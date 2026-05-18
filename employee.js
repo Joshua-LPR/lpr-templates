@@ -57,11 +57,15 @@
       const file = (location.pathname.split("/").pop() || "default").toLowerCase();
       let off = null;
       try { off = JSON.parse(localStorage.getItem("lpr_sig_offset_" + file) || "null"); } catch (e) {}
-      const tform = off ? "transform: translate(" + off.x + "px, " + off.y + "px); " : "";
+      const tform = off ? "transform: translate(" + (off.x || 0) + "px, " + (off.y || 0) + "px); " : "";
+      const widthCss = off && off.w
+        ? "width: " + off.w + "px; max-width: " + off.w + "px; height: auto; max-height: none;"
+        : "max-width: 2.4in;";
       document.querySelectorAll(".signature, .signature-slot").forEach(el => {
         if (el.querySelector("img.lpr-sig-img")) return;
         const h = el.offsetHeight || null;
-        el.innerHTML = '<img class="lpr-sig-img" src="' + sig + '" alt="signature" style="max-width: 2.4in; max-height: ' + (h ? (h + 8) + 'px' : '0.7in') + '; mix-blend-mode: multiply; display: block; ' + tform + '"/>';
+        const heightCss = off && off.w ? "" : "max-height: " + (h ? (h + 8) + "px" : "0.7in") + ";";
+        el.innerHTML = '<img class="lpr-sig-img" src="' + sig + '" alt="signature" style="' + widthCss + ' ' + heightCss + ' mix-blend-mode: multiply; display: block; ' + tform + '"/>';
       });
     }
   }

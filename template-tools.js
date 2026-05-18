@@ -79,7 +79,7 @@
     else teardownSignatureDrag();
   }
 
-  /* Signature drag-to-nudge (in edit mode only) */
+  /* Signature drag-to-nudge + resize (in edit mode only) */
   const sigDragHandlers = new Map();
   function offsetKey() {
     const file = (location.pathname.split("/").pop() || "default").toLowerCase();
@@ -89,6 +89,11 @@
     const m = /translate\(\s*(-?\d+(?:\.\d+)?)px\s*,\s*(-?\d+(?:\.\d+)?)px\s*\)/.exec(t || "");
     return m ? { x: parseFloat(m[1]), y: parseFloat(m[2]) } : { x: 0, y: 0 };
   }
+  function saveSigState(img) {
+    const off = parseTranslate(img.style.transform);
+    const data = { x: off.x, y: off.y, w: img.offsetWidth };
+    try { localStorage.setItem(offsetKey(), JSON.stringify(data)); } catch (e) {}
+  }
   function setupSignatureDrag() {
     teardownSignatureDrag();
     document.querySelectorAll("img.lpr-sig-img").forEach(img => {
@@ -96,9 +101,43 @@
       img.style.outline = "1px dashed rgba(40,56,145,0.4)";
       img.style.outlineOffset = "4px";
       img.setAttribute("draggable", "false");
-      img.title = "Drag to nudge — release to save";
+      img.title = "Drag to move \u2014 drag corner to resize";
 
-      const handler = (ev) => {
+      // Make parent the positioning context for the handle
+      const parent = img.parentElement;
+      let positionedParent = false;
+      if (parent && getComputedStyle(parent).position === "static") {
+        parent.style.position = "relative";
+        positionedParent = true;
+      }
+
+      // Resize handle
+      const handle = document.createElement("div");
+      handle.className = "tt-sig-handle";
+      handle.style.cssText = [
+        "position: absolute",
+        "width: 14px", "height: 14px",
+        "background: #283891", "border: 2px solid #fff",
+        "border-radius: 50%", "cursor: nwse-resize",
+        "z-index: 50",
+        "box-shadow: 0 2px 6px rgba(0,0,0,0.25)",
+        "pointer-events: auto"
+      ].join("; ");
+      handle.title = "Drag to resize";
+      handle.setAttribute("draggable", "false");
+      parent.appendChild(handle);
+
+      function positionHandle() {
+        const ir = img.getBoundingClientRect();
+        const pr = parent.getBoundingClientRect();
+        handle.style.left = (ir.right - pr.left - 7) + "px";
+        handle.style.top  = (ir.bottom - pr.top - 7) + "px";
+      }
+      positionHandle();
+
+      // ---------- Move ----------
+      const moveHandler = (ev) => {
+        if (ev.target === handle) return; // handle's drag is separate
         ev.preventDefault();
         ev.stopPropagation();
         const isTouch = ev.type === "touchstart";
@@ -110,6 +149,7 @@
           const dx = orig.x + (p.clientX - sx);
           const dy = orig.y + (p.clientY - sy);
           img.style.transform = "translate(" + dx + "px, " + dy + "px)";
+          positionHandle();
           if (e.cancelable) e.preventDefault();
         }
         function onEnd() {
@@ -117,28 +157,63 @@
           document.removeEventListener("mouseup", onEnd);
           document.removeEventListener("touchmove", onMove);
           document.removeEventListener("touchend", onEnd);
-          const off = parseTranslate(img.style.transform);
-          try { localStorage.setItem(offsetKey(), JSON.stringify(off)); } catch (e) {}
-          hasUnsavedEdits = true;
+          saveSigState(img);
         }
         document.addEventListener("mousemove", onMove);
         document.addEventListener("mouseup", onEnd);
         document.addEventListener("touchmove", onMove, { passive: false });
         document.addEventListener("touchend", onEnd);
       };
-      img.addEventListener("mousedown", handler);
-      img.addEventListener("touchstart", handler, { passive: false });
-      sigDragHandlers.set(img, handler);
+      img.addEventListener("mousedown", moveHandler);
+      img.addEventListener("touchstart", moveHandler, { passive: false });
+
+      // ---------- Resize ----------
+      const resizeHandler = (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const isTouch = ev.type === "touchstart";
+        const start = isTouch ? ev.touches[0] : ev;
+        const sx = start.clientX;
+        const startW = img.offsetWidth;
+        function onMove(e) {
+          const p = e.type === "touchmove" ? e.touches[0] : e;
+          const dx = p.clientX - sx;
+          const newW = Math.max(60, Math.min(1200, startW + dx));
+          img.style.width = newW + "px";
+          img.style.maxWidth = newW + "px";
+          img.style.height = "auto";
+          img.style.maxHeight = "none";
+          positionHandle();
+          if (e.cancelable) e.preventDefault();
+        }
+        function onEnd() {
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onEnd);
+          document.removeEventListener("touchmove", onMove);
+          document.removeEventListener("touchend", onEnd);
+          saveSigState(img);
+        }
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onEnd);
+        document.addEventListener("touchmove", onMove, { passive: false });
+        document.addEventListener("touchend", onEnd);
+      };
+      handle.addEventListener("mousedown", resizeHandler);
+      handle.addEventListener("touchstart", resizeHandler, { passive: false });
+
+      sigDragHandlers.set(img, { moveHandler, resizeHandler, handle, positionedParent, parent });
     });
   }
   function teardownSignatureDrag() {
-    sigDragHandlers.forEach((handler, img) => {
-      img.removeEventListener("mousedown", handler);
-      img.removeEventListener("touchstart", handler);
+    sigDragHandlers.forEach((rec, img) => {
+      img.removeEventListener("mousedown", rec.moveHandler);
+      img.removeEventListener("touchstart", rec.moveHandler);
       img.style.cursor = "";
       img.style.outline = "";
       img.style.outlineOffset = "";
       img.removeAttribute("title");
+      if (rec.handle && rec.handle.parentElement) rec.handle.remove();
+      if (rec.positionedParent && rec.parent) rec.parent.style.position = "";
     });
     sigDragHandlers.clear();
   }
