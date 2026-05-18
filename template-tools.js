@@ -50,6 +50,9 @@
     const saveBtn = mkBtn("Save As", saveAs);
     saveBtn.title = "Save this filled-in template to your library";
     toolbar.appendChild(saveBtn);
+
+    setupEditTracking();
+    injectModalStyles();
   }
 
   function mkBtn(label, onClick) {
@@ -72,6 +75,166 @@
     const btn = document.getElementById("tt-edit-btn");
     btn.textContent = editing ? "✓ Done editing" : "Edit";
     btn.classList.toggle("tt-active", editing);
+    if (editing) setupSignatureDrag();
+    else teardownSignatureDrag();
+  }
+
+  /* Signature drag-to-nudge (in edit mode only) */
+  const sigDragHandlers = new Map();
+  function offsetKey() {
+    const file = (location.pathname.split("/").pop() || "default").toLowerCase();
+    return "lpr_sig_offset_" + file;
+  }
+  function parseTranslate(t) {
+    const m = /translate\(\s*(-?\d+(?:\.\d+)?)px\s*,\s*(-?\d+(?:\.\d+)?)px\s*\)/.exec(t || "");
+    return m ? { x: parseFloat(m[1]), y: parseFloat(m[2]) } : { x: 0, y: 0 };
+  }
+  function setupSignatureDrag() {
+    teardownSignatureDrag();
+    document.querySelectorAll("img.lpr-sig-img").forEach(img => {
+      img.style.cursor = "move";
+      img.style.outline = "1px dashed rgba(40,56,145,0.4)";
+      img.style.outlineOffset = "4px";
+      img.setAttribute("draggable", "false");
+      img.title = "Drag to nudge — release to save";
+
+      const handler = (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const isTouch = ev.type === "touchstart";
+        const start = isTouch ? ev.touches[0] : ev;
+        const sx = start.clientX, sy = start.clientY;
+        const orig = parseTranslate(img.style.transform);
+        function onMove(e) {
+          const p = e.type === "touchmove" ? e.touches[0] : e;
+          const dx = orig.x + (p.clientX - sx);
+          const dy = orig.y + (p.clientY - sy);
+          img.style.transform = "translate(" + dx + "px, " + dy + "px)";
+          if (e.cancelable) e.preventDefault();
+        }
+        function onEnd() {
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onEnd);
+          document.removeEventListener("touchmove", onMove);
+          document.removeEventListener("touchend", onEnd);
+          const off = parseTranslate(img.style.transform);
+          try { localStorage.setItem(offsetKey(), JSON.stringify(off)); } catch (e) {}
+          hasUnsavedEdits = true;
+        }
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onEnd);
+        document.addEventListener("touchmove", onMove, { passive: false });
+        document.addEventListener("touchend", onEnd);
+      };
+      img.addEventListener("mousedown", handler);
+      img.addEventListener("touchstart", handler, { passive: false });
+      sigDragHandlers.set(img, handler);
+    });
+  }
+  function teardownSignatureDrag() {
+    sigDragHandlers.forEach((handler, img) => {
+      img.removeEventListener("mousedown", handler);
+      img.removeEventListener("touchstart", handler);
+      img.style.cursor = "";
+      img.style.outline = "";
+      img.style.outlineOffset = "";
+      img.removeAttribute("title");
+    });
+    sigDragHandlers.clear();
+  }
+  /* --------- UNSAVED-CHANGES TRACKING --------- */
+  let hasUnsavedEdits = false;
+
+  function setupEditTracking() {
+    // Mark dirty on any user text edit
+    document.querySelectorAll(".sheet").forEach(s => {
+      s.addEventListener("input", () => { hasUnsavedEdits = true; });
+    });
+    // Mark dirty on signature drag-end (handled inside the drag handler too)
+
+    // Browser-native warning on tab close / refresh
+    window.addEventListener("beforeunload", e => {
+      if (!hasUnsavedEdits) return;
+      e.preventDefault();
+      e.returnValue = "";
+    });
+
+    // Intercept in-page navigation (e.g. "← All templates")
+    document.addEventListener("click", e => {
+      if (!hasUnsavedEdits) return;
+      const a = e.target.closest("a");
+      if (!a) return;
+      const href = a.getAttribute("href");
+      if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
+      if (a.target === "_blank") return;
+      e.preventDefault();
+      e.stopPropagation();
+      showSaveModal(() => { hasUnsavedEdits = false; location.href = a.href; });
+    }, true);
+  }
+
+  function injectModalStyles() {
+    if (document.getElementById("tt-modal-styles")) return;
+    const s = document.createElement("style");
+    s.id = "tt-modal-styles";
+    s.textContent = `
+      .tt-backdrop {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 9999; padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+      }
+      .tt-dialog {
+        background: #fff; border-radius: 12px; padding: 28px 30px;
+        max-width: 440px; width: 100%;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+      }
+      .tt-dialog h2 { margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #0e1430; }
+      .tt-dialog p { margin: 0 0 18px; font-size: 13px; line-height: 1.6; color: #5a5f72; }
+      .tt-dialog .actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+      .tt-dialog button {
+        font-family: inherit; font-size: 12.5px; font-weight: 600; letter-spacing: 0.3px;
+        padding: 10px 18px; border-radius: 999px; cursor: pointer;
+        border: 1px solid #283891; background: #fff; color: #283891;
+      }
+      .tt-dialog button:hover { background: #283891; color: #fff; }
+      .tt-dialog button.primary { background: #283891; color: #fff; }
+      .tt-dialog button.primary:hover { background: #1c2870; }
+      .tt-dialog button.muted { border-color: rgba(40,56,145,0.18); color: #5a5f72; }
+      .tt-dialog button.muted:hover { background: #f4f1ec; color: #0e1430; }
+      .tt-dialog button.danger { border-color: #c33; color: #c33; }
+      .tt-dialog button.danger:hover { background: #c33; color: #fff; }
+    `;
+    document.head.appendChild(s);
+  }
+
+  function showSaveModal(onDiscard) {
+    const back = document.createElement("div");
+    back.className = "tt-backdrop";
+    back.innerHTML = `
+      <div class="tt-dialog">
+        <h2>Save changes before leaving?</h2>
+        <p>You've made edits to this template. Save a copy to your Library so you don't lose your work?</p>
+        <div class="actions">
+          <button data-act="cancel" class="muted">Stay on page</button>
+          <button data-act="discard" class="danger">Discard</button>
+          <button data-act="save" class="primary">Save to Library</button>
+        </div>
+      </div>`;
+    document.body.appendChild(back);
+    function close() { back.remove(); }
+    back.addEventListener("click", e => { if (e.target === back) close(); });
+    back.querySelector('[data-act="cancel"]').addEventListener("click", close);
+    back.querySelector('[data-act="discard"]').addEventListener("click", () => {
+      close();
+      onDiscard();
+    });
+    back.querySelector('[data-act="save"]').addEventListener("click", () => {
+      close();
+      // saveAs() prompts for a name, then offers a "Go back to the index now?" path.
+      saveAs();
+      hasUnsavedEdits = false;
+    });
   }
 
   /* --------- EXPORT --------- */
