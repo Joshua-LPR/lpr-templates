@@ -215,6 +215,7 @@
 
     const span = document.createElement('span');
     span.setAttribute('data-tenant-field', key);
+    if (FIELD_LABELS[key]) span.setAttribute('data-tenant-label', FIELD_LABELS[key]);
     range.insertNode(span);
 
     const after = range.cloneRange();
@@ -495,12 +496,23 @@
   }
 
   /* ================================================================
+     LABEL FIELDS — sets data-tenant-label for placeholder display
+     ================================================================ */
+  function labelFields() {
+    document.querySelectorAll('[data-tenant-field]').forEach(el => {
+      const key = el.getAttribute('data-tenant-field');
+      if (FIELD_LABELS[key]) el.setAttribute('data-tenant-label', FIELD_LABELS[key]);
+    });
+  }
+
+  /* ================================================================
      INIT
      ================================================================ */
   function init() {
     const toolbar = document.querySelector('.toolbar');
     if (!toolbar) return;
     injectStyles();
+    labelFields();
 
     const btn = document.createElement('button');
     btn.id          = 'lpr-fill-btn';
@@ -631,6 +643,18 @@
       .lpr-tp-apply:hover { background: #1c2870; }
       .lpr-tp-apply.ok { background: #2a7a2a; }
 
+      /* ---- Normal-view placeholder (subtle, non-editing) ---- */
+      [data-tenant-field]:empty::before {
+        content: attr(data-tenant-label);
+        color: rgba(40,56,145,.28);
+        font-style: italic; font-size: .9em;
+        border-bottom: 1px dashed rgba(40,56,145,.22);
+        pointer-events: none;
+      }
+      @media print {
+        [data-tenant-field]:empty::before { display: none; }
+      }
+
       /* ---- Edit-mode field highlights in the sheet ---- */
       .sheet.tt-editing [data-tenant-field] {
         background: rgba(40,56,145,.08);
@@ -638,8 +662,9 @@
         border-radius: 2px; padding: 0 2px;
       }
       .sheet.tt-editing [data-tenant-field]:empty::before {
-        content: '{{' attr(data-tenant-field) '}}';
-        color: rgba(40,56,145,.5); font-style: italic; font-size: .88em;
+        content: attr(data-tenant-label);
+        color: rgba(40,56,145,.55); font-style: italic; font-size: .88em;
+        border-bottom: none;
       }
     `;
     document.head.appendChild(s);
