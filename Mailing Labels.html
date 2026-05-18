@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>LPR — Mailing Labels (Avery 5160)</title>
+<link rel="stylesheet" href="brand.css">
+<script src="user.js"></script>
+<style>
+  body { background: #efeae0; padding: 60px 20px 40px; }
+  @page { size: 8.5in 11in; margin: 0; }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .label-h { font-size: 10px; letter-spacing: 3px; color: #6a6a6a; text-transform: uppercase; }
+  .sheet.labels { width: 8.5in; height: 11in; padding: 0.5in 0.1875in; }
+  .label-grid { display: grid; grid-template-columns: repeat(3, 2.625in); grid-template-rows: repeat(10, 1in); column-gap: 0.125in; row-gap: 0; }
+  .label-cell { padding: 0.08in 0.12in; display: flex; align-items: center; gap: 8px; overflow: hidden; border: 1px dashed rgba(40,56,145,0.18); }
+  .label-cell img { width: 0.7in; height: auto; flex-shrink: 0; }
+  .label-cell .info { font-size: 7pt; line-height: 1.3; color: var(--lpr-ink); font-weight: 400; }
+  .label-cell .info .name { font-weight: 700; color: var(--lpr-blue); font-size: 7.5pt; letter-spacing: 0.3px; }
+  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label-h { display: none; } .label-cell { border: none; } }
+</style>
+</head>
+<body>
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+  <button onclick="window.print()">Print</button>
+</div>
+<div class="stage">
+  <div class="label-h">RETURN-ADDRESS LABELS — AVERY 5160 · 30/SHEET</div>
+  <div class="sheet labels">
+    <div class="label-grid" id="grid"></div>
+  </div>
+</div>
+<script>
+  const grid = document.getElementById('grid');
+  for (let i = 0; i < 30; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'label-cell';
+    cell.innerHTML = `<img src="assets/logo-cropped.png" alt=""/><div class="info">
+      1517 Reisterstown Rd, 2nd Fl<br/>
+      Pikesville, MD 21208
+    </div>`;
+    grid.appendChild(cell);
+  }
+</script>
+<script src="template-tools.js"></script>
+</body>
+</html>

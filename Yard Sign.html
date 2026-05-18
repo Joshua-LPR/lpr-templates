@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>LPR — Yard Sign · For Rent</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="brand.css">
+<script src="user.js"></script>
+<style>
+  body { background: #efeae0; padding: 60px 20px 40px; }
+  @page { size: 24in 18in; margin: 0; }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .label { font-size: 10px; letter-spacing: 3px; color: #6a6a6a; text-transform: uppercase; }
+
+  /* Wrapper sized for display; actual sign inside is real size, scaled down */
+  .sign-wrap {
+    width: 8.4in;     /* 24in × 0.35 */
+    height: 6.3in;    /* 18in × 0.35 */
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 2px rgba(0,0,0,0.06);
+    background: #fff;
+  }
+  .sheet.sign {
+    width: 24in; height: 18in;
+    background: #fff;
+    display: grid;
+    grid-template-columns: 1fr 1.05fr;
+    grid-template-rows: 1fr;
+    position: absolute; top: 0; left: 0;
+    transform: scale(0.35);
+    transform-origin: top left;
+  }
+  @media print {
+    .sign-wrap { width: 24in; height: 18in; overflow: visible; box-shadow: none; }
+    .sheet.sign { transform: none; position: static; }
+  }
+
+  .sign-left {
+    background: var(--lpr-blue);
+    color: #fff;
+    padding: 1.2in 1.1in;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .sign-left img.logo { width: 7.5in; height: auto; display: block; }
+  .sign-left .accent { width: 3in; height: 0.05in; background: #fff; opacity: 0.5; margin-top: 0.4in; }
+  .sign-left .city {
+    font-size: 0.36in; font-weight: 600; letter-spacing: 0.08in;
+    text-transform: uppercase; color: rgba(255,255,255,0.9);
+    margin-top: 0.3in;
+  }
+
+  .sign-right {
+    padding: 1in 1.2in;
+    display: flex; flex-direction: column; justify-content: center; gap: 0.4in;
+    background: #fff;
+  }
+  .sign-right .super {
+    font-size: 0.5in; font-weight: 500; letter-spacing: 0.15in;
+    text-transform: uppercase; color: var(--lpr-blue);
+    border-bottom: 0.07in solid var(--lpr-blue); padding-bottom: 0.3in;
+  }
+  .sign-right .for-rent {
+    font-size: 2.8in; font-weight: 800; letter-spacing: -0.1in;
+    line-height: 0.9; color: var(--lpr-ink);
+  }
+  .sign-right .phone {
+    font-size: 1.25in; font-weight: 700; color: var(--lpr-blue);
+    letter-spacing: -0.03in; line-height: 1;
+  }
+  .sign-right .phone-label {
+    font-size: 0.2in; font-weight: 500; letter-spacing: 0.05in;
+    text-transform: uppercase; color: var(--lpr-muted);
+    margin-bottom: 0.1in;
+  }
+
+  .specs {
+    max-width: 720px; padding: 0 12px; font-size: 12px; line-height: 1.6;
+    color: var(--lpr-text);
+  }
+  .specs strong { color: var(--lpr-ink); letter-spacing: 1.5px; text-transform: uppercase; font-size: 11px; }
+  .specs code { font-family: 'SF Mono', Menlo, Consolas, monospace; background: rgba(40,56,145,0.08); padding: 1px 6px; border-radius: 3px; }
+
+  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label, .specs { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+  <button onclick="window.print()">Print</button>
+</div>
+
+<div class="stage">
+  <div class="label">YARD SIGN · FOR RENT — 24″ × 18″ LANDSCAPE</div>
+
+  <div class="sign-wrap">
+    <div class="sheet sign">
+      <div class="sign-left">
+        <img class="logo" src="assets/logo-white.png" alt="LPR Management, LLC"/>
+        <div>
+          <div class="accent"></div>
+          <div class="city">Pikesville · Maryland</div>
+        </div>
+      </div>
+      <div class="sign-right">
+        <div class="super">Available Now</div>
+        <div class="for-rent">FOR RENT</div>
+        <div>
+          <div class="phone-label">Call to inquire</div>
+          <div class="phone">443-402-5641</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="specs no-print">
+    <p><strong>Print-shop spec</strong> · Send this file (PDF or vector) to a sign printer.</p>
+    <p>
+      <strong>Size:</strong> 24″ × 18″ landscape ·
+      <strong>Material:</strong> 4mm coroplast (corrugated plastic), or aluminum composite for premium ·
+      <strong>Print:</strong> 4-color, full-bleed both sides (so it reads from either direction on a stake) ·
+      <strong>Mount:</strong> Standard H-frame wire stake (sold separately at any sign shop) ·
+      <strong>Color:</strong> Royal blue <code>#283891</code> / closest PMS: 287 C ·
+      <strong>Quantity:</strong> Order in lots of 10 minimum for best per-unit pricing.
+    </p>
+    <p>
+      <strong>Recommended sign printers:</strong> SignsOnTheCheap, BuildASign, BannerBuzz, or any local sign shop. Most turn around in 2–4 days.
+    </p>
+  </div>
+</div>
+<script src="template-tools.js"></script>
+</body>
+</html>

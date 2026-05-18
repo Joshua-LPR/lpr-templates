@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>LPR — #10 Envelope (Premium)</title>
+<link rel="stylesheet" href="brand.css">
+<script src="user.js"></script>
+<style>
+  body { background: #efeae0; padding: 60px 20px 40px; }
+  @page { size: 9.5in 4.125in; margin: 0; }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .label { font-size: 10px; letter-spacing: 3px; color: #6a6a6a; text-transform: uppercase; }
+  .envelope {
+    width: 9.5in; height: 4.125in;
+    background: #fbf9f5; /* warm ivory — feels like quality stock */
+    position: relative; overflow: hidden;
+    page-break-after: always;
+  }
+  /* Print-shop spec block — only shown on screen, not printed */
+  .specs {
+    font-size: 10px; color: #6a6a6a; line-height: 1.55;
+    max-width: 9.5in; padding: 0 4px;
+  }
+  .specs strong { color: var(--lpr-ink); letter-spacing: 1.5px; text-transform: uppercase; font-size: 9px; }
+
+  /* Refined return address — top-left, no big stripe */
+  .env-return {
+    position: absolute; top: 0.42in; left: 0.5in;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .env-return img { height: 0.5in; width: auto; }
+  .env-return .addr {
+    font-size: 8.5pt; line-height: 1.5; color: var(--lpr-ink);
+    font-weight: 400; letter-spacing: 0.2px;
+  }
+  .env-return .rule {
+    width: 1px; background: var(--lpr-blue); align-self: stretch;
+    margin: 2px 0;
+  }
+
+  /* Thin embossed-style rule along the bottom */
+  .env-baseline {
+    position: absolute; bottom: 0.32in; left: 0.5in; right: 0.5in;
+    height: 1px; background: var(--lpr-blue); opacity: 0.4;
+  }
+  .env-baseline::after {
+    content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: 0.4in;
+    background: var(--lpr-blue);
+  }
+
+  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label, .specs { display: none; } .envelope { background: #fff; } }
+</style>
+</head>
+<body>
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+  <button onclick="window.print()">Print</button>
+</div>
+<div class="stage">
+  <div class="label">#10 ENVELOPE — PREMIUM / PRE-PRINT</div>
+  <div class="sheet envelope">
+    <div class="env-return">
+      <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
+      <div class="rule"></div>
+      <div class="addr">
+        1517 Reisterstown Road, 2nd Floor<br/>
+        Pikesville, MD&nbsp;&nbsp;21208
+      </div>
+    </div>
+    <div class="env-baseline" style="display:none;"></div>
+  </div>
+
+  <div class="specs no-print">
+    <p><strong>Print-shop spec</strong> · Send this file to your printer with the notes below.</p>
+    <p>
+      <strong>Size:</strong> #10 commercial envelope, 9.5″ × 4.125″ ·
+      <strong>Stock:</strong> 70-80lb warm white wove (e.g. Mohawk Strathmore Bright White or Classic Crest Natural White) ·
+      <strong>Ink:</strong> 1-color flood, PMS 287 C (closest to <code>#283891</code>) — or 4/0 CMYK if 4-color ·
+      <strong>Print area:</strong> front only (1/0) ·
+      <strong>Finish:</strong> standard regular gum, no window ·
+      <strong>Bleed:</strong> none required (all art sits inside the live area)
+    </p>
+    <p>
+      Recipient address is intentionally blank — write, label, or print recipient via mail-merge.
+      Postage area top-right is left clear for stamp / meter / indicia.
+    </p>
+  </div>
+
+</div>
+<script src="template-tools.js"></script>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>LPR — Logo Refinements</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  html, body { margin:0; padding:0; height:100%; background:#f4f1ec; font-family:'Montserrat',sans-serif; color:#1a1a1a; }
+  *, *::before, *::after { box-sizing:border-box; }
+  :root { --dc-bg:#f4f1ec; }
+
+  .label-tiny {
+    font-family:'Montserrat',sans-serif;
+    font-size:9px; letter-spacing:3px; font-weight:500;
+    text-transform:uppercase; color:rgba(0,0,0,0.5);
+  }
+  .label-tiny.on-dark { color:rgba(255,255,255,0.55); }
+
+  .concept-rationale {
+    font-family:'Montserrat',sans-serif;
+    font-size:11px; line-height:1.55; color:rgba(0,0,0,0.65);
+    max-width:540px;
+  }
+  .size-rule { border-top:1px dashed rgba(0,0,0,0.18); margin: 24px 0 14px; }
+  .scale-row { display:flex; gap:36px; align-items:flex-end; flex-wrap:wrap; }
+  .scale-cell { display:flex; flex-direction:column; align-items:center; gap:8px; }
+
+  .palette-board { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
+  .palette-card {
+    border:1px solid rgba(0,0,0,0.08);
+    border-radius:6px; padding:14px; background:#fff;
+    text-align:left; cursor:pointer; font-family:inherit;
+  }
+  .palette-card h4 {
+    margin:0 0 10px; font-size:11px; font-weight:600; letter-spacing:2.5px;
+    text-transform:uppercase; color:#1a1a1a;
+  }
+  .palette-row { display:flex; gap:6px; margin-bottom:8px; }
+  .palette-row > div {
+    flex:1; height:36px; border-radius:3px; border:1px solid rgba(0,0,0,0.06);
+  }
+  .palette-card p { margin:0; font-size:10px; line-height:1.5; color:rgba(0,0,0,0.6); }
+
+  .reference-box {
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 6px;
+    padding: 18px;
+    display: flex; align-items: center; gap: 18px;
+  }
+  .reference-box img { width: 200px; height: auto; }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="logos.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "selected": "brand"
+}/*EDITMODE-END*/;
+
+/* Palette options — keep brand royal blue as default, offer tonal variants */
+const PALETTE_DEFS = {
+  brand: {
+    name: "Brand Royal Blue",
+    rationale: "The current brand color, refined slightly for better print contrast. The default & recommended choice.",
+    paper: "#fbf9f5",
+    ink: "#0e1430",
+    brand: "#243C95",
+    chips: ["#243C95","#fbf9f5","#0e1430","#dde2f0"],
+  },
+  navyDeep: {
+    name: "Deep Navy",
+    rationale: "Darker, more authoritative. Reads like an established firm. Same family, just more weight.",
+    paper: "#fbf9f5",
+    ink: "#0a1430",
+    brand: "#142657",
+    chips: ["#142657","#fbf9f5","#0a1430","#d6dae6"],
+  },
+  navyBrass: {
+    name: "Navy + Brass",
+    rationale: "Adds a brass accent for moments of warmth (rule lines, bullet dots). Good for premium materials.",
+    paper: "#fbf9f5",
+    ink: "#0a1430",
+    brand: "#1d3072",
+    accent: "#a87a3c",
+    chips: ["#1d3072","#fbf9f5","#a87a3c","#dadfe9"],
+  },
+  ink: {
+    name: "Ink Black",
+    rationale: "Monochrome version for fax/B&W printing, embossed materials, and apparel. Always have one.",
+    paper: "#fbf9f5",
+    ink: "#0e0e0e",
+    brand: "#0e0e0e",
+    chips: ["#0e0e0e","#fbf9f5","#3a3a3a","#dcdcdc"],
+  },
+  navyTeal: {
+    name: "Navy → Teal",
+    rationale: "Modernized brand pivot. Same blue family but warmer, more residential than corporate.",
+    paper: "#fbf9f5",
+    ink: "#0a2230",
+    brand: "#1a4a6b",
+    chips: ["#1a4a6b","#fbf9f5","#0a2230","#d4dee3"],
+  },
+};
+
+function PrimaryCard({ Concept, palette, on, label }) {
+  const bg = on === "dark" ? palette.ink : palette.paper;
+  return (
+    <div style={{
+      width:"100%", height:"100%", background:bg,
+      display:"flex", alignItems:"center", justifyContent:"center",
+      padding:"40px 32px", borderRadius:6, position:"relative",
+    }}>
+      <div className={`label-tiny ${on==="dark"?"on-dark":""}`}
+        style={{ position:"absolute", top:14, left:18 }}>{label}</div>
+      <Concept mode="primary" on={on} palette={palette} />
+    </div>
+  );
+}
+
+function VariantStrip({ Concept, palette, on, label }) {
+  const bg = on === "dark" ? palette.ink : palette.paper;
+  return (
+    <div style={{
+      width:"100%", height:"100%", background:bg, padding:"22px 28px",
+      borderRadius:6, position:"relative",
+      display:"flex", flexDirection:"column", gap:16,
+    }}>
+      <div className={`label-tiny ${on==="dark"?"on-dark":""}`}>{label}</div>
+      <div style={{ display:"flex", gap:36, alignItems:"center", flexWrap:"wrap", flex:1 }}>
+        <div className="scale-cell">
+          <Concept mode="mark" on={on} palette={palette} />
+          <div className={`label-tiny ${on==="dark"?"on-dark":""}`}>MARK ONLY</div>
+        </div>
+        <div className="scale-cell">
+          <Concept mode="horizontal" on={on} palette={palette} />
+          <div className={`label-tiny ${on==="dark"?"on-dark":""}`}>HORIZONTAL LOCKUP</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScaleCard({ Concept, palette, on, label }) {
+  const bg = on === "dark" ? palette.ink : palette.paper;
+  return (
+    <div style={{
+      width:"100%", height:"100%", background:bg, padding:"22px 28px",
+      borderRadius:6, position:"relative",
+      display:"flex", flexDirection:"column", gap:18,
+    }}>
+      <div className={`label-tiny ${on==="dark"?"on-dark":""}`}>{label}</div>
+      <div className="scale-row" style={{ flex:1 }}>
+        {[40, 56, 80, 110].map(sz => (
+          <div className="scale-cell" key={sz}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:130 }}>
+              <div style={{ transform:`scale(${sz/110})`, transformOrigin:"center" }}>
+                <Concept mode="mark" on={on} palette={palette} />
+              </div>
+            </div>
+            <div className={`label-tiny ${on==="dark"?"on-dark":""}`}>{sz}px</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RationaleCard({ concept }) {
+  return (
+    <div style={{
+      width:"100%", height:"100%", background:"#fbf9f5",
+      padding:"28px 30px", borderRadius:6,
+      display:"flex", flexDirection:"column", gap:14,
+    }}>
+      <div className="label-tiny">CONCEPT NOTE</div>
+      <div style={{
+        fontFamily:"'Montserrat', sans-serif",
+        fontSize:20, fontWeight:700, lineHeight:1.15,
+      }}>
+        {concept.name.split(" · ")[1]}
+      </div>
+      <p className="concept-rationale">{concept.direction}</p>
+    </div>
+  );
+}
+
+function IntroCard() {
+  return (
+    <div style={{
+      width:"100%", height:"100%", background:"#fbf9f5",
+      padding:"30px 32px", borderRadius:6,
+      display:"flex", flexDirection:"column", gap:14,
+    }}>
+      <div className="label-tiny">BRIEF</div>
+      <div style={{
+        fontFamily:"'Montserrat', sans-serif",
+        fontSize:24, lineHeight:1.1, fontWeight:700,
+      }}>
+        LPR Management, LLC
+      </div>
+      <p className="concept-rationale" style={{ fontSize:12 }}>
+        Refinements of the existing skyline + LPR logo. Same DNA preserved
+        across every concept: <strong>royal blue</strong>, <strong>vertical-bar
+        skyline mark</strong>, <strong>heavy-bold "LPR"</strong>, and
+        <strong> "Management, LLC"</strong> below. The five concepts move
+        from drop-in cleanup → progressive evolutions, so you can pick how
+        far to push it.
+      </p>
+      <div className="size-rule" />
+      <div className="label-tiny">REFERENCE — CURRENT LOGO</div>
+      <div className="reference-box">
+        <img src="assets/logo-current.png" alt="current LPR logo" />
+        <p className="concept-rationale">
+          The starting point. Note the tall slab + cluster of vertical bars,
+          a smaller stepped tower, and "Management, LLC" full-width beneath.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function PaletteBoard({ activeId, onPick }) {
+  return (
+    <div style={{
+      width:"100%", height:"100%", background:"#fbf9f5",
+      padding:"30px 32px", borderRadius:6,
+      display:"flex", flexDirection:"column", gap:18,
+    }}>
+      <div className="label-tiny">PALETTE EXPLORATION · CLICK TO APPLY</div>
+      <div className="palette-board">
+        {Object.entries(PALETTE_DEFS).map(([id, p]) => {
+          const active = id === activeId;
+          return (
+            <button key={id} onClick={() => onPick(id)} className="palette-card"
+              style={{ outline: active ? "2px solid #243C95" : "none", outlineOffset: 2 }}>
+              <h4>{p.name}</h4>
+              <div className="palette-row">
+                {p.chips.map(c => <div key={c} style={{ background:c }} />)}
+              </div>
+              <p>{p.rationale}</p>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const concepts = window.LPR_CONCEPTS || [];
+  const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const palette = PALETTE_DEFS[tweaks.selected] || PALETTE_DEFS.brand;
+
+  return (
+    <>
+      <DesignCanvas
+        title="LPR — Logo Refinements"
+        subtitle={`Five evolutions of the existing brand. Palette: ${palette.name}`}
+      >
+        <DCSection id="setup" title="Setup">
+          <DCArtboard id="brief" label="Brief & current logo" width={620} height={520}>
+            <IntroCard />
+          </DCArtboard>
+          <DCArtboard id="palettes" label="Palettes — click to apply" width={1180} height={360}>
+            <PaletteBoard activeId={tweaks.selected} onPick={(id)=>setTweak("selected", id)} />
+          </DCArtboard>
+        </DCSection>
+
+        {concepts.map(c => {
+          const C = c.Component;
+          return (
+            <DCSection id={c.id} title={c.name} key={c.id}>
+              <DCArtboard id={c.id+"-note"} label="Concept note" width={420} height={380}>
+                <RationaleCard concept={c} />
+              </DCArtboard>
+              <DCArtboard id={c.id+"-light"} label="Primary lockup · light" width={520} height={420}>
+                <PrimaryCard Concept={C} palette={palette} on="light" label="ON LIGHT" />
+              </DCArtboard>
+              <DCArtboard id={c.id+"-dark"} label="Primary lockup · dark" width={520} height={420}>
+                <PrimaryCard Concept={C} palette={palette} on="dark" label="ON DARK" />
+              </DCArtboard>
+              <DCArtboard id={c.id+"-variants"} label="Mark + horizontal lockup" width={780} height={300}>
+                <VariantStrip Concept={C} palette={palette} on="light" label="VARIANTS" />
+              </DCArtboard>
+              <DCArtboard id={c.id+"-scale"} label="Small-size behavior" width={780} height={300}>
+                <ScaleCard Concept={C} palette={palette} on="light" label="SCALE — 40 / 56 / 80 / 110 px" />
+              </DCArtboard>
+            </DCSection>
+          );
+        })}
+      </DesignCanvas>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection title="Palette">
+          <TweakSelect label="Brand palette" value={tweaks.selected}
+            options={Object.entries(PALETTE_DEFS).map(([id, p]) => ({ value:id, label:p.name }))}
+            onChange={(v) => setTweak("selected", v)} />
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>LPR Management — Brand Templates</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="brand.css">
+<script src="user.js"></script>
+<style>
+  body { background: #efeae0; min-height: 100vh; }
+  .container { max-width: 1180px; margin: 0 auto; padding: 56px 32px 80px; }
+  .hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: center; background: #fff; border-radius: 12px; padding: 48px 56px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); margin-bottom: 48px; }
+  .hero .logo img { width: 100%; max-width: 380px; display: block; }
+  .hero h1 { font-size: 32px; font-weight: 700; color: var(--lpr-ink); margin: 0 0 12px; letter-spacing: -0.4px; line-height: 1.1; }
+  .hero p { font-size: 14px; line-height: 1.65; color: var(--lpr-muted); margin: 0 0 8px; }
+  .hero .meta { margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--lpr-rule); display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 11px; }
+  .hero .meta strong { display: block; letter-spacing: 2px; text-transform: uppercase; color: var(--lpr-blue); font-weight: 600; margin-bottom: 4px; }
+  .hero .meta span { color: var(--lpr-text); }
+
+  .section-title { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--lpr-muted); font-weight: 600; margin: 0 0 18px; padding-left: 4px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-bottom: 44px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+
+  .card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.05); text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: transform 0.18s ease, box-shadow 0.18s ease; }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.10); }
+  .card .thumb { height: 200px; display: flex; align-items: center; justify-content: center; background: #fbf9f5; position: relative; overflow: hidden; border-bottom: 1px solid var(--lpr-rule); padding: 18px; }
+  .card .body { padding: 18px 20px 20px; }
+  .card h3 { font-size: 16px; font-weight: 700; color: var(--lpr-ink); margin: 0 0 4px; letter-spacing: -0.1px; }
+  .card .role { font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--lpr-blue); font-weight: 600; margin: 0 0 8px; }
+  .card p { font-size: 12.5px; line-height: 1.5; color: var(--lpr-muted); margin: 0; }
+
+  /* Mini thumbs — built around real logo image */
+  .mini-card { width: 80%; aspect-ratio: 3.5/2; background: #fff; border: 1px solid var(--lpr-rule); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: grid; grid-template-columns: 35% 1fr; padding: 8px 10px; gap: 8px; }
+  .mini-card .l { display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--lpr-rule); padding-right: 6px; }
+  .mini-card .l img { width: 100%; height: auto; }
+  .mini-card .r { display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+  .mini-card .r .a { height: 5px; background: var(--lpr-ink); width: 60%; border-radius: 1px; }
+  .mini-card .r .b { height: 3px; background: var(--lpr-blue); width: 40%; border-radius: 1px; }
+  .mini-card .r .c { height: 2px; background: var(--lpr-rule); width: 80%; border-radius: 1px; margin-top: 4px; }
+  .mini-card .r .c.s { width: 70%; }
+  .mini-card .r .c.t { width: 50%; }
+
+  .mini-letter { width: 60%; aspect-ratio: 8.5/11; background: #fff; border: 1px solid var(--lpr-rule); border-radius: 2px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden; }
+  .mini-letter .head { display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid var(--lpr-blue); padding-bottom: 6px; }
+  .mini-letter .head img { height: 22px; width: auto; }
+  .mini-letter .head .meta { font-size: 4px; color: var(--lpr-muted); text-align: right; line-height: 1.2; }
+  .mini-letter .lines { display: flex; flex-direction: column; gap: 2px; padding-top: 6px; }
+  .mini-letter .lines div { height: 2px; background: var(--lpr-rule); border-radius: 1px; }
+  .mini-letter .lines div:nth-child(1){ width:30%; }
+  .mini-letter .lines div:nth-child(2){ width:90%; }
+  .mini-letter .lines div:nth-child(3){ width:85%; }
+  .mini-letter .lines div:nth-child(4){ width:70%; margin-bottom: 4px; }
+  .mini-letter .lines div:nth-child(5){ width:88%; }
+  .mini-letter .lines div:nth-child(6){ width:50%; }
+  .mini-letter .wm { position: absolute; left: 50%; top: 55%; transform: translate(-50%, -50%); width: 60%; opacity: 0.08; }
+
+  .mini-watermark { width: 60%; aspect-ratio: 8.5/11; background: #fff; border: 1px solid var(--lpr-rule); border-radius: 2px; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .mini-watermark .top { position: absolute; left:0; right:0; top:0; height: 12%; background: var(--lpr-blue); }
+  .mini-watermark .bot { position: absolute; left:0; right:0; bottom:0; height: 4%; background: linear-gradient(to right, var(--lpr-blue) 0%, var(--lpr-blue) 30%, #d6a35a 30%, #d6a35a 36%, transparent 36%); }
+  .mini-watermark .wm { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 55%; opacity: 0.1; }
+
+  .mini-env { width: 92%; aspect-ratio: 9.5/4.125; background: #fff; border: 1px solid var(--lpr-rule); border-radius: 3px; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; }
+  .mini-env .stripe { width: 5%; background: var(--lpr-blue); }
+  .mini-env .body { flex: 1; padding: 8px 10px; display: flex; flex-direction: column; justify-content: space-between; }
+  .mini-env .ret { display: flex; gap: 6px; align-items: center; }
+  .mini-env .ret img { height: 22px; width: auto; }
+  .mini-env .ret .lines { display: flex; flex-direction: column; gap: 2px; }
+  .mini-env .ret .lines div { height: 2px; background: var(--lpr-rule); border-radius: 1px; }
+  .mini-env .ret .lines div:first-child { background: var(--lpr-blue); width: 26px; }
+  .mini-env .ret .lines div:nth-child(2) { width: 32px; }
+  .mini-env .ret .lines div:nth-child(3) { width: 22px; }
+  .mini-env .recip { align-self: center; margin-left: 30%; display: flex; flex-direction: column; gap: 2px; }
+  .mini-env .recip div { height: 3px; background: var(--lpr-ink); opacity: 0.5; border-radius: 1px; }
+  .mini-env .recip div:nth-child(1){ width: 40px; }
+  .mini-env .recip div:nth-child(2){ width: 50px; }
+  .mini-env .recip div:nth-child(3){ width: 36px; }
+
+  .mini-grid { width: 60%; aspect-ratio: 8.5/11; border: 1px solid var(--lpr-rule); border-radius: 2px; background: #fff; padding: 4%; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(10, 1fr); column-gap: 1.5%; row-gap: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .mini-grid .cell { border: 1px dashed rgba(40,56,145,0.25); background: linear-gradient(135deg, transparent 60%, rgba(40,56,145,0.08)); }
+
+  .mini-cover { width: 60%; aspect-ratio: 8.5/11; border: 1px solid var(--lpr-rule); border-radius: 2px; background: #fff; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; flex-direction: column; }
+  .mini-cover .band { background: var(--lpr-blue); height: 38%; padding: 8px 10px; color: #fff; display: flex; flex-direction: column; }
+  .mini-cover .band img { height: 24px; width: auto; }
+  .mini-cover .band .doc { font-size: 4px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.7; margin-top: 18px; }
+  .mini-cover .band .title { font-size: 9px; font-weight: 700; line-height: 1; margin-top: 3px; }
+  .mini-cover .body-mini { flex: 1; padding: 8px 10px; display: flex; flex-direction: column; gap: 5px; }
+  .mini-cover .row { display: grid; grid-template-columns: 30% 1fr; gap: 6px; padding-top: 4px; border-top: 1px solid var(--lpr-rule); }
+  .mini-cover .row .key { font-size: 4px; letter-spacing: 0.8px; text-transform: uppercase; color: var(--lpr-blue); font-weight: 600; }
+  .mini-cover .row .val { height: 3px; background: var(--lpr-rule); border-radius: 1px; }
+
+  .mini-email { width: 80%; background: #fff; border-radius: 4px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid var(--lpr-rule); }
+  .mini-email .lines { display: flex; flex-direction: column; gap: 3px; margin-bottom: 10px; }
+  .mini-email .lines div { height: 2px; background: var(--lpr-rule); border-radius: 1px; }
+  .mini-email .lines div:nth-child(1) { width: 50%; }
+  .mini-email .lines div:nth-child(2) { width: 80%; }
+  .mini-email .lines div:nth-child(3) { width: 65%; }
+  .mini-email .sig { border-top: 1px solid #eee; padding-top: 8px; display: flex; gap: 8px; align-items: center; }
+  .mini-email .sig img { width: 38px; height: auto; border-right: 1.5px solid var(--lpr-blue); padding-right: 6px; }
+  .mini-email .sig .right { display: flex; flex-direction: column; gap: 2px; }
+  .mini-email .sig .right div { height: 2px; background: var(--lpr-ink); opacity: 0.6; border-radius: 1px; }
+  .mini-email .sig .right div:nth-child(1){ width: 40px; background: var(--lpr-ink); opacity: 0.85; height: 3px;}
+  .mini-email .sig .right div:nth-child(2){ width: 32px; background: var(--lpr-blue); }
+  .mini-email .sig .right div:nth-child(3){ width: 50px; }
+  .mini-email .sig .right div:nth-child(4){ width: 44px; }
+
+  .footer-note { text-align: center; font-size: 11px; color: var(--lpr-muted); margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--lpr-rule); letter-spacing: 1px; text-transform: uppercase; }
+
+  /* Section blocks (each holds a section-head + grid) */
+  .section-block { margin-bottom: 36px; }
+  .section-block.dragging-section { opacity: 0.5; }
+  .section-block.sortable-ghost { opacity: 0.3; }
+
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 18px;
+    user-select: none;
+  }
+  .section-head .section-title {
+    margin: 0; cursor: grab; padding: 6px 8px; border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .section-head .section-title:hover { background: rgba(40,56,145,0.06); }
+  .section-head .section-title::before {
+    content: "⋮⋮  "; opacity: 0.35; font-weight: 400; letter-spacing: 0;
+  }
+
+  /* Per-card buttons */
+  .card { position: relative; }
+  .card-actions {
+    position: absolute; top: 8px; right: 8px;
+    display: flex; gap: 6px;
+    opacity: 0; transition: opacity 0.15s;
+    z-index: 5;
+  }
+  .card:hover .card-actions { opacity: 1; }
+  .card-actions button {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(255,255,255,0.95); border: 1px solid var(--lpr-rule);
+    color: var(--lpr-muted); font-size: 14px;
+    cursor: pointer; padding: 0; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .card-actions .star-btn:hover { background: #f5b400; color: #fff; border-color: #f5b400; }
+  .card-actions .star-btn.starred { background: #f5b400; color: #fff; border-color: #f5b400; opacity: 1; }
+  .card.is-favorite .star-btn { opacity: 1; }
+  .card.is-favorite .card-actions { opacity: 1; }
+  .card-actions .archive-btn:hover { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
+  .card-actions .delete-btn:hover { background: #c33; color: #fff; border-color: #c33; }
+
+  /* Star always visible on starred cards */
+  .card.starred .star-btn { opacity: 1; }
+  .card.starred .card-actions { opacity: 1; }
+
+  /* Custom (saved) template card accent */
+  .card.custom .role::before {
+    content: "★ "; color: var(--lpr-blue); font-weight: 700;
+  }
+
+  /* Drag-handle on cards */
+  .card { cursor: grab; }
+  .card.sortable-ghost { opacity: 0.3; }
+  .card.sortable-drag { cursor: grabbing; }
+
+  .empty-section {
+    background: #fff; border-radius: 10px; padding: 24px 28px;
+    text-align: center; color: var(--lpr-muted); font-size: 13px; line-height: 1.6;
+    border: 1px dashed var(--lpr-rule);
+  }
+  .empty-section strong { color: var(--lpr-ink); }
+  .empty-section a { color: var(--lpr-blue); text-decoration: underline; }
+
+  /* Top action bar above sections */
+  .top-actions {
+    display: flex; gap: 10px; justify-content: flex-end;
+    margin-bottom: 18px;
+  }
+  .top-actions a, .top-actions button {
+    font-family: inherit; font-size: 12px; font-weight: 500;
+    background: #fff; border: 1px solid var(--lpr-rule);
+    color: var(--lpr-ink); padding: 8px 14px; border-radius: 999px;
+    text-decoration: none; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .top-actions a:hover, .top-actions button:hover { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
+  .top-actions .archive-count {
+    background: rgba(40,56,145,0.1); color: var(--lpr-blue); border-radius: 999px;
+    padding: 1px 8px; font-size: 11px; font-weight: 700;
+  }
+
+  /* Reset section */
+  .reset-zone {
+    margin-top: 60px; padding-top: 28px;
+    border-top: 1px solid var(--lpr-rule);
+    text-align: center;
+  }
+  .reset-zone h3 {
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--lpr-muted); font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .reset-zone p {
+    font-size: 12px; color: var(--lpr-muted); line-height: 1.55;
+    margin: 0 0 16px; max-width: 480px; margin-left: auto; margin-right: auto;
+  }
+  .reset-zone button {
+    font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase;
+    background: transparent; border: 1px solid #c33; color: #c33;
+    padding: 9px 22px; border-radius: 999px; cursor: pointer;
+  }
+  .reset-zone button:hover { background: #c33; color: #fff; }
+
+  /* Employee picker */
+  .emp-picker { background: #fff; border-radius: 12px; padding: 32px 40px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); margin-bottom: 36px; }
+  .emp-picker h2 { font-size: 16px; font-weight: 700; color: var(--lpr-ink); margin: 0 0 4px; letter-spacing: -0.2px; }
+  .emp-picker .sub { font-size: 12.5px; color: var(--lpr-muted); margin: 0 0 22px; line-height: 1.55; }
+  .emp-picker .fields { display: grid; grid-template-columns: 1fr 1fr 1fr 1.4fr; gap: 14px; }
+  @media (max-width: 800px) { .emp-picker .fields { grid-template-columns: 1fr 1fr; } }
+  .emp-picker label { display: block; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--lpr-blue); font-weight: 600; margin-bottom: 6px; }
+  .emp-picker input { width: 100%; padding: 10px 12px; border: 1px solid var(--lpr-rule); border-radius: 6px; font-family: 'Montserrat', sans-serif; font-size: 13px; color: var(--lpr-ink); background: #fbf9f5; }
+  .emp-picker input:focus { outline: none; border-color: var(--lpr-blue); background: #fff; }
+  .emp-picker .row2 { display: flex; gap: 10px; margin-top: 18px; align-items: center; flex-wrap: wrap; }
+  .emp-picker .preset-label { font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--lpr-muted); font-weight: 600; margin-right: 4px; }
+  .emp-picker .preset { padding: 6px 12px; border: 1px solid var(--lpr-rule); border-radius: 20px; background: #fbf9f5; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 11.5px; color: var(--lpr-ink); transition: all 0.15s; }
+  .emp-picker .preset:hover { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
+  .emp-picker .preset.active { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
+  .emp-picker .preset .x { margin-left: 6px; opacity: 0.55; font-weight: 700; }
+  .emp-picker .preset .x:hover { opacity: 1; color: #c33; }
+  .emp-picker .save-btn { padding: 6px 14px; border: 1px solid var(--lpr-blue); border-radius: 20px; background: var(--lpr-blue); color: #fff; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.5px; }
+  .emp-picker .save-btn:hover { background: #1a266b; border-color: #1a266b; }
+  .emp-picker .save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .emp-picker .clear { font-size: 11px; color: var(--lpr-muted); text-decoration: underline; cursor: pointer; background: none; border: none; font-family: inherit; padding: 6px 4px; margin-left: auto; }
+  .emp-active { display: inline-block; background: rgba(40,56,145,0.08); color: var(--lpr-blue); padding: 4px 10px; border-radius: 4px; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; font-weight: 600; margin-left: 10px; vertical-align: middle; }
+
+  /* Usage instructions */
+  .usage { background: #fff; border-radius: 12px; padding: 36px 44px; margin-top: 40px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+  .usage h2 { font-size: 18px; font-weight: 700; color: var(--lpr-ink); margin: 0 0 6px; letter-spacing: -0.2px; }
+  .usage > p { font-size: 13px; color: var(--lpr-muted); margin: 0 0 28px; line-height: 1.6; }
+  .usage details { border-top: 1px solid var(--lpr-rule); padding: 14px 0; }
+  .usage details:last-child { border-bottom: 1px solid var(--lpr-rule); }
+  .usage summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: var(--lpr-ink); font-size: 14px; padding: 4px 0; }
+  .usage summary::-webkit-details-marker { display: none; }
+  .usage summary::after { content: "+"; color: var(--lpr-blue); font-weight: 400; font-size: 20px; transition: transform 0.15s; }
+  .usage details[open] summary::after { content: "–"; }
+  .usage .doc-body { padding: 14px 0 8px; font-size: 13px; line-height: 1.7; color: var(--lpr-text); }
+  .usage .doc-body ol, .usage .doc-body ul { margin: 8px 0 8px 22px; padding: 0; }
+  .usage .doc-body li { margin-bottom: 6px; }
+  .usage .doc-body strong { color: var(--lpr-ink); }
+  .usage .doc-body code { font-family: 'SF Mono', Menlo, Consolas, monospace; background: #fbf9f5; padding: 1px 6px; border-radius: 3px; font-size: 12px; color: var(--lpr-blue); }
+  .usage .doc-body .tip { background: rgba(40,56,145,0.06); border-left: 2px solid var(--lpr-blue); padding: 10px 14px; margin: 10px 0; font-size: 12.5px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="hero">
+    <div class="logo"><img src="assets/logo-cropped.png" alt="LPR Management, LLC"/></div>
+    <div>
+      <h1>Brand Template Library</h1>
+      <p>Print-ready stationery and digital assets — all built on your existing logo, type system, and royal blue. Click any template to open, then use the <strong>Print</strong> button (top-right) to send to a printer or save as PDF.</p>
+      <div class="meta">
+        <div><strong>Type</strong><span>Montserrat (300/500/700/800)</span></div>
+        <div><strong>Brand color</strong><span>#283891 royal blue</span></div>
+        <div><strong>Address</strong><span>1517 Reisterstown Rd, 2nd Fl<br/>Pikesville, MD 21208</span></div>
+        <div><strong>Phone</strong><span>443.402.5641</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="emp-picker">
+    <h2>Customize for an employee <span id="emp-active-tag" class="emp-active" style="display:none;"></span></h2>
+    <p class="sub">Fill in a person’s details below and the templates will open with their name, title, phone, and email automatically filled in. Defaults to David Mitnick when blank.</p>
+    <div class="fields">
+      <div><label>Full name</label><input id="emp-name" type="text" placeholder="David Mitnick"/></div>
+      <div><label>Title <span style="opacity:0.65; font-weight:500; letter-spacing:0; text-transform:none;">(optional)</span></label><input id="emp-title" type="text" placeholder="Senior Property Manager"/></div>
+      <div><label>Phone</label><input id="emp-phone" type="text" placeholder="443.402.5641"/></div>
+      <div><label>Email</label><input id="emp-email" type="email" placeholder="david@lasalleparkrealty.com"/></div>
+    </div>
+    <div class="row2">
+      <span class="preset-label">Presets:</span>
+      <div id="emp-presets" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;"></div>
+      <button class="save-btn" id="emp-save" title="Save the current name/title/phone/email as a reusable preset">+ Save as preset</button>
+      <button class="clear" id="emp-clear">Reset to default</button>
+    </div>
+  </div>
+  <div class="top-actions">
+    <span id="active-user-tag" style="display:inline-flex; align-items:center; gap:8px; padding: 7px 14px; background: rgba(40,56,145,0.08); border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--lpr-blue); margin-right: auto;">
+      <span id="active-user-avatar" style="width: 22px; height: 22px; border-radius: 50%; background: var(--lpr-blue); color: #fff; font-size: 10px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700;">?</span>
+      <span id="active-user-name">—</span>
+    </span>
+    <a href="users.html" id="switch-user-link">↻ Switch user</a>
+    <a href="archive.html" id="archive-link">⌫ Archive <span class="archive-count" id="archive-count" style="display:none;">0</span></a>
+  </div>
+
+  <div id="sections-wrap">
+
+    <!-- Favorites: shown only when there are starred items -->
+    <div class="section-block" data-section-id="favorites" id="favorites-section" style="display:none;">
+      <div class="section-head">
+        <div class="section-title">★ FAVORITES</div>
+      </div>
+      <div class="grid" data-section="favorites"></div>
+    </div>
+
+    <div class="section-block" data-section-id="stationery">
+      <div class="section-head">
+        <div class="section-title">STATIONERY</div>
+      </div>
+      <div class="grid" data-section="stationery">
+
+    <a href="Business Card.html" class="card">
+      <div class="thumb">
+        <div class="mini-card">
+          <div class="l"><img src="assets/logo-cropped.png" alt=""/></div>
+          <div class="r"><div class="a"></div><div class="b"></div><div class="c"></div><div class="c s"></div><div class="c t"></div></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">3.5″ × 2″ · Personal</div>
+        <h3>Business Card</h3>
+        <p>Mark left, employee contact right. Royal blue back with full lockup.</p>
+      </div>
+    </a>
+
+    <a href="Business Card Company.html" class="card">
+      <div class="thumb">
+        <div class="mini-card" style="grid-template-columns: 1fr; padding: 8px; justify-items:center;">
+          <div style="display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px; width:100%;">
+            <img src="assets/logo-cropped.png" alt="" style="width:55%; max-width:60px;"/>
+            <div style="width:35%; height:1px; background:var(--lpr-rule);"></div>
+            <div style="width:55%; height:3px; background:var(--lpr-blue); border-radius:1px;"></div>
+            <div style="width:45%; height:2px; background:var(--lpr-rule); border-radius:1px;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">3.5″ × 2″ · Company</div>
+        <h3>Business Card — Company</h3>
+        <p>No name version. Centered logo + office phone & address. For the main line.</p>
+      </div>
+    </a>
+
+    <a href="Letterhead Clean.html" class="card">
+      <div class="thumb">
+        <div class="mini-letter">
+          <div class="head">
+            <img src="assets/logo-cropped.png" alt=""/>
+            <div class="meta">1517 Reisterstown<br/>Pikesville, MD<br/>443.402.5641</div>
+          </div>
+          <div class="lines"><div></div><div></div><div></div><div></div><div></div><div></div></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">8.5″ × 11″ · US Letter</div>
+        <h3>Letterhead</h3>
+        <p>Standard letterhead. Header, body block, signature.</p>
+      </div>
+    </a>
+
+    <a href="Letterhead.html" class="card">
+      <div class="thumb">
+        <div class="mini-letter">
+          <div class="head">
+            <img src="assets/logo-cropped.png" alt=""/>
+            <div class="meta">1517 Reisterstown<br/>Pikesville, MD<br/>443.402.5641</div>
+          </div>
+          <div class="lines"><div></div><div></div><div></div><div></div><div></div><div></div></div>
+          <img class="wm" src="assets/logo-cropped.png" alt=""/>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">8.5″ × 11″ · US Letter</div>
+        <h3>Letterhead with Watermark</h3>
+        <p>Same letterhead with a ghosted logo behind the body.</p>
+      </div>
+    </a>
+
+    <a href="Letter Watermark.html" class="card">
+      <div class="thumb">
+        <div class="mini-watermark">
+          <div class="top"></div>
+          <img class="wm" src="assets/logo-cropped.png" alt=""/>
+          <div class="bot"></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">8.5″ × 11″ · US Letter</div>
+        <h3>Letter Watermark</h3>
+        <p>Pre-printable background — top brand band, foot stripe, ghosted mark.</p>
+      </div>
+    </a>
+
+    <a href="Envelope Premium.html" class="card">
+      <div class="thumb">
+        <div class="mini-env" style="background:#fbf9f5;">
+          <div class="body">
+            <div class="ret">
+              <img src="assets/logo-cropped.png" alt=""/>
+              <div class="lines"><div></div><div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">9.5″ × 4.125″ · #10</div>
+        <h3>Envelope</h3>
+        <p>Minimal ivory layout. Includes print-shop spec for pre-printed runs.</p>
+      </div>
+    </a>
+
+    <a href="Envelope.html" class="card">
+      <div class="thumb">
+        <div class="mini-env">
+          <div class="stripe"></div>
+          <div class="body">
+            <div class="ret">
+              <img src="assets/logo-cropped.png" alt=""/>
+              <div class="lines"><div></div><div></div><div></div></div>
+            </div>
+            <div class="recip"><div></div><div></div><div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">9.5″ × 4.125″ · #10</div>
+        <h3>Envelope — With Stripe</h3>
+        <p>Bolder variant. Royal-blue side stripe with mark + return address.</p>
+      </div>
+    </a>
+
+    <a href="Mailing Labels.html" class="card">
+      <div class="thumb">
+        <div class="mini-grid">
+          <script>document.write(Array(30).fill('<div class="cell"></div>').join(''));</script>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">Avery 5160 · 30 / Sheet</div>
+        <h3>Mailing Labels</h3>
+        <p>Return-address sheet with logo, name, and address per label.</p>
+      </div>
+    </a>
+
+    <a href="Lease Cover.html" class="card">
+      <div class="thumb">
+        <div class="mini-cover">
+          <div class="band">
+            <img src="assets/logo-white.png" alt=""/>
+            <div class="doc">Residential Lease Agreement</div>
+            <div class="title">Lease &<br/>Rental Agreement</div>
+          </div>
+          <div class="body-mini">
+            <div class="row"><div class="key">Property</div><div class="val"></div></div>
+            <div class="row"><div class="key">Landlord</div><div class="val"></div></div>
+            <div class="row"><div class="key">Tenant</div><div class="val"></div></div>
+            <div class="row"><div class="key">Term</div><div class="val"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">8.5″ × 11″ · US Letter</div>
+        <h3>Lease Cover Page</h3>
+        <p>Branded title sheet with property, landlord, tenant, and term blanks.</p>
+      </div>
+    </a>
+
+  </div>
+
+    </div>
+
+    <div class="section-block" data-section-id="property-management">
+      <div class="section-head">
+        <div class="section-title">PROPERTY MANAGEMENT</div>
+      </div>
+      <div class="grid" data-section="property-management">
+
+    <a href="Notice Template.html" class="card">
+      <div class="thumb">
+        <div class="mini-letter">
+          <div class="head">
+            <img src="assets/logo-cropped.png" alt=""/>
+            <div class="meta">1517 Reisterstown<br/>Pikesville, MD<br/>443.402.5641</div>
+          </div>
+          <div style="font-size:5px; letter-spacing:1px; text-transform:uppercase; color:var(--lpr-blue); font-weight:700; margin-top:4px;">[Category]</div>
+          <div style="font-size:9px; font-weight:700; line-height:1; color:var(--lpr-ink); margin-top:2px;">[Notice Title]</div>
+          <div class="lines"><div></div><div></div><div></div><div></div></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">8.5″ × 11″ · US Letter · Blank</div>
+        <h3>Notice Template — Blank</h3>
+        <p>Reusable shell for any new notice. Same layout as the other letters, with placeholders for category, title, and body.</p>
+      </div>
+    </a>
+
+    <a href="24-Hour Notice.html" class="card">
+      <div class="thumb">
+        <div class="mini-letter">
+          <div class="head">
+            <img src="assets/logo-cropped.png" alt=""/>
+            <div class="meta">1517 Reisterstown<br/>Pikesville, MD<br/>443.402.5641</div>
+          </div>
+          <div style="font-size:5px; letter-spacing:1px; text-transform:uppercase; color:var(--lpr-blue); font-weight:700; margin-top:4px;">Required Notice</div>
+          <div style="font-size:9px; font-weight:700; line-height:1; color:var(--lpr-ink); margin-top:2px;">24-Hour Notice<br/>of Entry</div>
+          <div style="margin-top:6px; padding:4px 6px; background:rgba(40,56,145,0.05); border-left:1.5px solid var(--lpr-blue); border-radius:1px; display:flex; flex-direction:column; gap:2px;">
+            <div style="height:1.5px; background:var(--lpr-rule); width:60%;"></div>
+            <div style="height:1.5px; background:var(--lpr-rule); width:75%;"></div>
+            <div style="height:1.5px; background:var(--lpr-rule); width:50%;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">8.5″ × 11″ · US Letter</div>
+        <h3>24-Hour Notice of Entry</h3>
+        <p>Required-by-MD-law entry notice with date, time, reason, and entrant fields.</p>
+      </div>
+    </a>
+
+    <a href="Rent Increase Notice.html" class="card">
+      <div class="thumb">
+        <div class="mini-letter">
+          <div class="head">
+            <img src="assets/logo-cropped.png" alt=""/>
+            <div class="meta">1517 Reisterstown<br/>Pikesville, MD<br/>443.402.5641</div>
+          </div>
+          <div style="font-size:5px; letter-spacing:1px; text-transform:uppercase; color:var(--lpr-blue); font-weight:700; margin-top:4px;">Lease Renewal</div>
+          <div style="font-size:9px; font-weight:700; line-height:1; color:var(--lpr-ink); margin-top:2px;">Notice of Rent<br/>Increase</div>
+          <div class="lines"><div></div><div></div><div></div><div></div></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">8.5″ × 11″ · US Letter</div>
+        <h3>Rent Increase Notice</h3>
+        <p>Renewal letter announcing new monthly rent amount and effective date.</p>
+      </div>
+    </a>
+
+    <a href="Non-Renewal Notice.html" class="card">
+      <div class="thumb">
+        <div class="mini-letter">
+          <div class="head">
+            <img src="assets/logo-cropped.png" alt=""/>
+            <div class="meta">1517 Reisterstown<br/>Pikesville, MD<br/>443.402.5641</div>
+          </div>
+          <div style="font-size:5px; letter-spacing:1px; text-transform:uppercase; color:var(--lpr-blue); font-weight:700; margin-top:4px;">Lease Notice</div>
+          <div style="font-size:9px; font-weight:700; line-height:1; color:var(--lpr-ink); margin-top:2px;">Notice of<br/>Non-Renewal</div>
+          <div class="lines"><div></div><div></div><div></div><div></div></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">8.5″ × 11″ · US Letter</div>
+        <h3>Non-Renewal Notice</h3>
+        <p>Lease will not renew. Vacate-by date and forwarding-address request.</p>
+      </div>
+    </a>
+
+    <a href="Security Deposit Returned.html" class="card">
+      <div class="thumb">
+        <div class="mini-letter">
+          <div class="head">
+            <img src="assets/logo-cropped.png" alt=""/>
+            <div class="meta">1517 Reisterstown<br/>Pikesville, MD<br/>443.402.5641</div>
+          </div>
+          <div style="font-size:5px; letter-spacing:1px; text-transform:uppercase; color:var(--lpr-blue); font-weight:700; margin-top:4px;">Security Deposit</div>
+          <div style="font-size:9px; font-weight:700; line-height:1; color:var(--lpr-ink); margin-top:2px;">Returned</div>
+          <div class="lines"><div></div><div></div><div></div></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">8.5″ × 11″ · US Letter</div>
+        <h3>Security Deposit — Returned</h3>
+        <p>Full deposit + interest refunded to tenant. With enclosed check reference.</p>
+      </div>
+    </a>
+
+    <a href="Security Deposit Partial Refund.html" class="card">
+      <div class="thumb">
+        <div class="mini-letter">
+          <div class="head">
+            <img src="assets/logo-cropped.png" alt=""/>
+            <div class="meta">1517 Reisterstown<br/>Pikesville, MD<br/>443.402.5641</div>
+          </div>
+          <div style="font-size:5px; letter-spacing:1px; text-transform:uppercase; color:var(--lpr-blue); font-weight:700; margin-top:4px;">Security Deposit</div>
+          <div style="font-size:9px; font-weight:700; line-height:1; color:var(--lpr-ink); margin-top:2px;">Partial Refund</div>
+          <div class="lines"><div></div><div></div><div></div></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">8.5″ × 11″ · US Letter</div>
+        <h3>Security Deposit — Partial Refund</h3>
+        <p>Portion withheld for outstanding balance. Account statement attached, check enclosed for remainder.</p>
+      </div>
+    </a>
+
+    <a href="Security Deposit Withheld.html" class="card">
+      <div class="thumb">
+        <div class="mini-letter">
+          <div class="head">
+            <img src="assets/logo-cropped.png" alt=""/>
+            <div class="meta">1517 Reisterstown<br/>Pikesville, MD<br/>443.402.5641</div>
+          </div>
+          <div style="font-size:5px; letter-spacing:1px; text-transform:uppercase; color:var(--lpr-blue); font-weight:700; margin-top:4px;">Security Deposit</div>
+          <div style="font-size:9px; font-weight:700; line-height:1; color:var(--lpr-ink); margin-top:2px;">Withheld</div>
+          <div class="lines"><div></div><div></div><div></div></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">8.5″ × 11″ · US Letter</div>
+        <h3>Security Deposit — Withheld</h3>
+        <p>Full deposit applied to outstanding ledger. Remaining balance owed by tenant.</p>
+      </div>
+    </a>
+
+    <a href="Door Hanger.html" class="card">
+      <div class="thumb">
+        <div style="width:33%; aspect-ratio:4.25/11; background:#fff; border:1px solid var(--lpr-rule); border-radius:2px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:hidden; display:flex; flex-direction:column;">
+          <div style="height:18%; border-bottom:1px dashed rgba(40,56,145,0.25); display:flex; align-items:center; justify-content:center;">
+            <div style="width:50%; height:55%; border-radius:999px; border:1px dashed rgba(40,56,145,0.5);"></div>
+          </div>
+          <div style="background:var(--lpr-blue); height:25%; padding:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;">
+            <img src="assets/logo-white.png" alt="" style="width:60%; height:auto;"/>
+            <div style="font-size:7px; font-weight:700; color:#fff; letter-spacing:-0.2px;">We Stopped By</div>
+          </div>
+          <div style="flex:1; padding:6px; display:flex; flex-direction:column; gap:3px;">
+            <div style="display:flex; gap:3px; align-items:center;"><div style="width:6px; height:6px; border:1px solid var(--lpr-blue); border-radius:1px;"></div><div style="flex:1; height:1.5px; background:var(--lpr-rule);"></div></div>
+            <div style="display:flex; gap:3px; align-items:center;"><div style="width:6px; height:6px; border:1px solid var(--lpr-blue); border-radius:1px;"></div><div style="flex:1; height:1.5px; background:var(--lpr-rule);"></div></div>
+            <div style="display:flex; gap:3px; align-items:center;"><div style="width:6px; height:6px; border:1px solid var(--lpr-blue); border-radius:1px;"></div><div style="flex:1; height:1.5px; background:var(--lpr-rule);"></div></div>
+            <div style="display:flex; gap:3px; align-items:center;"><div style="width:6px; height:6px; border:1px solid var(--lpr-blue); border-radius:1px;"></div><div style="flex:1; height:1.5px; background:var(--lpr-rule);"></div></div>
+          </div>
+          <div style="background:var(--lpr-blue); height:13%; padding:4px; display:flex; align-items:center; justify-content:center;">
+            <div style="font-size:7px; font-weight:700; color:#fff;">443-402-5641</div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">4.25″ × 11″ · Door-knob</div>
+        <h3>Door Hanger</h3>
+        <p>Notice card with die-cut for the door knob. Checkboxes for visit reason.</p>
+      </div>
+    </a>
+
+    <a href="Yard Sign.html" class="card">
+      <div class="thumb">
+        <div style="width:90%; aspect-ratio:24/18; background:#fff; border:1px solid var(--lpr-rule); border-radius:3px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:hidden; display:grid; grid-template-columns:1fr 1.05fr;">
+          <div style="background:var(--lpr-blue); padding:10px; display:flex; flex-direction:column; justify-content:space-between;">
+            <img src="assets/logo-white.png" alt="" style="width:90%; height:auto;"/>
+            <div style="width:50%; height:3px; background:rgba(255,255,255,0.5); border-radius:1.5px;"></div>
+          </div>
+          <div style="padding:10px; display:flex; flex-direction:column; justify-content:center; gap:4px;">
+            <div style="font-size:6px; letter-spacing:1.5px; text-transform:uppercase; color:var(--lpr-blue); font-weight:600; border-bottom:1.5px solid var(--lpr-blue); padding-bottom:3px;">Available Now</div>
+            <div style="font-size:22px; font-weight:800; color:var(--lpr-ink); letter-spacing:-1px; line-height:0.95;">FOR RENT</div>
+            <div style="font-size:11px; font-weight:700; color:var(--lpr-blue); margin-top:2px;">443-402-5641</div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">24″ × 18″ · Vinyl / Coroplast</div>
+        <h3>Yard Sign — For Rent</h3>
+        <p>Print-shop ready. Sized for standard H-stake yard signs. Includes spec sheet for printer.</p>
+      </div>
+    </a>
+
+  </div>
+
+    </div>
+
+    <div class="section-block" data-section-id="digital">
+      <div class="section-head">
+        <div class="section-title">DIGITAL</div>
+      </div>
+      <div class="grid" data-section="digital">
+    <a href="Email Signature.html" class="card">
+      <div class="thumb">
+        <div class="mini-email">
+          <div class="lines"><div></div><div></div><div></div></div>
+          <div class="sig">
+            <img src="assets/logo-cropped.png" alt=""/>
+            <div class="right"><div></div><div></div><div></div><div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">HTML · Gmail / Outlook</div>
+        <h3>Email Signature</h3>
+        <p>Live preview with one-click copy of the signature HTML.</p>
+      </div>
+    </a>
+  </div>
+
+    </div>
+
+    <!-- Library: custom-saved templates. Sits at the bottom by default. -->
+    <div class="section-block" data-section-id="library">
+      <div class="section-head">
+        <div class="section-title">YOUR LIBRARY</div>
+      </div>
+      <div id="library-grid"></div>
+    </div>
+
+  </div><!-- /sections-wrap -->
+
+  
+
+  <div class="usage">
+    <h2>How to use these templates</h2>
+    <p>Click each section below for setup steps. Most templates are print-ready — just click Print in any template’s toolbar to save as PDF or send to a printer.</p>
+
+    <details>
+      <summary>Editing, exporting &amp; saving (Edit / Export / Save As)</summary>
+      <div class="doc-body">
+        <ul>
+          <li><strong>Edit</strong> — on any template, click <em>Edit</em> in the top-right toolbar. The page gets a dashed blue outline and every text element becomes editable. Click any text and just type. Click <em>✓ Done editing</em> to exit.</li>
+          <li><strong>Export ▾</strong> — separate from Print. Three formats:
+            <ul>
+              <li><strong>PDF</strong> — saves a real PDF in the page's exact dimensions (envelope #10, card 3.5×2, letter, etc.)</li>
+              <li><strong>Image (.png)</strong> — saves a 2× resolution PNG. Two-sided pages export as two files.</li>
+              <li><strong>HTML (.html)</strong> — saves the page as a self-contained HTML file you can re-open or email.</li>
+            </ul>
+          </li>
+          <li><strong>Save As</strong> — saves the current edited template into your <em>Your Library</em> section on the index. Use this for "Smith Eviction Notice" etc. — keeps the original blank template untouched.</li>
+          <li><strong>Print</strong> — the original print button is unchanged. Use it for paper printing or system-level Save-as-PDF.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Multiple users (sign-in)</summary>
+      <div class="doc-body">
+        <ul>
+          <li>Visit <a href="users.html">users.html</a> (or click <strong>↻ Switch user</strong> at the top of the page) to pick or add accounts.</li>
+          <li>Each user has their own <strong>favorites, archive, library, presets, and section/template order</strong>. Switching users doesn't disturb anyone else's data.</li>
+          <li>Built-in templates and any edits made to the source HTML files are <strong>shared by everyone</strong> — that's the point. Update once, every user sees it.</li>
+          <li>Removing a user (the × on their card) wipes their saved data permanently.</li>
+          <li>This isn't real authentication — no password, no central account. Anyone using this browser can pick any name. Don't store sensitive info under another person's account.</li>
+        </ul>
+        <div class="tip">If you want each user to keep their data when switching devices, you'd need to host this on a real URL (e.g. GitHub Pages) and have everyone use the same bookmarked link. Localstorage is still per-browser, but a stable URL makes it easy to know where to come back to.</div>
+      </div>
+    </details>
+
+    <details open>
+      <summary>Organizing your templates</summary>
+      <div class="doc-body">
+        <ul>
+          <li><strong>Star (★)</strong> — hover any card, click the ★ button to mark it as a favorite. Starred templates move to a <strong>★ Favorites</strong> section at the top of the page. Click again to unstar.</li>
+          <li><strong>Archive (⌫)</strong> — hover any card, click the ⌫ button to move it to the archive. It disappears from the main page but isn't deleted. Visit <a href="archive.html">Archive</a> from the link at the top of the page to restore or permanently delete.</li>
+          <li><strong>Delete (×)</strong> — only appears on your saved Library items. Permanently removes a custom template.</li>
+          <li><strong>Drag to reorder</strong> — drag any template card around within its section to change the order. Drag the section <em>title</em> (e.g. "STATIONERY") up or down to reorder whole sections. Your order is remembered.</li>
+          <li><strong>Your Library</strong> — at the bottom of the page. Holds copies of templates you've filled out and saved with the <em>Save As</em> button on individual templates.</li>
+          <li><strong>Reset Everything</strong> — the red button at the very bottom of the page. Clears all your customizations (stars, archive, library, presets, order) and restores the original layout. Doesn't delete any template files.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Editing for a specific employee</summary>
+      <div class="doc-body">
+        <ol>
+          <li>Fill in the <strong>Customize for an employee</strong> form at the top of this page.</li>
+          <li>Click any template card. The template opens with that employee’s info automatically filled in.</li>
+          <li>To switch employees, change the values above and click another template — no need to refresh anything.</li>
+        </ol>
+        <div class="tip"><strong>Templates that respect the employee fields:</strong> Business Card, Letterhead, Letterhead with Watermark, and Email Signature. Business Card — Company, Envelopes, Mailing Labels, Lease Cover, and Letter Watermark are company-only and don’t change per employee.</div>
+        <p>You can also bookmark a template with an employee baked into the URL — e.g. <code>Business Card.html?name=Jane%20Smith&amp;title=Leasing%20Agent&amp;phone=410.555.0123&amp;email=jane@lasalleparkrealty.com</code></p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Business Cards (Personal &amp; Company)</summary>
+      <div class="doc-body">
+        <ol>
+          <li><strong>Business Card</strong> — personal card for a specific employee. Fill in the employee form above first.</li>
+          <li><strong>Business Card — Company</strong> — office card with no name. Uses the main office phone, email, and address.</li>
+          <li>Open the template. You’ll see front + back on screen.</li>
+          <li>Click <strong>Print</strong> in the top toolbar. In the print dialog, choose <strong>Save as PDF</strong>, and set the paper size to <em>US Letter</em> with margins <em>None</em>.</li>
+          <li>Send the PDF to a print shop (e.g. VistaPrint, Moo, or a local printer). Tell them: <em>standard 3.5″×2″, two-sided, full-bleed.</em></li>
+        </ol>
+      </div>
+    </details>
+
+    <details>
+      <summary>Letterheads (with &amp; without Watermark)</summary>
+      <div class="doc-body">
+        <ol>
+          <li><strong>Letterhead</strong> — default. Clean, no watermark. Best for most letters.</li>
+          <li><strong>Letterhead with Watermark</strong> — same layout with a faint logo behind the body text. Adds extra visual identity for formal letters.</li>
+          <li>Fill in your employee details above, open the template, and replace the bracketed <code>[Date]</code>, <code>[Recipient]</code>, and body placeholders by clicking directly into the page.</li>
+          <li>Click <strong>Print</strong> → <em>Save as PDF</em> (or print on letterhead paper).</li>
+        </ol>
+        <div class="tip">For repeated use, save a PDF version per employee — then paste your letter content into Word/Google Docs and merge with the PDF letterhead, or just type into the HTML each time.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Email Signature</summary>
+      <div class="doc-body">
+        <ol>
+          <li>Fill in employee details above.</li>
+          <li>Open <strong>Email Signature</strong>. The signature appears in a sample email preview.</li>
+          <li>Click inside the signature block, select all (⌘/Ctrl + A), and copy (⌘/Ctrl + C).</li>
+          <li><strong>Gmail:</strong> Settings (gear) → See all settings → General → Signature → Create new → paste → Save Changes.</li>
+          <li><strong>Outlook (web):</strong> Settings → Mail → Compose and reply → paste under “Email signature.”</li>
+          <li><strong>Apple Mail:</strong> Settings → Signatures → paste into the signature pane.</li>
+        </ol>
+        <div class="tip"><strong>Logo image:</strong> the signature page has a toggle for <em>Embed (base64)</em> vs <em>Hosted URL</em>. Embed is the easiest — the logo travels inside the HTML, no setup needed. There’s also a <em>Personal vs Company / Office</em> toggle for a no-name version using the office contact info.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Envelopes (default &amp; With Stripe)</summary>
+      <div class="doc-body">
+        <ol>
+          <li><strong>Envelope</strong> — default. Minimal ivory layout. Includes a print-shop spec sheet on screen for bulk pre-printed runs at a stationer.</li>
+          <li><strong>Envelope — With Stripe</strong> — bolder variant with a royal-blue side stripe. Good for everyday mail when you want the brand to pop.</li>
+          <li>Open the template, then <strong>Print</strong> → paper size <em>#10 Envelope (9.5″ × 4.125″)</em>, margins <em>None</em>.</li>
+          <li>Recipient address is intentionally blank — hand-write, label, or mail-merge.</li>
+        </ol>
+      </div>
+    </details>
+
+    <details>
+      <summary>Mailing Labels (Avery 5160)</summary>
+      <div class="doc-body">
+        <ol>
+          <li>Buy <strong>Avery 5160</strong> sheets (or compatible — 30 labels per sheet, 1″ × 2⅔″).</li>
+          <li>Open <strong>Mailing Labels</strong>. The grid is pre-aligned to the Avery template.</li>
+          <li>Click <strong>Print</strong>. In the print dialog: paper size <em>US Letter</em>, scaling <em>100% / Actual size</em>, margins <em>None</em>. Run a test page on plain paper first.</li>
+        </ol>
+      </div>
+    </details>
+
+    <details>
+      <summary>Lease Cover Page</summary>
+      <div class="doc-body">
+        <ol>
+          <li>Open <strong>Lease Cover Page</strong>.</li>
+          <li>Click any bracketed field (Property, Landlord, Tenant) and type in the details.</li>
+          <li>Print and staple/bind to the front of your lease document. Or save as PDF and merge with the lease in Acrobat / Preview.</li>
+        </ol>
+      </div>
+    </details>
+
+    <details>
+      <summary>Letter Watermark (Pre-printed paper)</summary>
+      <div class="doc-body">
+        <ol>
+          <li>This is a <em>background</em> for pre-printing in bulk — your staff types letters into the body area after the paper comes back from the printer.</li>
+          <li>Send the printed PDF to a print shop. Spec: <em>US Letter, 24lb writing stock, full bleed, 4/0 CMYK.</em></li>
+          <li>For one-off letters, use the Letterhead templates instead.</li>
+        </ol>
+      </div>
+    </details>
+
+    <details>
+      <summary>File formats — what to send to printers / use at home</summary>
+      <div class="doc-body">
+        <p>Templates are <strong>HTML files</strong> in this project. To print or hand off to a printer, save each as <strong>PDF</strong> using your browser:</p>
+        <ul>
+          <li>Open the template → click <strong>Print</strong> in the toolbar (or ⌘/Ctrl + P).</li>
+          <li>In the print dialog, set <strong>Destination = Save as PDF</strong> and click Save.</li>
+        </ul>
+
+        <p><strong>Business cards (commercial printer — e.g. VistaPrint, Moo, local shop):</strong></p>
+        <ul>
+          <li>Send the <strong>PDF</strong>. Tell them: <em>3.5″ × 2″, two-sided, no bleed required (artwork sits inside the safe area).</em></li>
+          <li>If they ask for bleed (some shops require it), let me know and I’ll produce a bleed version with 0.125″ added on each edge.</li>
+          <li>Some shops prefer <strong>print-ready PDF/X-1a</strong> or <strong>300 DPI CMYK</strong>. PDFs exported from a browser are RGB — most consumer printers (VistaPrint, Moo) convert this automatically and the result is fine for a royal-blue + grayscale card. For a high-end stationer who wants exact PMS 287, ask me for a CMYK / spot-color version.</li>
+        </ul>
+
+        <p><strong>Envelopes — home printer:</strong></p>
+        <ul>
+          <li>Save as PDF, open in Preview / Adobe Reader, click Print.</li>
+          <li>Set paper size to <strong>#10 Envelope (9.5″ × 4.125″)</strong>, scaling <strong>100%</strong>, margins <strong>None</strong>.</li>
+          <li>Load envelopes in the printer’s manual-feed tray, flap closed, address-side up (check your printer’s envelope guide).</li>
+          <li>Run one test on plain paper first to confirm alignment before burning envelopes.</li>
+        </ul>
+
+        <p><strong>Envelopes — print shop bulk run:</strong></p>
+        <ul>
+          <li>Send the <strong>PDF</strong>. The default Envelope template includes an on-screen spec block (size, stock, ink, finish) to copy-paste into your order.</li>
+        </ul>
+
+        <p><strong>Letterhead — home printer:</strong></p>
+        <ul>
+          <li>Save as PDF → print on US Letter, 24lb writing stock, 100% scale, margins None.</li>
+          <li>For everyday letters you can also print the live HTML directly via the template’s Print button.</li>
+        </ul>
+
+        <p><strong>Mailing labels (Avery 5160):</strong> save as PDF, print on Avery 5160 sheets at 100% scale, margins None. Test on plain paper first.</p>
+
+        <p><strong>Email signature:</strong> not a file at all — you copy the HTML directly out of the page and paste into Gmail/Outlook (see the Email Signature section above).</p>
+
+        <div class="tip"><strong>Quick reference:</strong> Browser HTML → Print → Save as PDF is the universal path. Send PDF to printers. Send HTML (copy-paste) into Gmail/Outlook.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Accessing these files</summary>
+      <div class="doc-body">
+        <ul>
+          <li><strong>This project workspace</strong> — the canonical home. Open it any time from your Claude account to view, edit, or download.</li>
+          <li><strong>Download as a ZIP</strong> — just ask (“download everything”) and you’ll get a folder of HTML files you can open in any browser, share over email, or post to a shared drive.</li>
+          <li><strong>Bookmark in your browser</strong> — you can bookmark individual template URLs (with employee params baked in) for one-click access.</li>
+          <li><strong>Host on your website</strong> — if you want these accessible from any computer, your web developer can drop the folder onto your domain. Ask me for a developer handoff package.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <div class="footer-note">LPR Management, LLC · Brand Templates</div>
+
+  <div class="reset-zone">
+    <h3>Reset</h3>
+    <p>Clears all your customizations: starred favorites, archived templates, saved presets, custom-library items, and category/order changes. Built-in templates are restored to their original order.</p>
+    <button id="full-reset">Reset Everything</button>
+  </div>
+
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+/* ============================================================
+   Index state: favorites, archive, custom library, ordering.
+   ============================================================ */
+(function () {
+  const KEYS = {
+    STARRED: "lpr_starred",
+    ARCHIVED: "lpr_archived",
+    CUSTOM: "lpr_custom_templates",
+    CARD_ORDER: "lpr_card_order",     // { sectionId: [id, id, ...] }
+    SECTION_ORDER: "lpr_section_order" // [id, id, ...]
+  };
+  const DEFAULT_SECTIONS = ["favorites","stationery","property-management","digital","library"];
+
+  const read = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } };
+  const write = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+  const getStarred  = () => new Set(read(KEYS.STARRED, []));
+  const setStarred  = s => write(KEYS.STARRED, [...s]);
+  const getArchived = () => new Set(read(KEYS.ARCHIVED, []));
+  const setArchived = s => write(KEYS.ARCHIVED, [...s]);
+  const getCustom   = () => read(KEYS.CUSTOM, {});
+  const setCustom   = o => write(KEYS.CUSTOM, o);
+  const getCardOrder = () => read(KEYS.CARD_ORDER, {});
+  const setCardOrder = o => write(KEYS.CARD_ORDER, o);
+  const getSectionOrder = () => read(KEYS.SECTION_ORDER, DEFAULT_SECTIONS);
+  const setSectionOrder = a => write(KEYS.SECTION_ORDER, a);
+
+  /* Each card's stable id = href value (e.g. "Business Card.html").
+     Custom cards use "custom:<id>". */
+  function cardId(card) {
+    if (card.dataset.customId) return "custom:" + card.dataset.customId;
+    const h = card.getAttribute("href"); if (!h) return null;
+    return h.split("?")[0];
+  }
+
+  /* ---------- 1. Tag every card with id + augment with star/archive buttons ---------- */
+  function augmentCard(card) {
+    if (card.dataset.augmented) return;
+    card.dataset.augmented = "1";
+    const id = cardId(card);
+    if (id) card.dataset.templateId = id;
+
+    const actions = document.createElement("div");
+    actions.className = "card-actions";
+
+    const isCustom = card.classList.contains("custom");
+
+    const star = document.createElement("button");
+    star.className = "star-btn";
+    star.title = "Star as favorite (shows up top)";
+    star.textContent = "★";
+    star.addEventListener("click", e => {
+      e.preventDefault(); e.stopPropagation();
+      const s = getStarred();
+      if (s.has(id)) s.delete(id); else s.add(id);
+      setStarred(s);
+      rebuild();
+    });
+    actions.appendChild(star);
+
+    const arch = document.createElement("button");
+    arch.className = "archive-btn";
+    arch.title = "Archive (hide from main page)";
+    arch.textContent = "⌫";
+    arch.addEventListener("click", e => {
+      e.preventDefault(); e.stopPropagation();
+      if (!confirm("Archive this template? You can restore it from the Archive page.")) return;
+      const a = getArchived(); a.add(id); setArchived(a);
+      const s = getStarred(); if (s.has(id)) { s.delete(id); setStarred(s); }
+      rebuild();
+    });
+    actions.appendChild(arch);
+
+    if (isCustom) {
+      const del = document.createElement("button");
+      del.className = "delete-btn";
+      del.title = "Delete this saved template (permanent)";
+      del.textContent = "×";
+      del.addEventListener("click", e => {
+        e.preventDefault(); e.stopPropagation();
+        const customId = card.dataset.customId;
+        const c = getCustom();
+        const name = c[customId] ? c[customId].name : "this item";
+        if (!confirm(`Delete "${name}" from your library? This is permanent.`)) return;
+        delete c[customId]; setCustom(c);
+        rebuild();
+      });
+      actions.appendChild(del);
+    }
+
+    card.appendChild(actions);
+  }
+
+  /* ---------- 2. Build the Library section from custom templates ---------- */
+  function buildLibraryCards() {
+    const wrap = document.getElementById("library-grid");
+    const custom = getCustom();
+    const ids = Object.keys(custom);
+    // Clear and rebuild as a grid
+    wrap.innerHTML = "";
+    if (ids.length === 0) {
+      wrap.classList.remove("grid");
+      wrap.innerHTML = `<div class="empty-section">
+        <strong>Your library is empty.</strong><br/>
+        Open any template, fill it in, and click <em>Save As</em> to save a copy here.
+      </div>`;
+      return;
+    }
+    wrap.className = "grid";
+    wrap.dataset.section = "library";
+    ids.sort((a, b) => (custom[b].savedAt || "").localeCompare(custom[a].savedAt || ""));
+    for (const id of ids) {
+      const t = custom[id];
+      const card = document.createElement("a");
+      card.className = "card custom";
+      card.href = "#";
+      card.dataset.customId = id;
+      card.innerHTML = `
+        <div class="thumb">
+          <div class="mini-letter">
+            <div class="head">
+              <img src="assets/logo-cropped.png" alt=""/>
+              <div class="meta">${escapeHtml(new Date(t.savedAt).toLocaleDateString())}</div>
+            </div>
+            <div style="font-size:9px; font-weight:700; line-height:1.1; color:var(--lpr-ink); margin-top:6px;">${escapeHtml(t.name)}</div>
+            <div class="lines"><div></div><div></div><div></div><div></div></div>
+          </div>
+        </div>
+        <div class="body">
+          <div class="role">Saved · from ${escapeHtml((t.base || "").replace(".html",""))}</div>
+          <h3>${escapeHtml(t.name)}</h3>
+          <p>Click to open. Edit, export, or save another copy.</p>
+        </div>`;
+      card.addEventListener("click", e => {
+        if (e.target.closest(".card-actions")) return;
+        e.preventDefault();
+        const t2 = getCustom()[id]; if (!t2) return;
+        const blob = new Blob([t2.html], { type: "text/html" });
+        window.location.href = URL.createObjectURL(blob);
+      });
+      wrap.appendChild(card);
+    }
+  }
+
+  /* ---------- 3. Apply state: hide archived, move starred to favorites, apply stored orders ---------- */
+  function rebuild() {
+    // Library cards must be rebuilt first (DOM may have stale entries)
+    buildLibraryCards();
+
+    // Augment every card
+    document.querySelectorAll(".grid .card[href], .grid .card[data-custom-id]").forEach(augmentCard);
+
+    const archived = getArchived();
+    const starred  = getStarred();
+
+    // Track all cards by id, and which DEFAULT section they belong to.
+    // Each card has data-section on its parent grid; remember it.
+    const allCards = [...document.querySelectorAll(".grid .card[data-template-id]")];
+    for (const c of allCards) {
+      const grid = c.closest(".grid");
+      if (grid && !c.dataset.homeSection) {
+        c.dataset.homeSection = grid.dataset.section || "library";
+      }
+    }
+
+    // Hide archived (but keep in DOM for restoring), unhide non-archived
+    for (const c of allCards) {
+      c.style.display = archived.has(c.dataset.templateId) ? "none" : "";
+      c.classList.toggle("starred", starred.has(c.dataset.templateId));
+      const starBtn = c.querySelector(".star-btn");
+      if (starBtn) starBtn.classList.toggle("starred", starred.has(c.dataset.templateId));
+    }
+
+    // Move starred cards into Favorites grid (clone? no — move originals so reorder works)
+    const favGrid = document.querySelector('.grid[data-section="favorites"]');
+    const favSection = document.getElementById("favorites-section");
+
+    // Return any cards currently in favorites that are no longer starred or are archived
+    [...favGrid.children].forEach(c => {
+      const tid = c.dataset.templateId;
+      if (!starred.has(tid) || archived.has(tid)) {
+        const homeGrid = document.querySelector(`.grid[data-section="${c.dataset.homeSection}"]`);
+        if (homeGrid) homeGrid.appendChild(c);
+      }
+    });
+    // Move starred cards INTO favorites
+    for (const c of allCards) {
+      if (starred.has(c.dataset.templateId) && !archived.has(c.dataset.templateId)) {
+        if (c.parentElement !== favGrid) favGrid.appendChild(c);
+        c.classList.add("is-favorite");
+      } else {
+        c.classList.remove("is-favorite");
+      }
+    }
+
+    favSection.style.display = favGrid.children.length ? "" : "none";
+
+    // Apply stored card orders within each section
+    const orders = getCardOrder();
+    document.querySelectorAll(".grid[data-section]").forEach(grid => {
+      const sec = grid.dataset.section;
+      const order = orders[sec];
+      if (!order) return;
+      const indexById = new Map([...grid.children].map(c => [c.dataset.templateId, c]));
+      // re-append in stored order; unknown new cards stay at end
+      for (const id of order) {
+        const el = indexById.get(id);
+        if (el) { grid.appendChild(el); indexById.delete(id); }
+      }
+      // remaining new ones already at end
+    });
+
+    // Apply stored section order
+    const wrap = document.getElementById("sections-wrap");
+    const secOrder = getSectionOrder();
+    const sectionMap = new Map([...wrap.children].map(s => [s.dataset.sectionId, s]));
+    for (const id of secOrder) {
+      const s = sectionMap.get(id);
+      if (s) { wrap.appendChild(s); sectionMap.delete(id); }
+    }
+    // any unknown new sections stay at end
+
+    // Update archive count
+    const count = archived.size;
+    const countEl = document.getElementById("archive-count");
+    if (count > 0) { countEl.style.display = ""; countEl.textContent = count; }
+    else { countEl.style.display = "none"; }
+
+    // (Re-)init sortables
+    initSortables();
+  }
+
+  /* ---------- 4. Sortable.js init ---------- */
+  let sortablesReady = false;
+  function initSortables() {
+    if (typeof Sortable === "undefined") return;
+
+    // Sections sortable (only init once)
+    const wrap = document.getElementById("sections-wrap");
+    if (!wrap.dataset.sortableInit) {
+      new Sortable(wrap, {
+        handle: ".section-title",
+        animation: 150,
+        ghostClass: "sortable-ghost",
+        onEnd: () => {
+          const order = [...wrap.children].map(s => s.dataset.sectionId);
+          setSectionOrder(order);
+        }
+      });
+      wrap.dataset.sortableInit = "1";
+    }
+
+    // Each grid sortable (init once per grid)
+    document.querySelectorAll(".grid[data-section]").forEach(grid => {
+      if (grid.dataset.sortableInit) return;
+      new Sortable(grid, {
+        animation: 150,
+        ghostClass: "sortable-ghost",
+        dragClass: "sortable-drag",
+        filter: ".card-actions, .card-actions *",
+        preventOnFilter: false,
+        onEnd: () => {
+          const sec = grid.dataset.section;
+          const orders = getCardOrder();
+          orders[sec] = [...grid.children].map(c => c.dataset.templateId).filter(Boolean);
+          setCardOrder(orders);
+        }
+      });
+      grid.dataset.sortableInit = "1";
+    });
+
+    sortablesReady = true;
+  }
+
+  /* ---------- 5. Full reset ---------- */
+  document.getElementById("full-reset").addEventListener("click", () => {
+    const msg = "Reset everything to original?\n\nThis will clear:\n• Starred favorites\n• Archived templates\n• Saved library items\n• Custom presets\n• Section/template order\n\nYour template files are not deleted.";
+    if (!confirm(msg)) return;
+    if (!confirm("Are you sure? This cannot be undone.")) return;
+    Object.values(KEYS).forEach(k => localStorage.removeItem(k));
+    localStorage.removeItem("lpr_presets");
+    localStorage.removeItem("lpr_employee");
+    localStorage.removeItem("lpr_sig_mode");
+    localStorage.removeItem("lpr_sig_url");
+    localStorage.removeItem("lpr_sig_style");
+    location.reload();
+  });
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
+  }
+
+  rebuild();
+
+  // Show active user badge in top-actions
+  if (window.LPR_USER) {
+    const name = LPR_USER.activeName();
+    const nameEl = document.getElementById("active-user-name");
+    const avEl = document.getElementById("active-user-avatar");
+    if (nameEl) nameEl.textContent = name;
+    if (avEl) avEl.textContent = name.trim().split(/\s+/).map(w => w[0]).slice(0,2).join("").toUpperCase() || "?";
+  }
+})();
+</script>
+
+
+
+<script>
+(function () {
+  const DEFAULTS = { david: { name: "David Mitnick", title: "Senior Property Manager", phone: "443.402.5641", email: "david@lasalleparkrealty.com" } };
+  const $ = id => document.getElementById(id);
+  const fields = ["name","title","phone","email"];
+
+  function loadPresets() {
+    try { return JSON.parse(localStorage.getItem("lpr_presets") || "{}"); } catch (e) { return {}; }
+  }
+  function savePresets(p) { localStorage.setItem("lpr_presets", JSON.stringify(p)); }
+  function allPresets() { return Object.assign({}, DEFAULTS, loadPresets()); }
+
+  function renderPresets() {
+    const wrap = $("emp-presets");
+    wrap.innerHTML = "";
+    const presets = allPresets();
+    const currentName = $("emp-name").value.trim();
+    Object.entries(presets).forEach(([id, p]) => {
+      const b = document.createElement("button");
+      b.className = "preset";
+      b.dataset.preset = id;
+      const isDefault = id in DEFAULTS;
+      const label = p.name || id;
+      b.innerHTML = label + (isDefault ? "" : ' <span class="x" data-del="'+id+'" title="Remove preset">×</span>');
+      if (p.name === currentName) b.classList.add("active");
+      b.addEventListener("click", (ev) => {
+        if (ev.target.dataset && ev.target.dataset.del) {
+          ev.stopPropagation();
+          if (confirm('Remove "' + p.name + '" from presets?')) {
+            const custom = loadPresets();
+            delete custom[ev.target.dataset.del];
+            savePresets(custom);
+            renderPresets();
+          }
+          return;
+        }
+        fields.forEach(f => $("emp-"+f).value = p[f] || "");
+        save();
+      });
+      wrap.appendChild(b);
+    });
+  }
+
+  function load() {
+    const saved = JSON.parse(localStorage.getItem("lpr_employee") || "{}");
+    fields.forEach(f => { if (saved[f]) $("emp-"+f).value = saved[f]; });
+    updateTag(); rebuildLinks(); renderPresets();
+  }
+  function save() {
+    const data = {};
+    fields.forEach(f => { const v = $("emp-"+f).value.trim(); if (v) data[f] = v; });
+    localStorage.setItem("lpr_employee", JSON.stringify(data));
+    updateTag(); rebuildLinks(); renderPresets();
+  }
+  function updateTag() {
+    const name = $("emp-name").value.trim();
+    const tag = $("emp-active-tag");
+    if (name && name !== "David Mitnick") {
+      tag.textContent = "→ " + name;
+      tag.style.display = "inline-block";
+    } else { tag.style.display = "none"; }
+  }
+  function rebuildLinks() {
+    const anySet = fields.some(f => $("emp-"+f).value.trim());
+    const params = new URLSearchParams();
+    if (anySet) {
+      // If user has customized anything, send every field (including blanks)
+      // so blank title etc. is respected, not overridden by defaults.
+      fields.forEach(f => params.set(f, $("emp-"+f).value.trim()));
+    }
+    const q = params.toString();
+    document.querySelectorAll(".grid .card").forEach(a => {
+      const base = a.getAttribute("href").split("?")[0];
+      a.setAttribute("href", q ? base + "?" + q : base);
+    });
+  }
+
+  fields.forEach(f => $("emp-"+f).addEventListener("input", save));
+
+  $("emp-save").addEventListener("click", () => {
+    const name = $("emp-name").value.trim();
+    if (!name) { alert("Enter a name first."); return; }
+    const id = "e_" + name.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+    if (id in DEFAULTS) { alert("That name matches a built-in preset."); return; }
+    const custom = loadPresets();
+    custom[id] = {};
+    fields.forEach(f => { const v = $("emp-"+f).value.trim(); if (v) custom[id][f] = v; });
+    savePresets(custom);
+    renderPresets();
+  });
+
+  $("emp-clear").addEventListener("click", () => {
+    fields.forEach(f => $("emp-"+f).value = "");
+    save();
+  });
+
+  load();
+})();
+</script>
+
+</body>
+</html>

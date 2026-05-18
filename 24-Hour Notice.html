@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>LPR — 24-Hour Notice of Entry</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="brand.css">
+<script src="user.js"></script>
+<style>
+  body { background: #efeae0; padding: 60px 20px 40px; }
+  @page { size: 8.5in 11in; margin: 0; }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .label { font-size: 10px; letter-spacing: 3px; color: #6a6a6a; text-transform: uppercase; }
+
+  .sheet.notice { width: 8.5in; height: 11in; padding: 0.75in 0.85in; display: flex; flex-direction: column; }
+
+  .n-header { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 18px; border-bottom: 2px solid var(--lpr-blue); }
+  .n-header img { height: 0.95in; width: auto; }
+  .n-header .meta { text-align: right; font-size: 8.5pt; line-height: 1.55; color: var(--lpr-ink); }
+
+  .doc-badge {
+    margin-top: 0.45in;
+    font-size: 9pt; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--lpr-blue); font-weight: 600;
+  }
+  .doc-title {
+    font-size: 28pt; font-weight: 700; letter-spacing: -0.5px;
+    line-height: 1.05; margin-top: 8px; color: var(--lpr-ink);
+  }
+
+  .n-body { flex: 1; padding-top: 0.4in; font-size: 11pt; line-height: 1.65; color: var(--lpr-text); }
+  .n-body .date { color: var(--lpr-muted); font-size: 10pt; margin-bottom: 22px; }
+  .n-body .to { margin-bottom: 22px; line-height: 1.45; }
+  .n-body p { margin: 0 0 12px; }
+
+  .info-grid {
+    margin: 0.3in 0; padding: 0.22in 0.28in;
+    background: rgba(40,56,145,0.05);
+    border-left: 3px solid var(--lpr-blue); border-radius: 4px;
+    display: grid; grid-template-columns: 1.3in 1fr; gap: 8px 18px;
+  }
+  .info-grid .key {
+    font-size: 8.5pt; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--lpr-blue); font-weight: 700; padding-top: 4px;
+  }
+  .info-grid .val {
+    font-size: 11pt; color: var(--lpr-ink); padding-top: 3px;
+    border-bottom: 1px dashed var(--lpr-rule); padding-bottom: 4px;
+  }
+  .info-grid .val .placeholder { color: var(--lpr-muted); font-style: italic; }
+
+  .legal {
+    font-size: 9pt; line-height: 1.55; color: var(--lpr-muted);
+    margin: 0.25in 0 0;
+    padding: 14px 16px; border: 1px solid var(--lpr-rule); border-radius: 4px;
+  }
+
+  .signoff { margin-top: auto; padding-top: 0.4in; }
+  .signoff .signature { height: 0.5in; }
+  .signoff .signed-name { font-weight: 600; color: var(--lpr-ink); }
+  .signoff .signed-role { font-size: 9pt; color: var(--lpr-muted); }
+
+  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+  <button onclick="window.print()">Print</button>
+</div>
+
+<div class="stage">
+  <div class="label">24-HOUR NOTICE OF ENTRY — US LETTER</div>
+  <div class="sheet notice">
+
+    <div class="n-header">
+      <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
+      <div class="meta">
+        1517 Reisterstown Road, 2nd Floor<br/>
+        Pikesville, MD 21208<br/>
+        443.402.5641
+      </div>
+    </div>
+
+    <div class="doc-badge">Required Notice</div>
+    <div class="doc-title">24-Hour Notice <br/>of Entry</div>
+
+    <div class="n-body">
+
+      <div class="date">[Date of Notice]</div>
+
+      <div class="to">
+        <strong>To:</strong> [Tenant Name(s)]<br/>
+        [Property Address]<br/>
+        [City, State ZIP]
+      </div>
+
+      <p>This letter serves as your written 24-hour notice that the property manager and/or authorized personnel will be entering the above premises on the date and time listed below.</p>
+
+      <div class="info-grid">
+        <div class="key">Entry Date</div>
+        <div class="val"><span class="placeholder">[Day, Month Date, Year]</span></div>
+
+        <div class="key">Time Window</div>
+        <div class="val"><span class="placeholder">[e.g. 10:00 AM – 12:00 PM]</span></div>
+
+        <div class="key">Reason</div>
+        <div class="val"><span class="placeholder">[e.g. Routine inspection, repair, contractor, showing]</span></div>
+
+        <div class="key">Persons Entering</div>
+        <div class="val"><span class="placeholder">[Name(s), e.g. David Mitnick + plumber from ABC Plumbing]</span></div>
+      </div>
+
+      <p>If you have any questions, please contact us at <strong>443-402-5641</strong> or <strong>office@lasalleparkrealty.com</strong>.</p>
+
+      <div class="legal">
+        <strong>Per Maryland Real Property §§ 8-208 and the terms of your lease,</strong> the landlord or their agent may enter the rental premises at reasonable times with advance notice to inspect, make repairs, or show the property. This notice satisfies the 24-hour written notice requirement. In the case of emergency, the landlord may enter without notice.
+      </div>
+
+      <div class="signoff">
+        <p>Thank you,</p>
+        <div class="signature"></div>
+        <div class="signed-name" data-employee-field="name">David Mitnick</div>
+        <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span> · LPR Management, LLC</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="employee.js"></script>
+<script src="template-tools.js"></script>
+</body>
+</html>

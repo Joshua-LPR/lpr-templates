@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>LPR — Letter Watermark Background</title>
+<link rel="stylesheet" href="brand.css">
+<script src="user.js"></script>
+<style>
+  body { background: #efeae0; padding: 60px 20px 40px; }
+  @page { size: 8.5in 11in; margin: 0; }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .label-h { font-size: 10px; letter-spacing: 3px; color: #6a6a6a; text-transform: uppercase; }
+  .sheet.watermark { width: 8.5in; height: 11in; background: #fff; position: relative; overflow: hidden; }
+  .wm-top { position: absolute; top: 0; left: 0; right: 0; height: 0.45in; background: var(--lpr-blue); }
+  .wm-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 0.18in; background: linear-gradient(to right, var(--lpr-blue) 0%, var(--lpr-blue) 30%, #d6a35a 30%, #d6a35a 36%, transparent 36%); }
+  .wm-bottom-text { position: absolute; bottom: 0.32in; left: 0.85in; right: 0.85in; display: flex; justify-content: space-between; align-items: center; font-size: 8pt; letter-spacing: 2.5px; text-transform: uppercase; color: var(--lpr-muted); font-weight: 500; }
+  .wm-mark { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 5.5in; opacity: 0.06; }
+  .wm-tile { position: absolute; inset: 0.5in 0.85in 0.6in 0.85in; opacity: 0.04; background-image: repeating-linear-gradient(135deg, transparent 0, transparent 60px, var(--lpr-blue) 60px, var(--lpr-blue) 61px); pointer-events: none; }
+  .wm-tag { position: absolute; top: 0.13in; left: 0.85in; color: rgba(255,255,255,0.85); font-size: 9pt; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; }
+  .wm-tag-right { position: absolute; top: 0.13in; right: 0.85in; color: rgba(255,255,255,0.6); font-size: 8pt; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; }
+  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label-h { display: none; } }
+</style>
+</head>
+<body>
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+  <button onclick="window.print()">Print</button>
+</div>
+<div class="stage">
+  <div class="label-h">LETTER BACKGROUND WATERMARK — US LETTER</div>
+  <div class="sheet watermark">
+    <div class="wm-top"></div>
+    <div class="wm-tag">LPR Management, LLC</div>
+    <div class="wm-tag-right">Pikesville · Maryland</div>
+    <div class="wm-tile"></div>
+    <img class="wm-mark" src="assets/logo-cropped.png" alt=""/>
+    <div class="wm-bottom"></div>
+    <div class="wm-bottom-text">
+      <span>1517 Reisterstown Rd · Pikesville, MD 21208</span>
+      <span style="color: var(--lpr-blue); font-weight: 600;">443.402.5641</span>
+    </div>
+  </div>
+</div>
+<script src="template-tools.js"></script>
+</body>
+</html>

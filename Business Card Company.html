@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>LPR — Business Card (Company)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="brand.css">
+<script src="user.js"></script>
+<style>
+  body { background: #efeae0; padding: 60px 20px 40px; }
+  @page { size: 3.5in 2in; margin: 0; }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 32px; }
+  .label { font-size: 10px; letter-spacing: 3px; color: #6a6a6a; text-transform: uppercase; }
+  .card { width: 3.5in; height: 2in; background: #fff; position: relative; overflow: hidden; page-break-after: always; }
+
+  /* FRONT — logo top-left, contact bottom-left with icons */
+  .card-front {
+    padding: 0.2in 0.26in 0.18in;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .card-front img.logo { width: 1.35in; height: auto; display: block; }
+  .card-front .contact {
+    font-size: 7pt; line-height: 1.4; color: var(--lpr-ink); font-weight: 400;
+  }
+  .card-front .contact .row {
+    display: flex; gap: 7px; align-items: flex-start; margin-bottom: 2px;
+  }
+  .card-front .contact .row:last-child { margin-bottom: 0; }
+  .card-front .contact .icon {
+    width: 9px; height: 9px; flex-shrink: 0; color: var(--lpr-blue); margin-top: 1px;
+  }
+  .card-front .contact .icon svg { width: 100%; height: 100%; display: block; }
+
+  /* BACK — brand blue with white logo, no text */
+  .card-back {
+    background: var(--lpr-blue);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card-back img { width: 2in; height: auto; display: block; }
+
+  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+  <button onclick="window.print()">Print</button>
+</div>
+
+<div class="stage">
+  <div class="label">FRONT — 3.5″ × 2″ · COMPANY CARD</div>
+  <div class="sheet card card-front">
+    <img class="logo" src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
+    <div class="contact">
+      <div class="row">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+        <span>443-402-5641</span>
+      </div>
+      <div class="row">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></span>
+        <span>office@lasalleparkrealty.com</span>
+      </div>
+      <div class="row">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+        <span>1517 Reisterstown Road, 2nd Floor<br/>Pikesville, MD 21208</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">BACK — 3.5″ × 2″</div>
+  <div class="sheet card card-back">
+    <img src="assets/logo-white.png" alt="LPR Management, LLC"/>
+  </div>
+</div>
+
+<script src="template-tools.js"></script>
+</body>
+</html>

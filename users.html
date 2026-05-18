@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>LPR Templates — Sign In</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="brand.css">
+<script src="user.js"></script>
+<style>
+  body { background: #efeae0; min-height: 100vh; padding: 0; }
+  .container { max-width: 880px; margin: 0 auto; padding: 80px 32px 60px; }
+
+  .header {
+    display: flex; align-items: center; gap: 24px;
+    background: #fff; border-radius: 12px; padding: 32px 40px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06); margin-bottom: 36px;
+  }
+  .header img { height: 1.05in; width: auto; }
+  .header h1 {
+    font-size: 24px; font-weight: 700; color: var(--lpr-ink);
+    margin: 0 0 4px; letter-spacing: -0.3px;
+  }
+  .header p {
+    font-size: 13px; color: var(--lpr-muted); margin: 0; line-height: 1.55;
+    max-width: 460px;
+  }
+
+  .user-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  @media (max-width: 720px) { .user-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 480px) { .user-grid { grid-template-columns: 1fr; } }
+
+  .user-card {
+    background: #fff; border-radius: 12px; padding: 28px 22px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    text-align: center; cursor: pointer; position: relative;
+    transition: transform 0.15s, box-shadow 0.15s;
+    border: 2px solid transparent;
+  }
+  .user-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+    border-color: var(--lpr-blue);
+  }
+  .avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--lpr-blue); color: #fff;
+    font-size: 28px; font-weight: 700; letter-spacing: -1px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+  }
+  .user-card.add .avatar {
+    background: rgba(40,56,145,0.08); color: var(--lpr-blue);
+    font-size: 32px; font-weight: 300;
+  }
+  .user-card .name {
+    font-size: 15px; font-weight: 600; color: var(--lpr-ink);
+    letter-spacing: -0.1px;
+  }
+  .user-card .subname {
+    font-size: 11px; color: var(--lpr-muted); margin-top: 4px;
+    letter-spacing: 0.3px;
+  }
+  .user-card .delete-user {
+    position: absolute; top: 8px; right: 8px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: transparent; border: 1px solid var(--lpr-rule);
+    color: var(--lpr-muted); font-size: 14px; cursor: pointer;
+    opacity: 0; transition: opacity 0.15s;
+    padding: 0; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .user-card:hover .delete-user { opacity: 1; }
+  .user-card .delete-user:hover { background: #c33; color: #fff; border-color: #c33; }
+
+  .footer-note {
+    margin-top: 32px; padding-top: 24px;
+    border-top: 1px solid var(--lpr-rule);
+    text-align: center; font-size: 11px; color: var(--lpr-muted);
+    line-height: 1.6;
+  }
+  .footer-note .small {
+    font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--lpr-muted); display: block; margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
+    <div>
+      <h1>Who's using the templates?</h1>
+      <p>Each person gets their own favorites, archive, and saved library. Pick yourself to continue — your browser will remember next time.</p>
+    </div>
+  </div>
+
+  <div class="user-grid" id="user-grid"></div>
+
+  <div class="footer-note">
+    <span class="small">Privacy note</span>
+    User accounts are stored only in this browser, on this device. There's no password and no central account — anyone using this browser can pick any name.
+  </div>
+
+</div>
+
+<script>
+(function () {
+  function initials(name) {
+    return name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase() || "?";
+  }
+  function render() {
+    const grid = document.getElementById("user-grid");
+    grid.innerHTML = "";
+    const users = LPR_USER.getUsers();
+    for (const u of users) {
+      const card = document.createElement("div");
+      card.className = "user-card";
+      card.innerHTML = `
+        <button class="delete-user" title="Remove this user (wipes their saved data)" data-id="${u.id}">×</button>
+        <div class="avatar">${initials(u.name)}</div>
+        <div class="name">${u.name}</div>
+        <div class="subname">Continue</div>`;
+      card.addEventListener("click", e => {
+        if (e.target.matches(".delete-user")) return;
+        LPR_USER.setActive(u.id);
+        location.href = "index.html";
+      });
+      card.querySelector(".delete-user").addEventListener("click", e => {
+        e.stopPropagation();
+        if (!confirm(`Remove "${u.name}" and wipe all their saved data? (Cannot be undone.)`)) return;
+        LPR_USER.deleteUser(u.id);
+        render();
+      });
+      grid.appendChild(card);
+    }
+    // Add-new card
+    const addCard = document.createElement("div");
+    addCard.className = "user-card add";
+    addCard.innerHTML = `
+      <div class="avatar">+</div>
+      <div class="name">Add new user</div>
+      <div class="subname">Your own library</div>`;
+    addCard.addEventListener("click", () => {
+      const name = prompt("Full name:");
+      if (!name || !name.trim()) return;
+      const id = "u_" + Date.now().toString(36);
+      const users = LPR_USER.getUsers();
+      users.push({ id, name: name.trim() });
+      LPR_USER.setUsers(users);
+      LPR_USER.setActive(id);
+      location.href = "index.html";
+    });
+    grid.appendChild(addCard);
+  }
+  render();
+})();
+</script>
+
+</body>
+</html>

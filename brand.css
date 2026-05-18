@@ -1,0 +1,98 @@
+/* LPR Management — brand tokens & shared styles */
+@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 300; font-display: swap;
+  src: url('assets/fonts/montserrat-300.woff2') format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url('assets/fonts/montserrat-400.woff2') format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url('assets/fonts/montserrat-500.woff2') format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url('assets/fonts/montserrat-600.woff2') format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 700; font-display: swap;
+  src: url('assets/fonts/montserrat-700.woff2') format('woff2'); }
+@font-face { font-family: 'Montserrat'; font-style: normal; font-weight: 800; font-display: swap;
+  src: url('assets/fonts/montserrat-800.woff2') format('woff2'); }
+
+:root {
+  --lpr-blue: #283891;          /* exact brand blue (sampled from logo) */
+  --lpr-blue-deep: #1c2870;
+  --lpr-ink: #0e1430;
+  --lpr-paper: #ffffff;
+  --lpr-paper-warm: #fbf9f5;
+  --lpr-rule: rgba(40, 56, 145, 0.18);
+  --lpr-text: #1a1a1a;
+  --lpr-muted: #5a5f72;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Montserrat', sans-serif; color: var(--lpr-text); }
+
+/* Print page sheet (visible on screen, real page in print) */
+.sheet {
+  background: var(--lpr-paper);
+  margin: 24px auto;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  position: relative;
+  overflow: hidden;
+  /* Force browsers to print background colors and images (otherwise watermark,
+     header bands, envelope stripe etc. silently drop out of the PDF). */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  color-adjust: exact;
+}
+
+@page { margin: 0; }
+@media print {
+  html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
+  body { background: white; }
+  .sheet { margin: 0; box-shadow: none; page-break-after: always; }
+  .sheet, .sheet * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+  .no-print { display: none !important; }
+}
+
+/* Toolbar shown on screen only */
+.toolbar {
+  position: fixed; top: 16px; right: 16px; z-index: 100;
+  display: flex; gap: 8px; align-items: center;
+  background: #fff; padding: 8px 10px; border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  font-size: 12px; font-weight: 500; letter-spacing: 0.5px;
+}
+.toolbar a, .toolbar button, .toolbar .tt-btn {
+  font-family: inherit; font-size: 12px; font-weight: 500;
+  background: transparent; border: 1px solid var(--lpr-rule);
+  color: var(--lpr-ink); padding: 6px 12px; border-radius: 999px;
+  text-decoration: none; cursor: pointer; white-space: nowrap;
+}
+.toolbar a:hover, .toolbar button:hover { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
+.toolbar .toolbar-back { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
+.toolbar .tt-btn.tt-active { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
+
+/* Export dropdown */
+.tt-export-wrap { position: relative; }
+.tt-export-menu {
+  position: absolute; top: calc(100% + 6px); right: 0;
+  background: #fff; border-radius: 8px; padding: 6px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 160px; z-index: 101;
+}
+.tt-export-menu[hidden] { display: none; }
+.tt-menu-item {
+  font-family: inherit; font-size: 12.5px; font-weight: 500;
+  text-align: left; padding: 8px 12px; border-radius: 6px;
+  border: none; background: transparent; cursor: pointer; color: var(--lpr-ink);
+}
+.tt-menu-item:hover { background: var(--lpr-blue); color: #fff; }
+.tt-caret { font-size: 10px; opacity: 0.75; }
+
+/* Edit-mode visual cue on the editable page */
+.sheet.tt-editing {
+  outline: 2px dashed var(--lpr-blue);
+  outline-offset: 4px;
+}
+.sheet.tt-editing :focus { outline: 2px solid var(--lpr-blue); background: rgba(40,56,145,0.06); }
+
+.label-tiny {
+  font-size: 9px; letter-spacing: 3px; font-weight: 500;
+  text-transform: uppercase; color: var(--lpr-muted);
+}
