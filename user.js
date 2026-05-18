@@ -29,7 +29,8 @@
   // Default users (used on first load if none have been added yet)
   const DEFAULT_USERS = [
     { id: "david",   name: "David Mitnick" },
-    { id: "joshua",  name: "Joshua Schoemann" }
+    { id: "joshua",  name: "Joshua Schoemann" },
+    { id: "sam",     name: "Sam Teitelman" }
   ];
 
   function getUsers() {
