@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>LPR — Address Labels (P-touch)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="brand.css">
+<script src="user.js"></script>
+<style>
+  body { background: #efeae0; padding: 60px 20px 40px; }
+  @page { size: 90mm 29mm; margin: 0; }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .label-h { font-size: 10px; letter-spacing: 3px; color: #6a6a6a; text-transform: uppercase; }
+
+  /* ---- Size toggle ---- */
+  .size-toggle {
+    display: flex; gap: 0; border-radius: 999px; overflow: hidden;
+    border: 1.5px solid var(--lpr-blue); background: #fff;
+  }
+  .size-btn {
+    padding: 8px 22px; border: none; background: none; font-family: inherit;
+    font-size: 12px; font-weight: 600; color: var(--lpr-blue);
+    cursor: pointer; transition: background .15s, color .15s; letter-spacing: .3px;
+  }
+  .size-btn + .size-btn { border-left: 1.5px solid var(--lpr-blue); }
+  .size-btn.active { background: var(--lpr-blue); color: #fff; }
+  .size-btn:not(.active):hover { background: rgba(40,56,145,.07); }
+
+  /* ---- Label preview ---- */
+  .sheet.label-card {
+    background: #fff; position: relative;
+    display: flex; align-items: center;
+    padding: 20px 30px; box-sizing: border-box;
+    border-radius: 4px; overflow: hidden;
+    /* DK-1201 at 7.56px/mm (≈192dpi) for a good screen size */
+    width: 680px; height: 219px;
+    transition: width .25s, height .25s;
+  }
+  /* Tape-edge perf marks */
+  .sheet.label-card::before, .sheet.label-card::after {
+    content: ''; position: absolute; top: 0; bottom: 0; width: 4px;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(40,56,145,.25) 0, rgba(40,56,145,.25) 4px,
+      transparent 4px, transparent 9px
+    );
+  }
+  .sheet.label-card::before { left: 0; }
+  .sheet.label-card::after  { right: 0; }
+
+  .label-text {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 17px; line-height: 1.45; color: #111;
+    flex: 1; padding: 0 14px;
+  }
+  .label-text .lbl-name { font-size: 19px; font-weight: 700; }
+  .label-text .lbl-addr2 { display: block; }
+  .label-text .lbl-addr2:empty { display: none; }
+
+  /* Large label variant */
+  .sheet.label-card.large {
+    width: 756px; height: 469px;
+  }
+  .sheet.label-card.large .label-text { font-size: 22px; }
+  .sheet.label-card.large .lbl-name  { font-size: 25px; }
+
+  /* Print: actual label size */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .stage { gap: 0; }
+    .label-h, .size-toggle, .print-info, .large-notice { display: none; }
+    .sheet.label-card {
+      width: 90mm; height: 29mm;
+      border-radius: 0; padding: 2.5mm 5mm;
+      box-shadow: none;
+    }
+    .sheet.label-card.large { width: 100mm; height: 62mm; }
+    .sheet.label-card::before, .sheet.label-card::after { display: none; }
+    .label-text { font-size: 8pt; line-height: 1.3; padding: 0; }
+    .label-text .lbl-name { font-size: 9.5pt; }
+  }
+
+  /* ---- Info / notice boxes ---- */
+  .print-info {
+    background: #fff; border-radius: 8px; padding: 16px 20px;
+    max-width: 680px; width: 100%;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    font-size: 12.5px; line-height: 1.65; color: var(--lpr-text);
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .print-info .pi-icon {
+    font-size: 22px; line-height: 1; color: var(--lpr-blue);
+    flex-shrink: 0; margin-top: 3px;
+  }
+  .print-info strong { color: var(--lpr-ink); }
+
+  .large-notice {
+    display: none;
+    background: rgba(40,56,145,.05); border-radius: 8px;
+    padding: 14px 20px; max-width: 680px; width: 100%;
+    font-size: 12.5px; color: var(--lpr-text); line-height: 1.65;
+    border-left: 3px solid var(--lpr-blue);
+  }
+  .large-notice strong { color: var(--lpr-blue); }
+  .large-notice code { font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 11.5px; background: rgba(40,56,145,.08); padding: 1px 5px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+  <button id="lpr-lbt-btn" onclick="downloadLbt()">Download .lbt</button>
+  <button onclick="window.print()">Print preview</button>
+</div>
+
+<div class="stage">
+
+  <div class="size-toggle no-print">
+    <button class="size-btn active" data-size="dk1201">Standard (DK-1201 · 29×90mm)</button>
+    <button class="size-btn"        data-size="dk1202">Large (DK-1202 · 62×100mm)</button>
+  </div>
+
+  <div class="label-h" id="lbl-dims">ADDRESS LABEL — DK-1201 · 29MM × 90MM · BROTHER QL-810W</div>
+
+  <div class="sheet label-card" id="label-card">
+    <div class="label-text">
+      <div class="lbl-name">
+        <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>
+      </div>
+      <div><span data-tenant-field="address_line1"></span></div>
+      <div class="lbl-addr2"><span data-tenant-field="address_line2"></span></div>
+      <div>
+        <span data-tenant-field="city"></span><span id="sep-cs">, </span><span data-tenant-field="state"></span> <span data-tenant-field="zip"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="print-info no-print" id="std-info">
+    <div class="pi-icon">⤓</div>
+    <div>
+      <strong>How to print:</strong> Use <em>Fill Fields</em> in the toolbar to pick a tenant — the label updates automatically. Then click <strong>Download .lbt</strong>. Double-click the downloaded file to open it in <strong>P-touch Editor</strong> (or P-touch Editor Lite) with the address already filled in. Make sure your QL-810W has a <strong>DK-1201</strong> standard address tape loaded (29mm × 90mm), then click Print.
+    </div>
+  </div>
+
+  <div class="large-notice no-print" id="large-info">
+    <strong>Large label (DK-1202) template not yet configured.</strong><br/>
+    To enable it: load a DK-1202 tape in your QL-810W, open P-touch Editor, create a blank single-address label, and save it as an <code>.lbt</code> file. Send that file to Joshua and it will be wired up here.
+  </div>
+
+</div>
+
+<script>
+/* ---- Size toggle ---- */
+document.querySelectorAll('.size-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.size-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    var isLarge = btn.dataset.size === 'dk1202';
+    document.getElementById('std-info').style.display   = isLarge ? 'none' : '';
+    document.getElementById('large-info').style.display = isLarge ? ''     : 'none';
+    document.getElementById('lpr-lbt-btn').disabled     = isLarge;
+    document.getElementById('lbl-dims').textContent     = isLarge
+      ? 'ADDRESS LABEL — DK-1202 · 62MM × 100MM · BROTHER QL-810W'
+      : 'ADDRESS LABEL — DK-1201 · 29MM × 90MM · BROTHER QL-810W';
+    var card = document.getElementById('label-card');
+    card.classList.toggle('large', isLarge);
+  });
+});
+
+/* ---- .lbt template (DK-1201, Brother QL-810W) ---- */
+var LBT_DK1201_B64 = 'UExMAhAARAgAAAAAAAAAAP/+WwBQAHIAbwBwAGEAdAB5AF0ADQAKAFYAZQByAHMAaQBvAG4APQAxAC4AMAAwAA0ACgBEAG8AdQBiAGwAZQBGAG8AcgBtAGEAdAA9AEkARQBFAEUANwA1ADQAKAAxAC4AMQAxAC4ANQAyACkADQAKAEQAZQB2AGkAYwBlAE4AYQBtAGUAPQBCAHIAbwB0AGgAZQByACAAUQBMAC0AOAAxADAAVwANAAoAUwBlAHIAaQBlAHMAQwBvAGQAZQA9ADQADQAKAE0AbwBkAGUAbABDAG8AZABlAD0AOQANAAoAVABhAHAAZQBMAGUAbgBnAHQAaAA9ADIALAA4ADkALgA4ADMAMQAzACgAMAAuADQAMAA1AC4ANgA3ADUAMwA0ADkAMABiADkAYQBmADcAMQApAA0ACgBUAGEAcABlAFcAaQBkAHQAaAA9ADIANwAxACwAMgA4AC4AOQA1ADYAKAAwAC4ANAAwADMALgBjAGYANABiAGMANgBhADcAZQBmADkAZABhACkADQAKAFQAYQBwAGUATQBhAHIAZwBpAG4APQAxAA0ACgBUAGEAcABlAEQAaQByAGUAYwB0AD0AMQANAAoARgBpAHQAUAByAGkAbgB0AEEAcgBlAGEAPQAxAA0ACgBFAGQAaQB0AE0AYQByAGcAaQBuAD0AMwAoADAALgA0ADAAMAAuADgAMAAwADAAMAAwADAAMAAwADAAMAAwADAAKQAsADEALgA1ADIANAAoADAALgAzAGYAZgAuADgANgAyADQAZABkADIAZgAxAGEAOQBmAGMAKQAsADgANgAuADgAMwAxADMAKAAwAC4ANAAwADUALgA1AGIANQAzADQAOQAwAGIAOQBhAGYANwAxACkALAAyADcALgA0ADMAMgAoADAALgA0ADAAMwAuAGIANgBlADkANwA4AGQANABmAGQAZgAzAGEAKQANAAoATQB1AGwAdABpAE8AYgBqAGUAYwB0AE0AbwBkAGUAPQAwAA0ACgBPAGIAagBlAGMAdABDAG8AdQBuAHQAPQAxAA0ACgANAAoAWwBCAGwAbwBjAGsAXQANAAoAVAB5AHAAZQA9AFQAZQB4AHQADQAKAFIAZQBjAHQAPQA1AC4ANwAxADUAKAAwAC4ANAAwADEALgA2AGQAYwAyADgAZgA1AGMAMgA4AGYANQA4ACkALAAxAC4ANQAyADQAKAAwAC4AMwBmAGYALgA4ADYAMgA0AGQAZAAyAGYAMQBhADkAZgBjACkALAA4ADQALgAxADEANgAzACgAMAAuADQAMAA1AC4ANQAwADcANwAyADAAMQA1AGQAOAA2ADcAYwApACwAMgA2AC4AOQAyADQAKAAwAC4ANAAwADMALgBhAGUAYwA4AGIANAAzADkANQA4ADEAMAA2ACkADQAKAEEAcwBwAGUAYwB0AD0AMwAuADAAOAA2ADYANwAoADAALgA0ADAAMAAuADgAYgAxADcAZQA0AGIAMQA3AGUANABiADEAKQANAAoAUABhAHIAYQBnAHIAYQBwAGgAPQAxAA0ACgBQAGEAcgBhAGcAcgBhAHAAaABSAGUAYwB0AD0AMAAoADAALgAwADAAMAAuADAAMAAwADAAMAAwADAAMAAwADAAMAAwADAAKQAsADAAKAAwAC4AMAAwADAALgAwADAAMAAwADAAMAAwADAAMAAwADAAMAAwACkALAAwACgAMAAuADAAMAAwAC4AMAAwADAAMAAwADAAMAAwADAAMAAwADAAMAApACwAMAAoADAALgAwADAAMAAuADAAMAAwADAAMAAwADAAMAAwADAAMAAwADAAKQANAAoARABpAHIAZQBjAHQAPQAxAA0ACgBSAG8AdABhAHQAZQA9ADAADQAKAEMAZQBuAHQAZQByAFIAZQBjAHQAPQAzACgAMAAuADQAMAAwAC4AOAAwADAAMAAwADAAMAAwADAAMAAwADAAMAApACwAMQAuADUAMgA0ACgAMAAuADMAZgBmAC4AOAA2ADIANABkAGQAMgBmADEAYQA5AGYAYwApACwAOAA2AC4AOAAzADEAMwAoADAALgA0ADAANQAuADUAYgA1ADMANAA5ADAAYgA5AGEAZgA3ADEAKQAsADIANwAuADQAMwAyACgAMAAuADQAMAAzAC4AYgA2AGUAOQA3ADgAZAA0AGYAZABmADMAYQApAA0ACgBUAGUAeAB0AEwAYQB5AG8AdQB0AD0AMgANAAoAVABlAHgAdABDAG8AdQBuAHQAPQA2ADIADQAKAFQAZQB4AHQAQwB1AHIAcwBvAHIAPQAwAA0ACgBGAG8AbgB0AD0AMwA2ACwAMQA0ACwAMAAsADAALAA0ADAAMAAsADAALAAwACwAMAAsADAALAAzACwAMgAsADEALAAzADQALABBAHIAaQBhAGwADQAKAFMAaQB6AGUAPQAyADQAKAAwAC4ANAAwADMALgA4ADAAMAAwADAAMAAwADAAMAAwADAAMAAwACkADQAKAEIAbwBsAGQAPQAwAA0ACgBJAHQAYQBsAGkAYwA9ADAADQAKAFUAbgBkAGUAcgBsAGkAbgBlAD0AMAANAAoATgB1AG0AYgBlAHIAaQBuAGcAPQAwAA0ACgBDAGgAYQByAD0AUwBoAGEAbgBhAHkAIABMAHkAbgBlAHQAdABlACAAVwBhAGwAbABlAHIACQA0ADgAMQAyACAAQQBiAGUAcgBkAGUAZQBuACAAQQB2AGUAbgB1AGUACQBCAGEAbAB0AGkAbQBvAHIAZQAsACAATQBEACAAMgAxADIAMAA2AA0ACgA=';
+
+/* ---- UTF-16LE find-and-replace ---- */
+function utf16leReplace(bytes, key, newValue) {
+  function encode(s) {
+    var out = new Uint8Array(s.length * 2);
+    for (var i = 0; i < s.length; i++) { out[i*2] = s.charCodeAt(i) & 0xFF; out[i*2+1] = 0; }
+    return out;
+  }
+  var keyBytes = encode(key);
+  var pos = -1;
+  outer: for (var i = 0; i <= bytes.length - keyBytes.length; i++) {
+    for (var j = 0; j < keyBytes.length; j++) { if (bytes[i+j] !== keyBytes[j]) continue outer; }
+    pos = i; break;
+  }
+  if (pos === -1) return bytes;
+  var valStart = pos + keyBytes.length;
+  var valEnd = valStart;
+  while (valEnd < bytes.length - 1) {
+    if (bytes[valEnd] === 0x0D && bytes[valEnd+1] === 0x00) break;
+    if (bytes[valEnd] === 0x0A && bytes[valEnd+1] === 0x00) break;
+    valEnd += 2;
+  }
+  var replBytes = encode(newValue);
+  var result = new Uint8Array(bytes.length - (valEnd - valStart) + replBytes.length);
+  result.set(bytes.slice(0, valStart));
+  result.set(replBytes, valStart);
+  result.set(bytes.slice(valEnd), valStart + replBytes.length);
+  return result;
+}
+
+/* ---- Download .lbt ---- */
+function downloadLbt() {
+  function get(k) {
+    var el = document.querySelector('[data-tenant-field="' + k + '"]');
+    return el ? el.textContent.trim() : '';
+  }
+  var firstName = get('first_name'), lastName = get('last_name');
+  var addr1 = get('address_line1'), addr2 = get('address_line2');
+  var city = get('city'), state = get('state'), zip = get('zip');
+
+  var nameLine  = [firstName, lastName].filter(Boolean).join(' ') || 'Tenant Name';
+  var addrLine  = addr1 || 'Street Address';
+  var csz       = (city && state ? city + ', ' + state : city || state || '');
+  var cityLine  = [csz, zip].filter(Boolean).join(' ') || 'City, State Zip';
+  var lines     = addr2 ? [nameLine, addrLine, addr2, cityLine] : [nameLine, addrLine, cityLine];
+  var charValue = lines.join('\t');
+
+  var binStr = atob(LBT_DK1201_B64);
+  var bytes  = new Uint8Array(binStr.length);
+  for (var i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+
+  bytes = utf16leReplace(bytes, 'TextCount=', String(charValue.length));
+  bytes = utf16leReplace(bytes, 'Char=', charValue);
+
+  var blob = new Blob([bytes], { type: 'application/octet-stream' });
+  var a    = document.createElement('a');
+  a.href   = URL.createObjectURL(blob);
+  a.download = ([lastName, firstName].filter(Boolean).join('_').replace(/[^\w]/g, '_') || 'Label') + '.lbt';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+</script>
+
+<script src="tenants.js"></script>
+<script src="template-tools.js"></script>
+</body>
+</html>

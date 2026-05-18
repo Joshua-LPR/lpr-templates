@@ -79,6 +79,15 @@
   .mini-grid { width: 60%; aspect-ratio: 8.5/11; border: 1px solid var(--lpr-rule); border-radius: 2px; background: #fff; padding: 4%; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(10, 1fr); column-gap: 1.5%; row-gap: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   .mini-grid .cell { border: 1px dashed rgba(40,56,145,0.25); background: linear-gradient(135deg, transparent 60%, rgba(40,56,145,0.08)); }
 
+  .mini-ptouch { width: 92%; display: flex; align-items: center; justify-content: center; }
+  .mini-pt-lbl { width: 85%; height: 34px; background: #fff; border: 1px solid #ddd; border-radius: 3px; padding: 0 9px; display: flex; flex-direction: column; justify-content: center; gap: 4px; box-shadow: 0 1px 5px rgba(0,0,0,.09); position: relative; }
+  .mini-pt-lbl::before, .mini-pt-lbl::after { content: ''; position: absolute; top: 0; bottom: 0; width: 3px; background: repeating-linear-gradient(to bottom, rgba(40,56,145,.3) 0, rgba(40,56,145,.3) 3px, transparent 3px, transparent 6px); }
+  .mini-pt-lbl::before { left: 0; } .mini-pt-lbl::after { right: 0; }
+  .mini-pt-lbl .ptl { height: 3px; border-radius: 1px; }
+  .mini-pt-lbl .ptl.n { width: 62%; background: var(--lpr-ink); }
+  .mini-pt-lbl .ptl.a { width: 80%; background: var(--lpr-rule); }
+  .mini-pt-lbl .ptl.c { width: 52%; background: var(--lpr-rule); }
+
   .mini-cover { width: 60%; aspect-ratio: 8.5/11; border: 1px solid var(--lpr-rule); border-radius: 2px; background: #fff; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; flex-direction: column; }
   .mini-cover .band { background: var(--lpr-blue); height: 38%; padding: 8px 10px; color: #fff; display: flex; flex-direction: column; }
   .mini-cover .band img { height: 24px; width: auto; }
@@ -544,6 +553,23 @@
       </div>
     </a>
 
+    <a href="Address Labels P-touch.html" class="card">
+      <div class="thumb">
+        <div class="mini-ptouch">
+          <div class="mini-pt-lbl">
+            <div class="ptl n"></div>
+            <div class="ptl a"></div>
+            <div class="ptl c"></div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">DK-1201 · 29×90mm · Brother QL-810W</div>
+        <h3>Address Labels — P-touch</h3>
+        <p>Generates a .lbt label file per tenant. Opens directly in P-touch Editor, ready to print.</p>
+      </div>
+    </a>
+
     <a href="Lease Cover.html" class="card">
       <div class="thumb">
         <div class="mini-cover">
@@ -899,6 +925,37 @@
           <li><strong>Your Library</strong> — at the bottom of the page. Holds copies of templates you've filled out and saved with the <em>Save As</em> button on individual templates.</li>
           <li><strong>Reset Everything</strong> — the red button at the very bottom of the page. Clears all your customizations (stars, archive, library, presets, order) and restores the original layout. Doesn't delete any template files.</li>
         </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Filling tenant fields (Fill Fields)</summary>
+      <div class="doc-body">
+        <ol>
+          <li>Open any tenant-aware template (notices, security deposit letters, lease cover, envelope, address labels).</li>
+          <li>Click <strong>Fill Fields</strong> in the top-right toolbar.</li>
+          <li>First time: click <strong>↑ Import CSV</strong> and pick your Buildium tenant export. Tenants are saved in your browser for future visits.</li>
+          <li>Search or scroll to find a tenant, click their row to select them.</li>
+          <li>Review or edit any field in the panel, then click <strong>Apply to Template</strong> — all tagged spots fill in instantly.</li>
+          <li>To update from a new Buildium export later, re-import the CSV. New tenants are added; existing records update. Any manual edits you made in the panel are preserved unless Buildium now matches them.</li>
+        </ol>
+        <div class="tip"><strong>Editing first:</strong> Click <em>Edit</em> before Fill Fields to insert tenant field markers at your cursor while typing — useful when building a new custom notice.</div>
+        <div class="tip"><strong>Clear all fields:</strong> In Edit mode, the Insert Field sidebar has a <em>Clear All Fields</em> button that empties every tenant spot in the template.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Address labels (P-touch, Brother QL-810W)</summary>
+      <div class="doc-body">
+        <ol>
+          <li>Open <strong>Address Labels — P-touch</strong> from the Stationery section.</li>
+          <li>Click <strong>Fill Fields</strong> → pick a tenant → click <em>Apply to Template</em>. The label preview updates with their name and address.</li>
+          <li>Click <strong>Download .lbt</strong> in the toolbar. A file named <code>LastName_FirstName.lbt</code> is saved.</li>
+          <li>Double-click the <code>.lbt</code> file — it opens in P-touch Editor (or Lite) with the address already populated.</li>
+          <li>Make sure a <strong>DK-1201</strong> standard address tape (29mm × 90mm) is loaded in your QL-810W, then click Print.</li>
+        </ol>
+        <div class="tip">You can also click <em>Edit</em> on the label page and type directly into the preview to adjust the address before downloading.</div>
+        <div class="tip"><strong>Large labels (DK-1202):</strong> The size toggle is visible but download is disabled until a DK-1202 template file is created. See the notice on the template page for how to enable it.</div>
       </div>
     </details>
 

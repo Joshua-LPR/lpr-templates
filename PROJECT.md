@@ -93,6 +93,7 @@ Montserrat is bundled locally in `assets/fonts/` so templates render identically
 | **Envelope** | 9.5″ × 4.125″ | #10 size. Minimal ivory layout. Includes on-screen print-shop spec. |
 | **Envelope — With Stripe** | 9.5″ × 4.125″ | Bolder variant with royal-blue side stripe. |
 | **Mailing Labels** | Avery 5160 | 30 labels per sheet (return-address). |
+| **Address Labels — P-touch** | DK-1201 (29×90mm) | Tenant mailing labels for Brother QL-810W. Generates a `.lbt` file per tenant — opens directly in P-touch Editor, ready to print. Size toggle included (DK-1202 large pending template). |
 | **Lease Cover Page** | US Letter | Branded title sheet with property/landlord/tenant blanks. |
 
 ### Property Management
@@ -165,6 +166,18 @@ Empty title is supported — `data-employee-hide-empty` collapses elements with 
 | **Save As** | Saves filled-in template to current user's Library |
 | **Print** | Browser-native print dialog (paper or system PDF) |
 
+### Tenant address book (Fill Fields)
+
+`tenants.js` provides a 3-layer tenant data model and fills `data-tenant-field` spans across all tenant-aware templates.
+
+- **Import CSV** — Buildium tenant export. Smart merge: new tenants added, existing records updated, manual overrides preserved.
+- **Fill Fields panel** — search/select a tenant, edit any field, click *Apply to Template*. Works on any template that loads `tenants.js`.
+- **Insert Field sidebar** — in Edit mode, auto-opens on the right. Click any field button to paste a `<span data-tenant-field="...">` at the cursor.
+- **Placeholder display** — empty field spans show a faint italic label (e.g. *First Name*) in normal view so layout is visible before filling. More prominent dashed highlight in Edit mode. Hidden on print.
+- **Storage key:** `lpr_tenants` (namespaced per user by `user.js`).
+
+**Templates with tenant fields:** 24-Hour Notice, Rent Increase Notice, Non-Renewal Notice, Security Deposit (all three), Envelope, Lease Cover, Address Labels P-touch.
+
 ### Unsaved-changes guard
 
 When you've made text edits, attempting to navigate away triggers a modal:
@@ -211,6 +224,7 @@ lpr-templates/
 ├── brand.css                           # Shared styles + bundled Montserrat @font-face
 ├── user.js                             # Multi-user namespacing (loads first)
 ├── employee.js                         # Employee-field replacement + signature injection
+├── tenants.js                          # Tenant address book, Fill Fields panel, Insert Field sidebar
 ├── template-tools.js                   # Edit/Export/Save As + unsaved-changes guard + signature drag
 │
 ├── Business Card.html
@@ -221,6 +235,7 @@ lpr-templates/
 ├── Envelope.html
 ├── Envelope Premium.html
 ├── Mailing Labels.html
+├── Address Labels P-touch.html
 ├── Lease Cover.html
 ├── Email Signature.html
 ├── 24-Hour Notice.html
@@ -255,7 +270,8 @@ lpr-templates/
 </head>
 <body>
   ...
-  <script src="employee.js"></script>      <!-- field replacement + signature -->
+  <script src="employee.js"></script>      <!-- field replacement + signature (omit on tenant-only templates) -->
+  <script src="tenants.js"></script>       <!-- tenant address book + Fill Fields (omit on non-tenant templates) -->
   <script src="template-tools.js"></script><!-- toolbar (Edit/Export/Save As) -->
 </body>
 ```
