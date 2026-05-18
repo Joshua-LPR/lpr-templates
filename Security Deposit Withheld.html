@@ -43,8 +43,8 @@
     <div class="doc-title">Security Deposit <br/>Withheld</div>
     <div class="lh-body">
       <div class="date">[Date]</div>
-      <p>Dear [Tenant Name],</p>
-      <p>This letter is to notify you that your security deposit and accrued security deposit interest have been applied to your outstanding ledger balance for <strong>[Property Address]</strong>.</p>
+      <p>Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</p>
+      <p>This letter is to notify you that your security deposit and accrued security deposit interest have been applied to your outstanding ledger balance for <strong><span data-tenant-field="address_line1"></span></strong>.</p>
       <p>Attached is your account statement detailing the deductions made. After applying the security deposit and interest, a remaining balance of <strong>$[Amount]</strong> is due. If any additional charges are incurred, you will be notified.</p>
       <div class="highlight">Please submit payment as soon as possible.</div>
       <div class="signoff">
@@ -57,6 +57,7 @@
   </div>
 </div>
 <script src="employee.js"></script>
+<script src="tenants.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

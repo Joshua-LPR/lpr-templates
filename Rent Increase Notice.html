@@ -44,8 +44,8 @@
     <div class="doc-title">Notice of Rent Increase</div>
     <div class="lh-body">
       <div class="date">[Date]</div>
-      <div class="recipient">Dear [Tenant Name],</div>
-      <p>I hope this letter finds you well. I am writing to inform you that, upon the renewal of your lease at <strong>[Property Address]</strong> on <strong>[Renewal Date]</strong>, there will be a monthly rent increase.</p>
+      <div class="recipient">Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</div>
+      <p>I hope this letter finds you well. I am writing to inform you that, upon the renewal of your lease at <strong><span data-tenant-field="address_line1"></span></strong> on <strong>[Renewal Date]</strong>, there will be a monthly rent increase.</p>
       <div class="highlight">The new monthly rent will be $[Amount].</div>
       <p>This rent increase will not affect any other terms of the lease.</p>
       <p>We appreciate your continued tenancy.</p>
@@ -59,6 +59,7 @@
   </div>
 </div>
 <script src="employee.js"></script>
+<script src="tenants.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

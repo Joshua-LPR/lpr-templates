@@ -92,9 +92,9 @@
       <div class="date">[Date of Notice]</div>
 
       <div class="to">
-        <strong>To:</strong> [Tenant Name(s)]<br/>
-        [Property Address]<br/>
-        [City, State ZIP]
+        <strong>To:</strong> <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span><br/>
+        <span data-tenant-field="address_line1"></span><br/>
+        <span data-tenant-field="city"></span>, <span data-tenant-field="state"></span> <span data-tenant-field="zip"></span>
       </div>
 
       <p>This letter serves as your written 24-hour notice that the property manager and/or authorized personnel will be entering the above premises on the date and time listed below.</p>
@@ -131,6 +131,7 @@
 </div>
 
 <script src="employee.js"></script>
+<script src="tenants.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

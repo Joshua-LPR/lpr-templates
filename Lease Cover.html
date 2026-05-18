@@ -40,13 +40,14 @@
       <div class="doc-title">Lease & <br/>Rental Agreement</div>
     </div>
     <div class="cover-body">
-      <div class="cover-section"><div class="key">Property</div><div class="val"><div><span class="placeholder">[Street Address]</span></div><div style="margin-top:6px;"><span class="placeholder">[City, State ZIP]</span></div></div></div>
+      <div class="cover-section"><div class="key">Property</div><div class="val"><div><span data-tenant-field="address_line1"></span></div><div style="margin-top:6px;"><span data-tenant-field="city"></span>, <span data-tenant-field="state"></span> <span data-tenant-field="zip"></span></div></div></div>
       <div class="cover-section"><div class="key">Landlord</div><div class="val"><div>LPR Management, LLC</div><div style="margin-top:6px; color:var(--lpr-muted); font-size:10pt;">on behalf of <span class="placeholder" style="min-width:2.6in;">[Owner Name]</span></div></div></div>
-      <div class="cover-section"><div class="key">Tenant(s)</div><div class="val"><div><span class="placeholder">[Tenant Name(s)]</span></div></div></div>
+      <div class="cover-section"><div class="key">Tenant(s)</div><div class="val"><div><span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span></div></div></div>
     </div>
     <div class="cover-footer"><span></span><span class="right">LPR Management, LLC</span></div>
   </div>
 </div>
+<script src="tenants.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

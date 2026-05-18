@@ -41,11 +41,14 @@
     </div>
     <div class="env-stamp">Postage</div>
     <div class="env-recipient">
-      <span class="placeholder">[Recipient Name]<br/>[Street Address]<br/>[City, State ZIP]</span>
+      <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span><br/>
+      <span data-tenant-field="address_line1"></span><br/>
+      <span data-tenant-field="city"></span>, <span data-tenant-field="state"></span> <span data-tenant-field="zip"></span>
     </div>
     <div class="env-mark">Pikesville · Maryland</div>
   </div>
 </div>
+<script src="tenants.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

@@ -42,8 +42,8 @@
     <div class="doc-title">Security Deposit <br/>Returned</div>
     <div class="lh-body">
       <div class="date">[Date]</div>
-      <p>Dear [Tenant Name],</p>
-      <p>This letter is to inform you that your security deposit and accrued interest are being returned to you in full for the property at <strong>[Property Address]</strong>.</p>
+      <p>Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</p>
+      <p>This letter is to inform you that your security deposit and accrued interest are being returned to you in full for the property at <strong><span data-tenant-field="address_line1"></span></strong>.</p>
       <p>Enclosed is a check in the amount of <strong>$[Amount]</strong>, representing your security deposit and all applicable interest.</p>
       <p>We appreciated having you as a tenant, and we wish you all the best in your future endeavors.</p>
       <div class="signoff">
@@ -56,6 +56,7 @@
   </div>
 </div>
 <script src="employee.js"></script>
+<script src="tenants.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>
