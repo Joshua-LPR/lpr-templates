@@ -271,6 +271,53 @@
   .emp-picker .clear { font-size: 11px; color: var(--lpr-muted); text-decoration: underline; cursor: pointer; background: none; border: none; font-family: inherit; padding: 6px 4px; margin-left: auto; }
   .emp-active { display: inline-block; background: rgba(40,56,145,0.08); color: var(--lpr-blue); padding: 4px 10px; border-radius: 4px; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; font-weight: 600; margin-left: 10px; vertical-align: middle; }
 
+  /* Signature manager */
+  .sig-manager {
+    background: #fff; border-radius: 12px; padding: 28px 36px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    margin-bottom: 36px;
+  }
+  .sig-manager h2 {
+    font-size: 16px; font-weight: 700; color: var(--lpr-ink);
+    margin: 0 0 4px; letter-spacing: -0.2px;
+  }
+  .sig-manager .sub {
+    font-size: 12.5px; color: var(--lpr-muted); margin: 0 0 18px; line-height: 1.55;
+  }
+  .sig-manager .sig-row {
+    display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
+  }
+  .sig-manager .sig-preview {
+    width: 240px; height: 80px; padding: 10px;
+    border: 1px dashed var(--lpr-rule); border-radius: 6px;
+    background: #fbf9f5;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--lpr-muted); font-size: 11px; font-style: italic;
+  }
+  .sig-manager .sig-preview img {
+    max-width: 100%; max-height: 100%;
+    mix-blend-mode: multiply;
+  }
+  .sig-manager .sig-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+  .sig-manager .sig-buttons button {
+    font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0.3px;
+    padding: 9px 16px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--lpr-blue); background: var(--lpr-blue); color: #fff;
+  }
+  .sig-manager .sig-buttons button.secondary {
+    background: #fff; color: var(--lpr-blue);
+  }
+  .sig-manager .sig-buttons button:hover {
+    background: var(--lpr-blue-deep); border-color: var(--lpr-blue-deep); color: #fff;
+  }
+  .sig-manager .sig-buttons .danger { border-color: #c33; color: #c33; background: #fff; }
+  .sig-manager .sig-buttons .danger:hover { background: #c33; color: #fff; border-color: #c33; }
+  .sig-manager .tip {
+    margin-top: 12px; font-size: 11.5px; color: var(--lpr-muted);
+    line-height: 1.55;
+  }
+  .sig-manager .tip strong { color: var(--lpr-blue); }
+
   /* Usage instructions */
   .usage { background: #fff; border-radius: 12px; padding: 36px 44px; margin-top: 40px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
   .usage h2 { font-size: 18px; font-weight: 700; color: var(--lpr-ink); margin: 0 0 6px; letter-spacing: -0.2px; }
@@ -323,6 +370,22 @@
       <button class="clear" id="emp-clear">Reset to default</button>
     </div>
   </div>
+  <div class="sig-manager">
+    <h2>My signature</h2>
+    <p class="sub">Upload an image of your signature. It will auto-fill every letter you sign — letterhead, notices, lease cover. Tied to the currently signed-in user (<span id="sig-user-name">—</span>); each user has their own.</p>
+    <div class="sig-row">
+      <div class="sig-preview" id="sig-preview">No signature uploaded</div>
+      <div class="sig-buttons">
+        <button id="sig-upload-btn">Upload signature</button>
+        <button id="sig-clear-btn" class="danger">Remove</button>
+        <input type="file" id="sig-input" accept="image/*" style="display:none"/>
+      </div>
+    </div>
+    <div class="tip">
+      <strong>Best results:</strong> sign in dark ink on a clean white page, take a photo or scan, upload as JPG or PNG. The whitespace gets auto-cropped and the background blends with the page so it won't cover text.
+    </div>
+  </div>
+
   <div class="top-actions">
     <span id="active-user-tag" style="display:inline-flex; align-items:center; gap:8px; padding: 7px 14px; background: rgba(40,56,145,0.08); border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--lpr-blue); margin-right: auto;">
       <span id="active-user-avatar" style="width: 22px; height: 22px; border-radius: 50%; background: var(--lpr-blue); color: #fff; font-size: 10px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700;">?</span>
@@ -774,6 +837,25 @@
           <li><strong>Save As</strong> — saves the current edited template into your <em>Your Library</em> section on the index. Use this for "Smith Eviction Notice" etc. — keeps the original blank template untouched.</li>
           <li><strong>Print</strong> — the original print button is unchanged. Use it for paper printing or system-level Save-as-PDF.</li>
         </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Signatures (auto-fill on letters)</summary>
+      <div class="doc-body">
+        <ol>
+          <li>Sign your name in dark ink on a clean piece of white paper.</li>
+          <li>Take a photo or scan it. Save as JPG or PNG.</li>
+          <li>On the index page, find the <strong>My signature</strong> panel near the top.</li>
+          <li>Click <strong>Upload signature</strong>, pick the file. Whitespace gets auto-cropped.</li>
+          <li>Open any letter template — your signature appears above your typed name on the signoff line.</li>
+        </ol>
+        <div class="tip">
+          The signature is tied to the currently signed-in user. Each user uploads their own. JPGs with white backgrounds work because of a CSS trick that blends white pixels with the page — they won't print as a visible white box around your signature.
+        </div>
+        <div class="tip">
+          <strong>Want a transparent background?</strong> Use a free tool like <em>remove.bg</em> on your signature image, save as PNG, then upload. Best for signatures placed on non-white backgrounds.
+        </div>
       </div>
     </details>
 
@@ -1373,7 +1455,112 @@
     const avEl = document.getElementById("active-user-avatar");
     if (nameEl) nameEl.textContent = name;
     if (avEl) avEl.textContent = name.trim().split(/\s+/).map(w => w[0]).slice(0,2).join("").toUpperCase() || "?";
+    const sigUserEl = document.getElementById("sig-user-name");
+    if (sigUserEl) sigUserEl.textContent = name;
   }
+
+  /* ---------- 7. Signature upload ---------- */
+  const SIG_KEY = "lpr_signature";
+  function renderSig() {
+    const data = localStorage.getItem(SIG_KEY);
+    const preview = document.getElementById("sig-preview");
+    if (!preview) return;
+    if (data) {
+      preview.innerHTML = '<img src="' + data + '" alt="signature"/>';
+    } else {
+      preview.textContent = "No signature uploaded";
+    }
+  }
+  function processSignature(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        // 1. Find bbox of dark pixels (so we crop out whitespace borders)
+        const probe = document.createElement("canvas");
+        probe.width = img.width; probe.height = img.height;
+        const px = probe.getContext("2d");
+        px.drawImage(img, 0, 0);
+        const d = px.getImageData(0, 0, probe.width, probe.height).data;
+        let minX = probe.width, maxX = 0, minY = probe.height, maxY = 0, dark = 0;
+        for (let y = 0; y < probe.height; y++) {
+          for (let x = 0; x < probe.width; x++) {
+            const i = (y * probe.width + x) * 4;
+            // luminance + alpha check
+            const a = d[i + 3];
+            const lum = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
+            if (a > 100 && lum < 200) {
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+              if (y < minY) minY = y;
+              if (y > maxY) maxY = y;
+              dark++;
+            }
+          }
+        }
+        if (dark < 50) {
+          alert("Couldn't find a signature in that image (almost all white). Try a clearer scan with dark ink on white paper.");
+          return;
+        }
+        // 2. Pad the bbox a little so the signature has breathing room
+        const padX = Math.max((maxX - minX) * 0.04, 8);
+        const padY = Math.max((maxY - minY) * 0.10, 8);
+        minX = Math.max(0, minX - padX);
+        minY = Math.max(0, minY - padY);
+        maxX = Math.min(probe.width, maxX + padX);
+        maxY = Math.min(probe.height, maxY + padY);
+        const cropW = maxX - minX;
+        const cropH = maxY - minY;
+
+        // 3. Scale to max 800px wide
+        const maxOutW = 800;
+        const scale = Math.min(1, maxOutW / cropW);
+        const outW = Math.round(cropW * scale);
+        const outH = Math.round(cropH * scale);
+
+        // 4. Determine output format. PNGs (with transparency) → keep as PNG.
+        //    JPGs (likely white background) → keep as JPEG.
+        const isPng = file.type === "image/png" || /\.png$/i.test(file.name);
+        const out = document.createElement("canvas");
+        out.width = outW; out.height = outH;
+        const ox = out.getContext("2d");
+        if (!isPng) {
+          // White background for JPEG (so mix-blend-mode multiply works on the template page)
+          ox.fillStyle = "#ffffff";
+          ox.fillRect(0, 0, outW, outH);
+        }
+        ox.drawImage(img, minX, minY, cropW, cropH, 0, 0, outW, outH);
+        const dataUrl = out.toDataURL(isPng ? "image/png" : "image/jpeg", 0.9);
+
+        try {
+          localStorage.setItem(SIG_KEY, dataUrl);
+        } catch (err) {
+          alert("Signature too large to save. Try a smaller image (under 800px wide).");
+          return;
+        }
+        renderSig();
+      };
+      img.onerror = () => alert("Couldn't load that image file.");
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.getElementById("sig-upload-btn").addEventListener("click", () => {
+    document.getElementById("sig-input").click();
+  });
+  document.getElementById("sig-input").addEventListener("change", e => {
+    const file = e.target.files && e.target.files[0];
+    if (file) processSignature(file);
+    e.target.value = "";
+  });
+  document.getElementById("sig-clear-btn").addEventListener("click", () => {
+    if (!localStorage.getItem(SIG_KEY)) return;
+    if (!confirm("Remove the saved signature for this user?")) return;
+    localStorage.removeItem(SIG_KEY);
+    renderSig();
+  });
+  renderSig();
 })();
 </script>
 

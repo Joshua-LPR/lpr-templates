@@ -50,6 +50,17 @@
       const field = el.getAttribute("data-employee-hide-if-empty");
       if (emp[field] === "") el.style.display = "none";
     });
+
+    // Drop the active user's signature image into any .signature placeholder.
+    const sig = localStorage.getItem("lpr_signature");
+    if (sig) {
+      document.querySelectorAll(".signature, .signature-slot").forEach(el => {
+        if (el.querySelector("img.lpr-sig-img")) return;
+        // Preserve original height so layout doesn't shift
+        const h = el.offsetHeight || null;
+        el.innerHTML = '<img class="lpr-sig-img" src="' + sig + '" alt="signature" style="max-width: 2.4in; max-height: ' + (h ? (h + 8) + 'px' : '0.7in') + '; mix-blend-mode: multiply; display: block; pointer-events: none;"/>';
+      });
+    }
   }
 
   if (document.readyState === "loading") {
