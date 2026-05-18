@@ -212,6 +212,43 @@
   }
   .reset-zone button:hover { background: #c33; color: #fff; }
 
+  /* Backup / restore */
+  .backup-zone {
+    background: #fff; border-radius: 12px; padding: 28px 32px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    margin-top: 36px;
+  }
+  .backup-zone h2 {
+    margin: 0 0 6px; font-size: 16px; font-weight: 700; color: var(--lpr-ink);
+    letter-spacing: -0.2px;
+  }
+  .backup-zone .sub {
+    font-size: 12.5px; color: var(--lpr-muted); margin: 0 0 14px; line-height: 1.6;
+  }
+  .backup-zone .recommend {
+    background: rgba(40,56,145,0.06); border-left: 3px solid var(--lpr-blue);
+    padding: 10px 14px; border-radius: 4px; font-size: 12px;
+    color: var(--lpr-text); line-height: 1.55; margin-bottom: 18px;
+  }
+  .backup-zone .recommend strong { color: var(--lpr-blue); }
+  .backup-zone .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .backup-zone .actions button {
+    font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+    background: var(--lpr-blue); color: #fff; border: 1px solid var(--lpr-blue);
+    padding: 9px 18px; border-radius: 999px; cursor: pointer;
+  }
+  .backup-zone .actions button.secondary {
+    background: #fff; color: var(--lpr-blue);
+  }
+  .backup-zone .actions button:hover {
+    background: var(--lpr-blue-deep); border-color: var(--lpr-blue-deep);
+    color: #fff;
+  }
+  .backup-zone .scope-note {
+    font-size: 11px; color: var(--lpr-muted); margin-top: 12px;
+    line-height: 1.5;
+  }
+
   /* Employee picker */
   .emp-picker { background: #fff; border-radius: 12px; padding: 32px 40px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); margin-bottom: 36px; }
   .emp-picker h2 { font-size: 16px; font-weight: 700; color: var(--lpr-ink); margin: 0 0 4px; letter-spacing: -0.2px; }
@@ -704,6 +741,20 @@
 
   
 
+  <div class="backup-zone">
+    <h2>Backup &amp; Restore</h2>
+    <p class="sub">All your saved templates, favorites, archive, presets and order live only in this browser on this device. If browser data ever gets cleared, your customizations go with it.</p>
+    <div class="recommend">
+      <strong>Strongly recommended:</strong> download a backup file every now and then and stash a copy somewhere offline — Google Drive, email it to yourself, an external hard drive, whatever. If anything ever goes sideways, you can restore everything in one click.
+    </div>
+    <div class="actions">
+      <button id="export-backup">↓ Download backup</button>
+      <button id="import-backup" class="secondary">↑ Restore from backup</button>
+      <input type="file" id="import-file" accept=".json,application/json" style="display:none"/>
+    </div>
+    <div class="scope-note" id="backup-scope"></div>
+  </div>
+
   <div class="usage">
     <h2>How to use these templates</h2>
     <p>Click each section below for setup steps. Most templates are print-ready — just click Print in any template’s toolbar to save as PDF or send to a printer.</p>
@@ -722,6 +773,18 @@
           </li>
           <li><strong>Save As</strong> — saves the current edited template into your <em>Your Library</em> section on the index. Use this for "Smith Eviction Notice" etc. — keeps the original blank template untouched.</li>
           <li><strong>Print</strong> — the original print button is unchanged. Use it for paper printing or system-level Save-as-PDF.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Backup &amp; Restore</summary>
+      <div class="doc-body">
+        <ul>
+          <li>The <strong>Backup &amp; Restore</strong> panel above the instructions lets you download a single JSON file containing every customization on this browser — all users' favorites, archives, libraries, presets, and order preferences.</li>
+          <li><strong>Strongly recommended:</strong> click <em>Download backup</em> after any major reorganization, and email the file to yourself or drop it in Google Drive. If browser data ever gets cleared, you can restore everything in one click.</li>
+          <li>The file is plain text — readable in any text editor. Safe to keep multiple versions.</li>
+          <li>Restoring overwrites current data, so back up first if you're not sure.</li>
         </ul>
       </div>
     </details>
@@ -1209,6 +1272,93 @@
     localStorage.removeItem("lpr_sig_style");
     location.reload();
   });
+
+  /* ---------- 6. Backup / Restore ---------- */
+  function buildBackup() {
+    // Grab every lpr_* key (current + all users) and serialize.
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith("lpr_")) data[k] = localStorage.getItem(k);
+    }
+    return {
+      _lprBackup: true,
+      _version: 1,
+      _exportedAt: new Date().toISOString(),
+      _exportedBy: (window.LPR_USER ? LPR_USER.activeName() : "unknown"),
+      data
+    };
+  }
+
+  function downloadBackup() {
+    const payload = buildBackup();
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const a = document.createElement("a");
+    const date = new Date().toISOString().split("T")[0];
+    a.href = URL.createObjectURL(blob);
+    a.download = `lpr-templates-backup-${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
+  function restoreBackup(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      let payload;
+      try { payload = JSON.parse(e.target.result); }
+      catch (err) { alert("That's not a valid backup file (couldn't read JSON)."); return; }
+      if (!payload || !payload._lprBackup || !payload.data) {
+        alert("That doesn't look like an LPR Templates backup file.");
+        return;
+      }
+      const keyCount = Object.keys(payload.data).length;
+      const exportedAt = payload._exportedAt ? new Date(payload._exportedAt).toLocaleString() : "unknown";
+      const exportedBy = payload._exportedBy || "unknown";
+      const msg = `Restore from backup?\n\nBackup contents:\n• ${keyCount} saved keys\n• Exported by: ${exportedBy}\n• Exported at: ${exportedAt}\n\nThis will OVERWRITE your current data with the backup. Anything saved since the backup was made will be lost.\n\nContinue?`;
+      if (!confirm(msg)) return;
+      if (!confirm("Final confirmation — overwrite current data with the backup?")) return;
+
+      // Wipe existing lpr_* keys first to avoid orphaned entries
+      const wipeKeys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("lpr_")) wipeKeys.push(k);
+      }
+      wipeKeys.forEach(k => localStorage.removeItem(k));
+
+      // Write backup data
+      for (const [k, v] of Object.entries(payload.data)) {
+        localStorage.setItem(k, v);
+      }
+      alert("Restored successfully. Reloading...");
+      location.reload();
+    };
+    reader.readAsText(file);
+  }
+
+  document.getElementById("export-backup").addEventListener("click", downloadBackup);
+  const importBtn = document.getElementById("import-backup");
+  const importInput = document.getElementById("import-file");
+  importBtn.addEventListener("click", () => importInput.click());
+  importInput.addEventListener("change", e => {
+    const file = e.target.files && e.target.files[0];
+    if (file) restoreBackup(file);
+    importInput.value = "";
+  });
+
+  // Scope hint under the backup buttons
+  const scopeEl = document.getElementById("backup-scope");
+  if (scopeEl) {
+    let count = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith("lpr_")) count++;
+    }
+    scopeEl.textContent = "Backups include every user on this browser (" + count + " keys total).";
+  }
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);

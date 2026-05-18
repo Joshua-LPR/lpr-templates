@@ -84,6 +84,73 @@
     font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase;
     color: var(--lpr-muted); display: block; margin-bottom: 4px;
   }
+
+  /* Manage-users mode (delete buttons hidden by default) */
+  .user-card .delete-user { display: none; }
+  body.manage-mode .user-card .delete-user { display: flex; opacity: 1; }
+  body.manage-mode .user-card { animation: shake 0.4s ease; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+  }
+  .manage-toggle {
+    margin-top: 18px; text-align: center;
+  }
+  .manage-toggle button {
+    font-family: inherit; font-size: 11px; font-weight: 500;
+    background: transparent; border: 1px solid var(--lpr-rule);
+    color: var(--lpr-muted); padding: 6px 14px; border-radius: 999px;
+    cursor: pointer; letter-spacing: 0.5px;
+  }
+  .manage-toggle button:hover { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
+  body.manage-mode .manage-toggle button {
+    background: #c33; color: #fff; border-color: #c33;
+  }
+
+  /* Modal for typed delete confirmation */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 12px; padding: 32px;
+    max-width: 440px; width: 100%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+  .modal h2 {
+    margin: 0 0 8px; font-size: 18px; color: var(--lpr-ink); font-weight: 700;
+  }
+  .modal p {
+    margin: 0 0 14px; font-size: 13px; color: var(--lpr-text); line-height: 1.55;
+  }
+  .modal .warning {
+    background: #fff5f5; border-left: 3px solid #c33;
+    padding: 10px 14px; border-radius: 4px; font-size: 12.5px;
+    color: #8a1f1f; margin-bottom: 16px;
+  }
+  .modal input {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--lpr-rule);
+    border-radius: 6px; font-family: inherit; font-size: 13px;
+    color: var(--lpr-ink); background: #fbf9f5; margin-bottom: 16px;
+  }
+  .modal input:focus { outline: none; border-color: var(--lpr-blue); background: #fff; }
+  .modal .actions {
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
+  .modal .actions button {
+    font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+    padding: 9px 18px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--lpr-rule); background: #fff; color: var(--lpr-ink);
+  }
+  .modal .actions .cancel:hover { background: #f4f1ec; }
+  .modal .actions .delete {
+    border-color: #c33; color: #c33;
+  }
+  .modal .actions .delete:hover { background: #c33; color: #fff; }
+  .modal .actions .delete:disabled { opacity: 0.4; cursor: not-allowed; background: transparent; color: #c33; }
 </style>
 </head>
 <body>
@@ -100,11 +167,28 @@
 
   <div class="user-grid" id="user-grid"></div>
 
+  <div class="manage-toggle">
+    <button id="manage-btn">Manage users</button>
+  </div>
+
   <div class="footer-note">
     <span class="small">Privacy note</span>
     User accounts are stored only in this browser, on this device. There's no password and no central account — anyone using this browser can pick any name.
   </div>
 
+</div>
+
+<div class="modal-backdrop" id="delete-modal">
+  <div class="modal">
+    <h2>Remove user?</h2>
+    <p>You're about to remove <strong id="del-name"></strong> and wipe all their saved data — favorites, archive, library, presets, and order preferences.</p>
+    <div class="warning"><strong>This cannot be undone.</strong> To confirm, type the user's full name below exactly as shown.</div>
+    <input type="text" id="del-confirm" placeholder="Type name here" autocomplete="off"/>
+    <div class="actions">
+      <button class="cancel" id="del-cancel">Cancel</button>
+      <button class="delete" id="del-confirm-btn" disabled>Remove user</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -131,9 +215,7 @@
       });
       card.querySelector(".delete-user").addEventListener("click", e => {
         e.stopPropagation();
-        if (!confirm(`Remove "${u.name}" and wipe all their saved data? (Cannot be undone.)`)) return;
-        LPR_USER.deleteUser(u.id);
-        render();
+        openDeleteModal(u);
       });
       grid.appendChild(card);
     }
@@ -157,6 +239,46 @@
     grid.appendChild(addCard);
   }
   render();
+
+  // Manage-users toggle
+  const manageBtn = document.getElementById("manage-btn");
+  manageBtn.addEventListener("click", () => {
+    document.body.classList.toggle("manage-mode");
+    manageBtn.textContent = document.body.classList.contains("manage-mode")
+      ? "Done managing"
+      : "Manage users";
+  });
+
+  // Delete modal
+  let pendingDelete = null;
+  const modal = document.getElementById("delete-modal");
+  const confirmInput = document.getElementById("del-confirm");
+  const confirmBtn = document.getElementById("del-confirm-btn");
+  function openDeleteModal(u) {
+    pendingDelete = u;
+    document.getElementById("del-name").textContent = u.name;
+    confirmInput.value = "";
+    confirmInput.placeholder = `Type "${u.name}" exactly`;
+    confirmBtn.disabled = true;
+    modal.classList.add("open");
+    setTimeout(() => confirmInput.focus(), 50);
+  }
+  function closeDeleteModal() {
+    modal.classList.remove("open");
+    pendingDelete = null;
+  }
+  confirmInput.addEventListener("input", () => {
+    if (!pendingDelete) return;
+    confirmBtn.disabled = confirmInput.value.trim() !== pendingDelete.name;
+  });
+  document.getElementById("del-cancel").addEventListener("click", closeDeleteModal);
+  modal.addEventListener("click", e => { if (e.target === modal) closeDeleteModal(); });
+  confirmBtn.addEventListener("click", () => {
+    if (!pendingDelete || confirmBtn.disabled) return;
+    LPR_USER.deleteUser(pendingDelete.id);
+    closeDeleteModal();
+    render();
+  });
 })();
 </script>
 
