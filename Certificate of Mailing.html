@@ -152,6 +152,9 @@
   .overlay-from, .overlay-to { color:black !important; }
 }
 
+/* hide address line 2 row when span is empty */
+.cof-line2:has([data-tenant-field]:empty) { display: none; }
+
 /* suppress tenant-field placeholder border lines — the form image has its own lines */
 .sheet [data-tenant-field]:empty::before { border-bottom:none !important; }
 </style>
@@ -212,7 +215,7 @@
       <div class="overlay-to">
         <div><span data-tenant-field="first_name"></span>&nbsp;<span data-tenant-field="last_name"></span></div>
         <div><span data-tenant-field="address_line1"></span></div>
-        <div><span data-tenant-field="address_line2"></span></div>
+        <div class="cof-line2"><span data-tenant-field="address_line2"></span></div>
         <div><span data-tenant-field="city"></span>,&nbsp;<span data-tenant-field="state"></span>&nbsp;<span data-tenant-field="zip"></span></div>
       </div>
 
