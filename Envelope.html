@@ -20,6 +20,8 @@
   .env-recipient .placeholder { color: #c8c8c8; font-style: italic; }
   /* hide address line 2 row when the span is empty */
   .env-line2:has([data-tenant-field]:empty) { display: none; }
+  /* …but reveal it in edit mode so the field is clickable */
+  .sheet.tt-editing .env-line2:has([data-tenant-field]:empty) { display: block; }
   /* hide the comma when city is empty */
   .env-csl:has([data-tenant-field="city"]:empty) .env-comma { display: none; }
   /* print nothing when no address has been filled in */

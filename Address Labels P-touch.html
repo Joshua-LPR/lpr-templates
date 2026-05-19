@@ -56,6 +56,8 @@
   .label-text .lbl-name { font-size: 19px; font-weight: 700; }
   .label-text .lbl-addr2 { display: block; }
   .label-text .lbl-addr2:has([data-tenant-field]:empty) { display: none; }
+  /* reveal in edit mode so the field is clickable */
+  .sheet.tt-editing .lbl-addr2:has([data-tenant-field]:empty) { display: block; }
 
   /* Large label variant */
   .sheet.label-card.large {

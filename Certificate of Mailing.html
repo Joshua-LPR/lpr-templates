@@ -154,6 +154,8 @@
 
 /* hide address line 2 row when span is empty */
 .cof-line2:has([data-tenant-field]:empty) { display: none; }
+/* reveal in edit mode so the field is clickable */
+.sheet.tt-editing .cof-line2:has([data-tenant-field]:empty) { display: block; }
 
 /* suppress tenant-field placeholder border lines — the form image has its own lines */
 .sheet [data-tenant-field]:empty::before { border-bottom:none !important; }
