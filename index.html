@@ -79,6 +79,13 @@
   .mini-grid { width: 60%; aspect-ratio: 8.5/11; border: 1px solid var(--lpr-rule); border-radius: 2px; background: #fff; padding: 4%; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(10, 1fr); column-gap: 1.5%; row-gap: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   .mini-grid .cell { border: 1px dashed rgba(40,56,145,0.25); background: linear-gradient(135deg, transparent 60%, rgba(40,56,145,0.08)); }
 
+  .mini-cof { width:90%; height:54px; background:#fff; border:1px solid #ddd; border-radius:3px; box-shadow:0 1px 5px rgba(0,0,0,.09); display:flex; overflow:hidden; }
+  .mini-cof-left { flex:1; padding:5px 5px 3px; display:flex; flex-direction:column; justify-content:space-around; border-right:1px solid #ddd; }
+  .mini-cof-line { height:1px; background:#dde; margin:1px 0; }
+  .mini-cof-line.mini-cof-gap { margin-top:4px; }
+  .mini-cof-right { width:22px; display:flex; align-items:center; justify-content:center; }
+  .mini-cof-stamp { font-size:4px; color:#aab; text-align:center; line-height:1.3; border:1px dashed #ccd; padding:2px; border-radius:2px; }
+
   .mini-ptouch { width: 92%; display: flex; align-items: center; justify-content: center; }
   .mini-pt-lbl { width: 85%; height: 34px; background: #fff; border: 1px solid #ddd; border-radius: 3px; padding: 0 9px; display: flex; flex-direction: column; justify-content: center; gap: 4px; box-shadow: 0 1px 5px rgba(0,0,0,.09); position: relative; }
   .mini-pt-lbl::before, .mini-pt-lbl::after { content: ''; position: absolute; top: 0; bottom: 0; width: 3px; background: repeating-linear-gradient(to bottom, rgba(40,56,145,.3) 0, rgba(40,56,145,.3) 3px, transparent 3px, transparent 6px); }
@@ -570,6 +577,29 @@
       </div>
     </a>
 
+    <a href="Certificate of Mailing.html" class="card">
+      <div class="thumb">
+        <div class="mini-cof">
+          <div class="mini-cof-left">
+            <div class="mini-cof-line"></div>
+            <div class="mini-cof-line"></div>
+            <div class="mini-cof-line"></div>
+            <div class="mini-cof-line mini-cof-gap"></div>
+            <div class="mini-cof-line"></div>
+            <div class="mini-cof-line"></div>
+          </div>
+          <div class="mini-cof-right">
+            <div class="mini-cof-stamp">Postmark</div>
+          </div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="role">5″ × 3″ · PS Form 3817 · Feed &amp; Fill</div>
+        <h3>Certificate of Mailing</h3>
+        <p>Prints From/To directly onto a blank USPS PS Form 3817 fed through your printer. Calibration sliders dial in your printer's offset.</p>
+      </div>
+    </a>
+
     <a href="Lease Cover.html" class="card">
       <div class="thumb">
         <div class="mini-cover">
@@ -957,6 +987,21 @@
         <div class="tip">You can also click <em>Edit</em> on the label page and type directly into the preview to adjust the address before downloading.</div>
         <div class="tip"><strong>Font:</strong> Labels use Montserrat (LPR brand font). P-touch Lite reads fonts from Windows — if the label opens in the wrong font, install Montserrat from <a href="https://fonts.google.com/specimen/Montserrat" target="_blank" rel="noopener">fonts.google.com</a> and restart P-touch Lite.</div>
         <div class="tip"><strong>Large labels (DK-1202):</strong> The size toggle is visible but download is disabled until a DK-1202 template file is created. See the notice on the template page for how to enable it.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Certificate of Mailing (PS Form 3817)</summary>
+      <div class="doc-body">
+        <ol>
+          <li>Get free blank <strong>PS Form 3817</strong> slips from any USPS post office counter.</li>
+          <li>Open <strong>Certificate of Mailing</strong> from the Stationery section. Use <strong>Fill Fields</strong> to select a tenant — the "To" address fills automatically. Or click <strong>Edit</strong> to type it manually.</li>
+          <li><strong>Calibrate once:</strong> click Print and print on plain paper first. Hold the printout behind a blank form to check alignment. Use the <em>Up/Down</em> and <em>Left/Right</em> sliders at the top of the template page to nudge the text until it lands on the form's lines. Calibration saves automatically.</li>
+          <li>Feed a blank PS Form 3817 into your printer's <strong>manual/bypass tray</strong>. Try face-up first; flip it if text prints on the wrong side.</li>
+          <li>Click <strong>Print</strong> in the toolbar. Set paper size to <strong>5″ × 3″</strong> in the print dialog (or select the manual feed tray if your printer auto-detects size).</li>
+          <li>Bring the filled form to the post office. The postal worker stamps <em>Postmark Here</em> and returns it — that's your proof of mailing.</li>
+        </ol>
+        <div class="tip">The From address (LPR Management, LLC) is pre-filled. Click <strong>Edit</strong> in the toolbar if you ever need to change it.</div>
       </div>
     </details>
 

@@ -94,6 +94,7 @@ Montserrat is bundled locally in `assets/fonts/` so templates render identically
 | **Envelope — With Stripe** | 9.5″ × 4.125″ | Bolder variant with royal-blue side stripe. |
 | **Mailing Labels** | Avery 5160 | 30 labels per sheet (return-address). |
 | **Address Labels — P-touch** | DK-1201 (29×90mm) | Tenant mailing labels for Brother QL-810W. Generates a `.lbt` file per tenant — opens directly in P-touch Editor, ready to print. Size toggle included (DK-1202 large pending template). |
+| **Certificate of Mailing** | 5″ × 3″ (PS Form 3817) | Feed-and-fill overlay. Feed a blank USPS PS Form 3817 slip into the printer's manual tray; prints only the From/To text at exact field positions. Calibration sliders (±18pt) compensate for printer margin offset. From pre-filled with LPR Management address; To filled via Fill Fields. |
 | **Lease Cover Page** | US Letter | Branded title sheet with property/landlord/tenant blanks. |
 
 ### Property Management
@@ -236,6 +237,7 @@ lpr-templates/
 ├── Envelope Premium.html
 ├── Mailing Labels.html
 ├── Address Labels P-touch.html
+├── Certificate of Mailing.html
 ├── Lease Cover.html
 ├── Email Signature.html
 ├── 24-Hour Notice.html

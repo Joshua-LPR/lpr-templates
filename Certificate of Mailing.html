@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Certificate of Mailing — LPR Management</title>
+<link rel="stylesheet" href="brand.css">
+<script src="user.js"></script>
+
+<!-- @page size injected dynamically -->
+<style id="page-style">@media print { @page { size:5in 3in; margin:0; } }</style>
+
+<style>
+/* ── calibration vars ── */
+:root { --cof-dx:0pt; --cof-dy:0pt; --cof-fs:8pt; }
+
+/* ── page chrome ── */
+.cof-page { max-width:900px; margin:0 auto; padding:24px; font-family:Montserrat,sans-serif; }
+
+/* ── mode toggle bar ── */
+.mode-bar {
+  background:#fff; border:1px solid #dde; border-radius:8px;
+  padding:14px 20px; margin-bottom:14px;
+  display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+}
+.mode-bar strong { font-size:12px; color:#283891; margin-right:4px; white-space:nowrap; }
+.mode-btn {
+  padding:6px 14px; border:1.5px solid #c8cce0; border-radius:20px;
+  background:#f6f6f8; font-family:Montserrat,sans-serif;
+  font-size:12px; cursor:pointer; color:#555; white-space:nowrap;
+  transition:all .15s;
+}
+.mode-btn.active { background:#283891; color:#fff; border-color:#283891; }
+.mode-btn:hover:not(.active) { background:#eef0f8; border-color:#aab; }
+
+/* ── calibration card ── */
+.cal-card {
+  background:#fff; border:1px solid #dde; border-radius:8px;
+  padding:16px 20px; margin-bottom:14px;
+}
+.cal-card h3 { margin:0 0 4px; font-size:13px; font-weight:700; color:#283891; }
+.cal-card > p { margin:0 0 12px; font-size:12px; color:#666; }
+.cal-row { display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
+.cal-ctrl { display:flex; align-items:center; gap:6px; font-size:12px; color:#444; }
+.cal-ctrl input[type=range] { width:110px; accent-color:#283891; }
+.cal-ctrl .v { min-width:34px; font-size:11px; color:#888; font-family:monospace; }
+.cal-btn {
+  padding:5px 14px; border:1px solid #bbb; border-radius:4px;
+  background:#f6f6f8; font-family:Montserrat,sans-serif;
+  font-size:12px; cursor:pointer; color:#444;
+}
+.cal-btn:hover { background:#ececf0; }
+
+/* ── form preview wrapper ── */
+.cof-preview { display:flex; justify-content:center; margin:0 0 20px; position:relative; }
+
+/* ── the 5×3 sheet — real form image as background ── */
+.sheet {
+  width:5in; height:3in; position:relative;
+  background-image: url('assets/ps3817-form.png');
+  background-size:100% 100%; background-repeat:no-repeat;
+  background-color:white;
+  box-shadow:0 2px 14px rgba(0,0,0,.22);
+  box-sizing:border-box; flex-shrink:0; overflow:hidden;
+}
+
+/* ── overlay text ── */
+.overlay-from,
+.overlay-to {
+  position:absolute;
+  left:calc(0.297in + var(--cof-dx));
+  font-family:Montserrat,Arial,sans-serif;
+  font-size:var(--cof-fs);
+  line-height:18pt;
+  color:#111;
+  max-width:3.15in;
+}
+.overlay-from { top:calc(0.686in + var(--cof-dy)); }
+.overlay-to   { top:calc(1.797in + var(--cof-dy)); }
+
+/* ── cut lines (letter mode preview, screen only) ── */
+.cut-line-h, .cut-line-v { display:none; pointer-events:none; }
+.mode-letter .cut-line-h {
+  display:block; position:absolute;
+  left:-24px; right:-24px; top:3in;
+  border-top:1px dashed #bbb;
+}
+.mode-letter .cut-line-v {
+  display:block; position:absolute;
+  top:-24px; bottom:-24px; left:5in;
+  border-left:1px dashed #bbb;
+}
+
+/* ── instructions ── */
+.instructions {
+  background:#fff; border:1px solid #dde; border-radius:8px;
+  padding:16px 20px; font-size:13px; color:#444;
+}
+.instructions h3 { margin:0 0 10px; font-size:14px; color:#283891; }
+.instructions ol { margin:0; padding-left:20px; }
+.instructions li { margin-bottom:6px; line-height:1.5; }
+.instructions p  { margin:10px 0 0; font-size:11px; color:#888; }
+
+/* ══════════════════════════════
+   PRINT
+   ══════════════════════════════ */
+@media print {
+  html,body { margin:0; padding:0; background:none; }
+
+  /* hide page chrome, show only the form */
+  body > *:not(.cof-page)         { display:none !important; }
+  .cof-page > *:not(.cof-preview) { display:none !important; }
+  .cof-preview { margin:0 !important; padding:0 !important; justify-content:flex-start !important; }
+
+  .sheet {
+    position:fixed !important; top:0 !important; left:0 !important;
+    width:5in !important; height:3in !important;
+    box-shadow:none !important; overflow:visible !important;
+  }
+
+  /* Overlay: no background image — transparent so blank form shows through */
+  .mode-overlay .sheet {
+    background:transparent !important;
+    background-image:none !important;
+  }
+
+  /* Full form: print the real form image */
+  .mode-card .sheet,
+  .mode-letter .sheet {
+    background-image:url('assets/ps3817-form.png') !important;
+    background-size:100% 100% !important;
+    background-repeat:no-repeat !important;
+    background-color:white !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+
+  /* Letter mode: cut lines */
+  .mode-letter .cut-line-h {
+    display:block !important; position:fixed;
+    top:3in; left:0; right:0; border-top:1px dashed #aaa;
+  }
+  .mode-letter .cut-line-v {
+    display:block !important; position:fixed;
+    left:5in; top:0; bottom:0; border-left:1px dashed #aaa;
+  }
+  .mode-card .cut-line-h,
+  .mode-card .cut-line-v { display:none !important; }
+
+  /* overlay text always prints black */
+  .overlay-from, .overlay-to { color:black !important; }
+}
+</style>
+</head>
+<body class="mode-overlay">
+
+<div class="cof-page">
+
+  <!-- mode toggle -->
+  <div class="mode-bar">
+    <strong>Print mode:</strong>
+    <button class="mode-btn active" data-mode="overlay">Overlay — feed blank USPS form</button>
+    <button class="mode-btn" data-mode="card">Full form — 3×5 card</button>
+    <button class="mode-btn" data-mode="letter">Full form — Letter paper (cut corner)</button>
+  </div>
+
+  <!-- calibration (overlay mode only) -->
+  <div class="cal-card" id="cal-panel">
+    <h3>Printer Alignment Calibration</h3>
+    <p>Calibrate once: print a test on plain paper, hold it behind a blank form, nudge until text lands on the lines. Settings save automatically.</p>
+    <div class="cal-row">
+      <div class="cal-ctrl">
+        <label for="cal-y">Up / Down</label>
+        <input type="range" id="cal-y" min="-18" max="18" value="0" step="1">
+        <span class="v" id="val-y">0pt</span>
+      </div>
+      <div class="cal-ctrl">
+        <label for="cal-x">Left / Right</label>
+        <input type="range" id="cal-x" min="-18" max="18" value="0" step="1">
+        <span class="v" id="val-x">0pt</span>
+      </div>
+      <div class="cal-ctrl">
+        <label for="cal-fs">Font size</label>
+        <input type="range" id="cal-fs" min="5.5" max="10" value="8" step="0.5">
+        <span class="v" id="val-fs">8pt</span>
+      </div>
+      <button class="cal-btn" id="btn-reset">Reset</button>
+    </div>
+  </div>
+
+  <!-- form preview -->
+  <div class="cof-preview">
+    <div class="sheet" id="the-sheet">
+
+      <!-- overlay text — the only thing that prints in overlay mode -->
+      <div class="overlay-from">
+        <div>LPR Management, LLC</div>
+        <div>1517 Reisterstown Road, 2nd Floor</div>
+        <div>Pikesville, MD 21208</div>
+        <div></div>
+      </div>
+
+      <div class="overlay-to">
+        <div><span data-tenant-field="first_name"></span>&nbsp;<span data-tenant-field="last_name"></span></div>
+        <div><span data-tenant-field="address_line1"></span></div>
+        <div><span data-tenant-field="address_line2"></span></div>
+        <div><span data-tenant-field="city"></span>,&nbsp;<span data-tenant-field="state"></span>&nbsp;<span data-tenant-field="zip"></span></div>
+      </div>
+
+    </div>
+
+    <!-- cut lines shown in letter mode preview -->
+    <div class="cut-line-h"></div>
+    <div class="cut-line-v"></div>
+  </div>
+
+  <!-- per-mode instructions -->
+  <div class="instructions" id="instr-overlay">
+    <h3>Overlay mode — feed a blank PS Form 3817</h3>
+    <ol>
+      <li>Use <strong>Fill Fields</strong> to select a tenant — the To address fills automatically. Or click <strong>Edit</strong> in the toolbar to type it manually.</li>
+      <li><strong>Calibrate once:</strong> click Print, print on plain paper, hold it over a blank form to check that text lands on the lines. Nudge Up/Down and Left/Right above until aligned. Settings save automatically.</li>
+      <li>Feed a blank <strong>PS Form 3817</strong> into your printer's manual/bypass tray. Try face-up first; flip it if text lands on the wrong side.</li>
+      <li>Click <strong>Print</strong> in the toolbar. Set paper size to <strong>5″ × 3″</strong> or select the manual feed tray.</li>
+      <li>Hand to the postal worker — they stamp <em>Postmark Here</em> and return it as your proof of mailing.</li>
+    </ol>
+    <p>Blank PS Form 3817 slips are free at any USPS post office counter — just ask at the window.</p>
+  </div>
+
+  <div class="instructions" id="instr-card" style="display:none">
+    <h3>Full form — 3×5 index card</h3>
+    <ol>
+      <li>Use <strong>Fill Fields</strong> to select a tenant, or click <strong>Edit</strong> to type the address manually.</li>
+      <li>Load a <strong>3×5 index card</strong> into your printer's manual/bypass tray.</li>
+      <li>Click <strong>Print</strong> in the toolbar. In the print dialog, set paper size to <strong>5″ × 3″</strong> (custom size) or select the index card tray if your printer has one. Disable "fit to page" scaling.</li>
+      <li>Hand the printed card to the postal worker — they stamp it and return it as your proof of mailing.</li>
+    </ol>
+    <p>Prints the complete official form from scratch — no blank USPS slip needed.</p>
+  </div>
+
+  <div class="instructions" id="instr-letter" style="display:none">
+    <h3>Full form — Letter paper (top-left corner)</h3>
+    <ol>
+      <li>Use <strong>Fill Fields</strong> to select a tenant, or click <strong>Edit</strong> to type the address manually.</li>
+      <li>Load a standard <strong>8.5″ × 11″</strong> sheet into your printer.</li>
+      <li>Click <strong>Print</strong> in the toolbar. Select <strong>Letter</strong> paper size. The form prints in the top-left corner; dashed lines mark where to cut.</li>
+      <li>Cut along the dashed lines with scissors or a paper trimmer.</li>
+      <li>Hand to the postal worker — they stamp it and return it as your proof of mailing.</li>
+    </ol>
+    <p>Prints the complete official form from scratch — no blank USPS slip needed.</p>
+  </div>
+
+</div><!-- .cof-page -->
+
+<script>
+(function () {
+  var root     = document.documentElement;
+  var body     = document.body;
+  var calPanel = document.getElementById('cal-panel');
+  var pageStyle = document.getElementById('page-style');
+
+  /* ── calibration ── */
+  var elY  = document.getElementById('cal-y');
+  var elX  = document.getElementById('cal-x');
+  var elFs = document.getElementById('cal-fs');
+  var vY   = document.getElementById('val-y');
+  var vX   = document.getElementById('val-x');
+  var vFs  = document.getElementById('val-fs');
+
+  function fmt(n) { return (n > 0 ? '+' : '') + n; }
+
+  function applyCal() {
+    var y = +elY.value, x = +elX.value, fs = +elFs.value;
+    root.style.setProperty('--cof-dy', y + 'pt');
+    root.style.setProperty('--cof-dx', x + 'pt');
+    root.style.setProperty('--cof-fs', fs + 'pt');
+    vY.textContent  = fmt(y)  + 'pt';
+    vX.textContent  = fmt(x)  + 'pt';
+    vFs.textContent = fs + 'pt';
+    localStorage.setItem('lpr_cof_dy', y);
+    localStorage.setItem('lpr_cof_dx', x);
+    localStorage.setItem('lpr_cof_fs', fs);
+  }
+
+  document.getElementById('btn-reset').addEventListener('click', function () {
+    elY.value = 0; elX.value = 0; elFs.value = 8;
+    applyCal();
+  });
+
+  var sy  = localStorage.getItem('lpr_cof_dy');
+  var sx  = localStorage.getItem('lpr_cof_dx');
+  var sfs = localStorage.getItem('lpr_cof_fs');
+  if (sy  !== null) elY.value  = sy;
+  if (sx  !== null) elX.value  = sx;
+  if (sfs !== null) elFs.value = sfs;
+  applyCal();
+
+  elY.addEventListener('input', applyCal);
+  elX.addEventListener('input', applyCal);
+  elFs.addEventListener('input', applyCal);
+
+  /* ── mode switching ── */
+  var PAGE_SIZES = {
+    overlay: '@media print { @page { size:5in 3in; margin:0; } }',
+    card:    '@media print { @page { size:5in 3in; margin:0; } }',
+    letter:  '@media print { @page { size:8.5in 11in; margin:0; } }'
+  };
+
+  function setMode(mode) {
+    body.className = 'mode-' + mode;
+    pageStyle.textContent = PAGE_SIZES[mode];
+    calPanel.style.display = (mode === 'overlay') ? '' : 'none';
+    document.getElementById('instr-overlay').style.display = (mode === 'overlay') ? '' : 'none';
+    document.getElementById('instr-card').style.display    = (mode === 'card')    ? '' : 'none';
+    document.getElementById('instr-letter').style.display  = (mode === 'letter')  ? '' : 'none';
+    document.querySelectorAll('.mode-btn').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+    localStorage.setItem('lpr_cof_mode', mode);
+  }
+
+  document.querySelectorAll('.mode-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { setMode(btn.dataset.mode); });
+  });
+
+  var saved = localStorage.getItem('lpr_cof_mode');
+  if (saved && ['overlay','card','letter'].indexOf(saved) !== -1) setMode(saved);
+})();
+</script>
+
+<script src="tenants.js"></script>
+<script src="template-tools.js"></script>
+</body>
+</html>
