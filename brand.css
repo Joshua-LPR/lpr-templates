@@ -96,3 +96,7 @@ body { margin: 0; font-family: 'Montserrat', sans-serif; color: var(--lpr-text);
   font-size: 9px; letter-spacing: 3px; font-weight: 500;
   text-transform: uppercase; color: var(--lpr-muted);
 }
+
+/* ---- Signoff block — shared across all letter/notice templates ---- */
+.sheet .signed-name { font-weight: 600; color: var(--lpr-ink); }
+.sheet .signed-role { font-size: 9pt; color: var(--lpr-muted); }

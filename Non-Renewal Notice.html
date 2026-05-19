@@ -31,7 +31,6 @@
 <body>
 <div class="toolbar no-print">
   <a href="index.html" class="toolbar-back">← All templates</a>
-  <button onclick="window.print()">Print</button>
 </div>
 <div class="stage">
   <div class="label">NON-RENEWAL NOTICE — US LETTER</div>
@@ -45,9 +44,9 @@
     <div class="lh-body">
       <div class="date">[Date]</div>
       <div class="recipient">
-        <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span><br/>
-        <span data-tenant-field="address_line1"></span><br/>
-        <span data-tenant-field="city"></span>, <span data-tenant-field="state"></span> <span data-tenant-field="zip"></span>
+        <span data-contact-field="name"></span><br/>
+        <span data-contact-field="address_line1"></span><br/>
+        <span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span>
       </div>
       <div class="subject">Re: Notice of Non-Renewal of Lease Agreement</div>
       <p>Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</p>
@@ -59,13 +58,15 @@
         <p>Sincerely,</p>
         <div class="signature"></div>
         <div class="signed-name" data-employee-field="name">David Mitnick</div>
-        <div class="signed-role">LPR Management</div>
+        <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span></div>
       </div>
     </div>
   </div>
 </div>
 <script src="employee.js"></script>
 <script src="tenants.js"></script>
+<script src="owners.js"></script>
+<script src="vendors.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

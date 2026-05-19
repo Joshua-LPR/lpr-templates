@@ -24,6 +24,7 @@
     wrap.innerHTML = `
       <button class="tt-btn" id="tt-export-btn">Export <span class="tt-caret">▾</span></button>
       <div class="tt-export-menu" hidden>
+        <button class="tt-menu-item" data-export="print">Print</button>
         <button class="tt-menu-item" data-export="pdf">PDF (.pdf)</button>
         <button class="tt-menu-item" data-export="png">Image (.png)</button>
         <button class="tt-menu-item" data-export="html">HTML (.html)</button>
@@ -312,10 +313,53 @@
     });
   }
 
+  /* --------- UNFILLED FIELDS CHECK --------- */
+  function checkUnfilledFields() {
+    const warnings = [];
+    const hasEmpty = sel => [...document.querySelectorAll(sel)].some(el => !el.textContent.trim());
+    if (hasEmpty('[data-contact-field]'))  warnings.push('No recipient selected — recipient fields will be blank');
+    if (hasEmpty('[data-tenant-field]'))   warnings.push('No tenant selected — tenant fields will be blank');
+    if (hasEmpty('[data-vendor-field]'))   warnings.push('No vendor selected — vendor fields will be blank');
+    return warnings;
+  }
+
+  function showUnfilledWarning(warnings, onContinue) {
+    const back = document.createElement('div');
+    back.className = 'tt-backdrop';
+    back.innerHTML = `
+      <div class="tt-dialog">
+        <h2>⚠ Some fields are unfilled</h2>
+        <p>The following will appear blank:<br/>
+          <ul style="margin:8px 0 0 16px;padding:0;font-size:13px;color:#5a5f72;line-height:1.8">
+            ${warnings.map(w => `<li>${w}</li>`).join('')}
+          </ul>
+        </p>
+        <div class="actions">
+          <button data-act="cancel" class="muted">Go back</button>
+          <button data-act="ok" class="primary">Continue anyway</button>
+        </div>
+      </div>`;
+    document.body.appendChild(back);
+    const close = () => back.remove();
+    back.addEventListener('click', e => { if (e.target === back) close(); });
+    back.querySelector('[data-act="cancel"]').addEventListener('click', close);
+    back.querySelector('[data-act="ok"]').addEventListener('click', () => { close(); onContinue(); });
+  }
+
   /* --------- EXPORT --------- */
   async function doExport(kind) {
+    const warnings = kind === "print" ? [] : checkUnfilledFields();
+    if (warnings.length) {
+      showUnfilledWarning(warnings, () => doExportNow(kind));
+      return;
+    }
+    await doExportNow(kind);
+  }
+
+  async function doExportNow(kind) {
     const name = baseFilename();
     try {
+      if (kind === "print") return window.print();
       if (kind === "html") return exportHtml(name);
       if (kind === "png")  return await exportPng(name);
       if (kind === "pdf")  return await exportPdf(name);
@@ -334,6 +378,7 @@
   function exportHtml(name) {
     // Clean up edit-mode state before saving
     const clone = document.documentElement.cloneNode(true);
+    clone.dataset.lprSnapshot = '1'; // tells employee.js not to overwrite baked-in values
     clone.querySelectorAll("[contenteditable]").forEach(el => el.removeAttribute("contenteditable"));
     clone.querySelectorAll(".tt-editing").forEach(el => el.classList.remove("tt-editing"));
     // Make asset paths absolute so the file works from anywhere
@@ -425,12 +470,22 @@
 
   /* --------- SAVE AS to library --------- */
   function saveAs() {
+    const warnings = checkUnfilledFields();
+    if (warnings.length) {
+      showUnfilledWarning(warnings, () => doSaveAs());
+      return;
+    }
+    doSaveAs();
+  }
+
+  function doSaveAs() {
     const defaultName = baseFilename() + " — Copy";
     const name = prompt("Save this template as:", defaultName);
     if (!name || !name.trim()) return;
 
     // Clean DOM, absolute paths
     const clone = document.documentElement.cloneNode(true);
+    clone.dataset.lprSnapshot = '1'; // tells employee.js not to overwrite baked-in values
     clone.querySelectorAll("[contenteditable]").forEach(el => el.removeAttribute("contenteditable"));
     clone.querySelectorAll(".tt-editing").forEach(el => el.classList.remove("tt-editing"));
     const baseUrl = location.href.substring(0, location.href.lastIndexOf("/") + 1);

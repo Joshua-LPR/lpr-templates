@@ -19,8 +19,8 @@
   .lh-body { flex: 1; padding-top: 0.5in; font-size: 11pt; line-height: 1.6; color: var(--lpr-text); position: relative; z-index: 1; font-weight: 400; }
   .lh-body .date { color: var(--lpr-muted); font-size: 10pt; margin-bottom: 24px; }
   .lh-body .recipient { margin-bottom: 24px; line-height: 1.45; }
-  .lh-addr2:has([data-tenant-field]:empty) { display: none; }
-  .sheet.tt-editing .lh-addr2:has([data-tenant-field]:empty) { display: block; }
+  .lh-addr2:has([data-contact-field]:empty) { display: none; }
+  .sheet.tt-editing .lh-addr2:has([data-contact-field]:empty) { display: block; }
   .lh-body p { margin: 0 0 12px; }
   .lh-body .signoff { margin-top: 36px; }
   .lh-body .signature { height: 0.5in; }
@@ -34,7 +34,6 @@
 <body>
 <div class="toolbar no-print">
   <a href="index.html" class="toolbar-back">← All templates</a>
-  <button onclick="window.print()">Print</button>
 </div>
 <div class="stage">
   <div class="label">LETTERHEAD — US LETTER (8.5″ × 11″)</div>
@@ -52,12 +51,12 @@
     <div class="lh-body">
       <div class="date">[Date]</div>
       <div class="recipient">
-        <div><span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span></div>
-        <div><span data-tenant-field="address_line1"></span></div>
-        <div class="lh-addr2"><span data-tenant-field="address_line2"></span></div>
-        <div><span data-tenant-field="city"></span>, <span data-tenant-field="state"></span> <span data-tenant-field="zip"></span></div>
+        <div><span data-contact-field="name"></span></div>
+        <div><span data-contact-field="address_line1"></span></div>
+        <div class="lh-addr2"><span data-contact-field="address_line2"></span></div>
+        <div><span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span></div>
       </div>
-      <p>Dear <span data-tenant-field="first_name"></span>,</p>
+      <p>Dear <span data-contact-field="name"></span>,</p>
       <p>[Body text. Replace this paragraph with your message. Body type is set in Montserrat 11pt with a 1.6 line-height for comfortable reading.]</p>
       <p>[Continue here. Letterhead works best with 2–4 short paragraphs; long letters can run to a second page using the same margins.]</p>
       <p>[Closing paragraph or call to action.]</p>
@@ -65,7 +64,7 @@
         <p>Sincerely,</p>
         <div class="signature"></div>
         <div class="signed-name" data-employee-field="name">David Mitnick</div>
-        <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span> · LPR Management, LLC</div>
+        <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span></div>
       </div>
     </div>
     <div class="lh-footer"></div>
@@ -73,6 +72,8 @@
 </div>
 <script src="employee.js"></script>
 <script src="tenants.js"></script>
+<script src="owners.js"></script>
+<script src="vendors.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

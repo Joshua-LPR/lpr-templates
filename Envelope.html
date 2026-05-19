@@ -19,11 +19,11 @@
   .env-recipient { position: absolute; left: 4in; top: 1.85in; font-size: 11pt; line-height: 1.5; color: var(--lpr-text); font-weight: 400; }
   .env-recipient .placeholder { color: #c8c8c8; font-style: italic; }
   /* hide address line 2 row when the span is empty */
-  .env-line2:has([data-tenant-field]:empty) { display: none; }
+  .env-line2:has([data-contact-field]:empty) { display: none; }
   /* …but reveal it in edit mode so the field is clickable */
-  .sheet.tt-editing .env-line2:has([data-tenant-field]:empty) { display: block; }
+  .sheet.tt-editing .env-line2:has([data-contact-field]:empty) { display: block; }
   /* hide the comma when city is empty */
-  .env-csl:has([data-tenant-field="city"]:empty) .env-comma { display: none; }
+  .env-csl:has([data-contact-field="city"]:empty) .env-comma { display: none; }
   /* print nothing when no address has been filled in */
   @media print { .env-recipient:not(.env-rec-filled) { visibility: hidden; } }
   .env-stamp { position: absolute; top: 0.3in; right: 0.4in; width: 0.85in; height: 1in; border: 1px dashed rgba(40,56,145,0.25); display: flex; align-items: center; justify-content: center; font-size: 7pt; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(40,56,145,0.45); text-align: center; }
@@ -34,7 +34,6 @@
 <body>
 <div class="toolbar no-print">
   <a href="index.html" class="toolbar-back">← All templates</a>
-  <button onclick="window.print()">Print</button>
 </div>
 <div class="stage">
   <div class="label">#10 ENVELOPE — 9.5″ × 4.125″</div>
@@ -49,22 +48,23 @@
     </div>
     <div class="env-stamp">Postage</div>
     <div class="env-recipient" id="env-rec">
-      <div><span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span></div>
-      <div><span data-tenant-field="address_line1"></span></div>
-      <div class="env-line2"><span data-tenant-field="address_line2"></span></div>
-      <div class="env-csl"><span data-tenant-field="city"></span><span class="env-comma">, </span><span data-tenant-field="state"></span> <span data-tenant-field="zip"></span></div>
+      <div><span data-contact-field="name"></span></div>
+      <div><span data-contact-field="address_line1"></span></div>
+      <div class="env-line2"><span data-contact-field="address_line2"></span></div>
+      <div class="env-csl"><span data-contact-field="city"></span><span class="env-comma">, </span><span data-contact-field="state"></span> <span data-contact-field="zip"></span></div>
     </div>
     <div class="env-mark">Pikesville · Maryland</div>
   </div>
 </div>
 <script src="tenants.js"></script>
+<script src="vendors.js"></script>
 <script src="template-tools.js"></script>
 <script>
 (function () {
   var rec = document.getElementById('env-rec');
   if (!rec) return;
   function check() {
-    var filled = Array.from(rec.querySelectorAll('[data-tenant-field]'))
+    var filled = Array.from(rec.querySelectorAll('[data-contact-field]'))
       .some(function (s) { return s.textContent.trim(); });
     rec.classList.toggle('env-rec-filled', filled);
   }

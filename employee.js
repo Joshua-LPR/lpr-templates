@@ -33,6 +33,8 @@
   emp.phoneDigits = "+1" + emp.phone.replace(/\D/g, "");
 
   function apply() {
+    // Saved snapshots have employee values baked into the DOM — don't overwrite them
+    if (document.documentElement.dataset.lprSnapshot) return;
     document.querySelectorAll("[data-employee-field]").forEach(el => {
       const field = el.getAttribute("data-employee-field");
       const val = emp[field];

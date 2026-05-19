@@ -896,15 +896,15 @@
       <div class="doc-body">
         <ul>
           <li><strong>Edit</strong> — on any template, click <em>Edit</em> in the top-right toolbar. The page gets a dashed blue outline and every text element becomes editable. Click any text and just type. Click <em>✓ Done editing</em> to exit.</li>
-          <li><strong>Export ▾</strong> — separate from Print. Three formats:
+          <li><strong>Export ▾</strong> — opens a menu with four options:
             <ul>
-              <li><strong>PDF</strong> — saves a real PDF in the page's exact dimensions (envelope #10, card 3.5×2, letter, etc.)</li>
-              <li><strong>Image (.png)</strong> — saves a 2× resolution PNG. Two-sided pages export as two files.</li>
-              <li><strong>HTML (.html)</strong> — saves the page as a self-contained HTML file you can re-open or email.</li>
+              <li><strong>Print</strong> — sends to your browser's print dialog. Use this for paper printing or to save a system PDF.</li>
+              <li><strong>PDF</strong> — saves a real PDF in the page's exact dimensions (envelope, card, letter, etc.).</li>
+              <li><strong>Image (.png)</strong> — saves a 2× resolution PNG. Multi-sheet templates export as multiple files.</li>
+              <li><strong>HTML (.html)</strong> — saves a self-contained HTML file you can re-open, email, or archive.</li>
             </ul>
           </li>
-          <li><strong>Save As</strong> — saves the current edited template into your <em>Your Library</em> section on the index. Use this for "Smith Eviction Notice" etc. — keeps the original blank template untouched.</li>
-          <li><strong>Print</strong> — the original print button is unchanged. Use it for paper printing or system-level Save-as-PDF.</li>
+          <li><strong>Save As</strong> — saves the current filled-in template into your <em>Your Library</em> section on the index. All filled content, the signer name, and the recipient address are preserved in the saved copy. Keeps the original blank template untouched.</li>
         </ul>
       </div>
     </details>
@@ -974,18 +974,38 @@
     </details>
 
     <details>
-      <summary>Filling tenant fields (Fill Fields)</summary>
+      <summary>Setup panel — Tenants, Vendors &amp; Sender</summary>
       <div class="doc-body">
+        <p>The <strong>Setup</strong> button in any template toolbar opens a panel with three tabs: <strong>Sender</strong>, <strong>Tenants</strong>, and <strong>Vendors</strong>. Use it to fill the recipient address block, body field references, and the signoff — without typing anything manually.</p>
+
+        <h4 style="margin:14px 0 6px;font-size:13px;color:var(--lpr-ink)">Sender tab</h4>
+        <ul>
+          <li>Pick which owner LLC appears in the signoff (e.g. <em>LPR Management, LLC</em> vs. a specific property LLC). Import your owner list from a Buildium CSV or add manually.</li>
+          <li>Toggle <strong>Include signer name</strong> to show or hide the employee name and title below the signature.</li>
+          <li>Toggle <strong>Use office contact</strong> to replace the signer's direct phone/email with the main office line.</li>
+          <li>Click <strong>Apply to Template</strong> to update the signoff.</li>
+        </ul>
+
+        <h4 style="margin:14px 0 6px;font-size:13px;color:var(--lpr-ink)">Tenants tab</h4>
         <ol>
-          <li>Open any tenant-aware template (notices, security deposit letters, lease cover, envelope, address labels).</li>
-          <li>Click <strong>Fill Fields</strong> in the top-right toolbar.</li>
-          <li>First time: click <strong>↑ Import CSV</strong> and pick your Buildium tenant export. Tenants are saved in your browser for future visits.</li>
-          <li>Search or scroll to find a tenant, click their row to select them.</li>
-          <li>Review or edit any field in the panel, then click <strong>Apply to Template</strong> — all tagged spots fill in instantly.</li>
-          <li>To update from a new Buildium export later, re-import the CSV. New tenants are added; existing records update. Any manual edits you made in the panel are preserved unless Buildium now matches them.</li>
+          <li>First time: click <strong>↑ Import CSV</strong> and pick your Buildium tenant export. The list is saved in your browser for future visits.</li>
+          <li>Search or scroll to find a tenant, then click their row.</li>
+          <li>Review or edit any field — edits are saved per-tenant and survive future CSV re-imports unless Buildium now matches the edited value.</li>
+          <li><strong>Apply as Recipient</strong> — fills the mailing address block at the top of the document <em>and</em> any tenant body-reference fields (name, address mentioned in the letter body).</li>
+          <li><strong>Body fields only</strong> — fills only the body references, leaving the recipient address block untouched. Use this when the letter is addressed to a vendor but references a tenant's property.</li>
         </ol>
-        <div class="tip"><strong>Editing first:</strong> Click <em>Edit</em> before Fill Fields to insert tenant field markers at your cursor while typing — useful when building a new custom notice.</div>
-        <div class="tip"><strong>Clear all fields:</strong> In Edit mode, the Insert Field sidebar has a <em>Clear All Fields</em> button that empties every tenant spot in the template.</div>
+
+        <h4 style="margin:14px 0 6px;font-size:13px;color:var(--lpr-ink)">Vendors tab</h4>
+        <ol>
+          <li>Click <strong>↑ Import CSV</strong> and pick your Buildium vendor export.</li>
+          <li>Select a vendor from the list. Edit any field directly in the panel — same override system as tenants.</li>
+          <li><strong>Apply as Recipient</strong> — fills the mailing address block with the vendor's name and address.</li>
+          <li><strong>Body fields only</strong> — fills only vendor body references, leaving the recipient block for a tenant.</li>
+        </ol>
+
+        <div class="tip"><strong>Cross-party letters:</strong> writing to a vendor about a tenant's property? Use <em>Vendor → Apply as Recipient</em> for the address block, then <em>Tenant → Body fields only</em> for the property references in the body. The two are fully independent.</div>
+        <div class="tip"><strong>Unfilled field warning:</strong> if you Export or Save As while some field types are still empty, a prompt tells you exactly which fields will print blank and lets you go back or continue anyway.</div>
+        <div class="tip"><strong>Insert fields while editing:</strong> click <em>Edit</em> first, then open Setup — an <em>Insert Field</em> sidebar appears. Click any field button to paste a field marker at your cursor, useful when building a new custom notice. <em>Clear All Fields</em> empties all filled spots in one click.</div>
       </div>
     </details>
 
@@ -994,8 +1014,8 @@
       <div class="doc-body">
         <ol>
           <li>Open <strong>Address Labels — P-touch</strong> from the Stationery section.</li>
-          <li>Click <strong>Fill Fields</strong> → pick a tenant → click <em>Apply to Template</em>. The label preview updates with their name and address.</li>
-          <li>Click <strong>Download .lbt</strong> in the toolbar. A file named <code>LastName_FirstName.lbt</code> is saved.</li>
+          <li>Click <strong>Setup</strong> → Tenants tab → pick a tenant → click <em>Apply as Recipient</em>. The label preview updates with their name and address. Works for vendors too — use the Vendors tab.</li>
+          <li>Click <strong>Download .lbt</strong> in the toolbar. A file named after the recipient is saved.</li>
           <li>Double-click the <code>.lbt</code> file — it opens in P-touch Editor (or Lite) with the address already populated.</li>
           <li>Make sure a <strong>DK-1201</strong> standard address tape (29mm × 90mm) is loaded in your QL-810W, then click Print.</li>
         </ol>
@@ -1010,7 +1030,7 @@
       <div class="doc-body">
         <ol>
           <li>Get free blank <strong>PS Form 3817</strong> slips from any USPS post office counter.</li>
-          <li>Open <strong>Certificate of Mailing</strong> from the Stationery section. Use <strong>Fill Fields</strong> to select a tenant — the "To" address fills automatically. Or click <strong>Edit</strong> to type it manually.</li>
+          <li>Open <strong>Certificate of Mailing</strong> from the Stationery section. Click <strong>Setup</strong> and pick a tenant or vendor — the "To" address fills automatically. Or click <strong>Edit</strong> to type it manually.</li>
           <li><strong>Calibrate once:</strong> click Print and print on plain paper first. Hold the printout behind a blank form to check alignment. Use the <em>Up/Down</em> and <em>Left/Right</em> sliders at the top of the template page to nudge the text until it lands on the form's lines. Calibration saves automatically.</li>
           <li>Feed a blank PS Form 3817 into your printer's <strong>manual/bypass tray</strong>. Try face-up first; flip it if text prints on the wrong side.</li>
           <li>Click <strong>Print</strong> in the toolbar. Set paper size to <strong>5″ × 3″</strong> in the print dialog (or select the manual feed tray if your printer auto-detects size).</li>
@@ -1025,10 +1045,11 @@
       <div class="doc-body">
         <ol>
           <li>Fill in the <strong>Customize for an employee</strong> form at the top of this page.</li>
-          <li>Click any template card. The template opens with that employee’s info automatically filled in.</li>
+          <li>Click any template card. The template opens with that employee’s name, title, phone, and email already filled in.</li>
           <li>To switch employees, change the values above and click another template — no need to refresh anything.</li>
         </ol>
-        <div class="tip"><strong>Templates that respect the employee fields:</strong> Business Card, Letterhead, Letterhead with Watermark, and Email Signature. Business Card — Company, Envelopes, Mailing Labels, Lease Cover, and Letter Watermark are company-only and don’t change per employee.</div>
+        <div class="tip"><strong>Signer options per letter:</strong> on any letter template, open <strong>Setup → Sender</strong> to change which LLC appears in the signoff, toggle the signer name on/off, or switch to the office contact line — without leaving the template.</div>
+        <div class="tip"><strong>Templates that respect the employee fields:</strong> Business Card, Letterheads, all notices, and Email Signature. Business Card — Company, Envelopes, Mailing Labels, and Letter Watermark are company-only and don’t change per employee.</div>
         <p>You can also bookmark a template with an employee baked into the URL — e.g. <code>Business Card.html?name=Jane%20Smith&amp;title=Leasing%20Agent&amp;phone=410.555.0123&amp;email=jane@lasalleparkrealty.com</code></p>
       </div>
     </details>
@@ -1080,8 +1101,8 @@
         <ol>
           <li><strong>Envelope</strong> — default. Minimal ivory layout. Includes a print-shop spec sheet on screen for bulk pre-printed runs at a stationer.</li>
           <li><strong>Envelope — With Stripe</strong> — bolder variant with a royal-blue side stripe. Good for everyday mail when you want the brand to pop.</li>
-          <li>Open the template, then <strong>Print</strong> → paper size <em>#10 Envelope (9.5″ × 4.125″)</em>, margins <em>None</em>.</li>
-          <li>Recipient address is intentionally blank — hand-write, label, or mail-merge.</li>
+          <li>Click <strong>Setup</strong> → Tenants or Vendors tab → pick a recipient → <em>Apply as Recipient</em>. The address block fills in automatically. Or click <strong>Edit</strong> to type directly.</li>
+          <li>Click <strong>Export → Print</strong>, set paper size to <em>#10 Envelope (9.5″ × 4.125″)</em>, margins <em>None</em>.</li>
         </ol>
       </div>
     </details>

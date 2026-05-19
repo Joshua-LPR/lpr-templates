@@ -28,8 +28,8 @@
   }
   .wm-date { color: var(--lpr-muted); font-size: 10pt; margin-bottom: 16px; }
   .wm-recipient { margin-bottom: 20px; line-height: 1.45; font-size: 10.5pt; }
-  .wm-addr2:has([data-tenant-field]:empty) { display: none; }
-  .sheet.tt-editing .wm-addr2:has([data-tenant-field]:empty) { display: block; }
+  .wm-addr2:has([data-contact-field]:empty) { display: none; }
+  .sheet.tt-editing .wm-addr2:has([data-contact-field]:empty) { display: block; }
   .wm-doc-badge { font-size: 9pt; letter-spacing: 4px; text-transform: uppercase; color: var(--lpr-blue); font-weight: 600; margin-bottom: 6px; }
   .wm-doc-title { font-size: 24pt; font-weight: 700; letter-spacing: -0.3px; line-height: 1.05; color: var(--lpr-ink); margin-bottom: 0.25in; }
   .wm-content p { margin: 0 0 12px; }
@@ -45,7 +45,6 @@
 <body>
 <div class="toolbar no-print">
   <a href="index.html" class="toolbar-back">← All templates</a>
-  <button onclick="window.print()">Print</button>
 </div>
 <div class="stage">
   <div class="label-h">LETTER BACKGROUND WATERMARK — US LETTER</div>
@@ -65,16 +64,16 @@
       <div class="wm-date">[Date]</div>
 
       <div class="wm-recipient">
-        <div><span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span></div>
-        <div><span data-tenant-field="address_line1"></span></div>
-        <div class="wm-addr2"><span data-tenant-field="address_line2"></span></div>
-        <div><span data-tenant-field="city"></span>, <span data-tenant-field="state"></span> <span data-tenant-field="zip"></span></div>
+        <div><span data-contact-field="name"></span></div>
+        <div><span data-contact-field="address_line1"></span></div>
+        <div class="wm-addr2"><span data-contact-field="address_line2"></span></div>
+        <div><span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span></div>
       </div>
 
       <div class="wm-doc-badge">[Category]</div>
       <div class="wm-doc-title">[Notice Title]</div>
 
-      <p>Dear <span data-tenant-field="first_name"></span>,</p>
+      <p>Dear <span data-contact-field="name"></span>,</p>
       <p>[Opening paragraph. State the purpose of the notice clearly in the first sentence.]</p>
       <p>[Body paragraph. Provide the relevant facts, dates, amounts, or actions required.]</p>
       <div class="wm-highlight">[Key info highlight — use this for important amounts, dates, or required actions. Delete this block if not needed.]</div>
@@ -84,13 +83,15 @@
         <p>Sincerely,</p>
         <div class="signature"></div>
         <div class="signed-name" data-employee-field="name">David Mitnick</div>
-        <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span> · LPR Management, LLC</div>
+        <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span></div>
       </div>
     </div>
   </div>
 </div>
 <script src="employee.js"></script>
 <script src="tenants.js"></script>
+<script src="owners.js"></script>
+<script src="vendors.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

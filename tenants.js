@@ -203,7 +203,37 @@
   /* ================================================================
      INSERT FIELD AT CURSOR
      ================================================================ */
-  function insertField(key) {
+  const CONTACT_FIELD_LABELS = {
+    name:          'Recipient Name',
+    address_line1: 'Street Address',
+    address_line2: 'Address Line 2',
+    city:          'City',
+    state:         'State',
+    zip:           'Zip',
+    email:         'Email',
+    phone:         'Phone',
+  };
+
+  function applyTenantAsRecipient(tenant) {
+    applyTenant(tenant);
+    const name = [tenant.effective.first_name, tenant.effective.last_name].filter(Boolean).join(' ');
+    const contactMap = {
+      name,
+      address_line1: tenant.effective.address_line1,
+      address_line2: tenant.effective.address_line2,
+      city:          tenant.effective.city,
+      state:         tenant.effective.state,
+      zip:           tenant.effective.zip,
+      email:         tenant.effective.email1,
+      phone:         tenant.effective.phone,
+    };
+    document.querySelectorAll('[data-contact-field]').forEach(el => {
+      const f = el.getAttribute('data-contact-field');
+      if (f in contactMap) el.textContent = contactMap[f] || '';
+    });
+  }
+
+  function insertField(key, ns) {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return false;
 
@@ -214,8 +244,14 @@
     range.deleteContents();
 
     const span = document.createElement('span');
-    span.setAttribute('data-tenant-field', key);
-    if (FIELD_LABELS[key]) span.setAttribute('data-tenant-label', FIELD_LABELS[key]);
+    const attr  = ns === 'contact' ? 'data-contact-field'
+                : ns === 'vendor'  ? 'data-vendor-field'
+                : 'data-tenant-field';
+    const label = ns === 'contact' ? CONTACT_FIELD_LABELS[key]
+                : ns === 'vendor'  ? (window.LPR_VENDORS?.FIELD_LABELS?.[key])
+                : FIELD_LABELS[key];
+    span.setAttribute(attr, key);
+    if (label) span.setAttribute(attr.replace('-field', '-label'), label);
     range.insertNode(span);
 
     const after = range.cloneRange();
@@ -268,17 +304,27 @@
 
   function renderInsertSidebar() {
     if (!insertPanel) return;
+    const vendorLabels = window.LPR_VENDORS?.FIELD_LABELS || {};
+
+    function insGroup(title, fields, ns) {
+      return `
+        <div class="lpr-ins-group-label">${title}</div>
+        <div class="lpr-ins-grid">
+          ${fields.map(([key, label]) => `
+            <button class="lpr-ins-btn" data-field="${esc(key)}" data-ns="${ns}">${esc(label)}</button>
+          `).join('')}
+        </div>`;
+    }
+
     insertPanel.innerHTML = `
       <div class="lpr-ins-hd">
         <span>Insert Field</span>
         <button class="lpr-tp-x" id="lpr-ins-x">✕</button>
       </div>
       <div class="lpr-ins-body">
-        <div class="lpr-ins-grid">
-          ${ALL_FIELDS.map(f => `
-            <button class="lpr-ins-btn" data-field="${esc(f)}">${esc(FIELD_LABELS[f])}</button>
-          `).join('')}
-        </div>
+        ${insGroup('RECIPIENT', Object.entries(CONTACT_FIELD_LABELS), 'contact')}
+        ${insGroup('TENANT — body reference', Object.entries(FIELD_LABELS), 'tenant')}
+        ${Object.keys(vendorLabels).length ? insGroup('VENDOR — body reference', Object.entries(vendorLabels), 'vendor') : ''}
         <div id="lpr-ins-hint" class="lpr-ins-hint"></div>
         <button class="lpr-ins-clear" id="lpr-ins-clear">Clear All Fields</button>
       </div>
@@ -290,7 +336,7 @@
     };
 
     document.getElementById('lpr-ins-clear').onclick = () => {
-      document.querySelectorAll('[data-tenant-field]').forEach(el => {
+      document.querySelectorAll('[data-tenant-field],[data-vendor-field],[data-contact-field]').forEach(el => {
         el.textContent = '';
         if (el.hasAttribute('data-tenant-hide-empty')) el.style.display = 'none';
       });
@@ -302,7 +348,7 @@
     insertPanel.querySelectorAll('.lpr-ins-btn').forEach(btn => {
       btn.addEventListener('mousedown', e => {
         e.preventDefault(); // keep focus in contenteditable
-        const ok = insertField(btn.dataset.field);
+        const ok = insertField(btn.dataset.field, btn.dataset.ns);
         if (ok) {
           btn.classList.add('inserted');
           setTimeout(() => btn.classList.remove('inserted'), 500);
@@ -329,6 +375,7 @@
      FILL FIELDS PANEL
      ================================================================ */
   let fillPanel  = null;
+  let activeTab  = 'tenants';
   let selectedId = null;
   let searchQ    = '';
   let importMsg  = '';
@@ -352,10 +399,40 @@
   function renderFillPanel(opts) {
     if (!fillPanel) return;
 
+    const tabs     = window.LPR_FILL_TABS || [];
+    const showTabs = tabs.length > 1;
+
+    fillPanel.innerHTML = `
+      <div class="lpr-tp-hd">
+        <span>Setup</span>
+        <button class="lpr-tp-x" id="lpr-fill-x">✕</button>
+      </div>
+      ${showTabs ? `
+      <div class="lpr-tp-tab-bar">
+        ${tabs.map(t => `<button class="lpr-tp-tab-btn${t.id === activeTab ? ' active' : ''}" data-tab="${esc(t.id)}">${esc(t.label)}</button>`).join('')}
+      </div>` : ''}
+      <div id="lpr-tab-body" class="lpr-tab-body"></div>
+    `;
+
+    gid('lpr-fill-x').onclick = closeFillPanel;
+
+    if (showTabs) {
+      fillPanel.querySelectorAll('.lpr-tp-tab-btn').forEach(btn => {
+        btn.onclick = () => { activeTab = btn.dataset.tab; renderFillPanel(); };
+      });
+    }
+
+    const body = gid('lpr-tab-body');
+    const tab  = tabs.find(t => t.id === activeTab) || tabs[0];
+    if (tab) tab.render(body, opts);
+  }
+
+  function renderTenantContent(container, opts) {
     const data     = loadTenants();
     const all      = Object.values(data);
+    const named    = all.filter(t => t.effective.first_name || t.effective.last_name);
     const q        = searchQ.toLowerCase();
-    const filtered = all
+    const filtered = named
       .filter(t => !q || [
         t.effective.first_name, t.effective.last_name,
         t.effective.address_line1, t.effective.city
@@ -364,18 +441,13 @@
 
     const sel = selectedId ? data[selectedId] : null;
 
-    fillPanel.innerHTML = `
-      <div class="lpr-tp-hd">
-        <span>Fill Fields</span>
-        <button class="lpr-tp-x" id="lpr-fill-x">✕</button>
-      </div>
-
+    container.innerHTML = `
       <div class="lpr-tp-import-row">
         <label class="lpr-tp-import-btn">
           <input type="file" accept=".csv" id="lpr-tp-file" hidden/>
           ↑ Import CSV
         </label>
-        <span class="lpr-tp-count">${all.length} tenant${all.length !== 1 ? 's' : ''}</span>
+        <span class="lpr-tp-count">${named.length} tenant${named.length !== 1 ? 's' : ''}</span>
       </div>
       ${importMsg ? `<div class="lpr-tp-msg">${esc(importMsg)}</div>` : ''}
 
@@ -396,8 +468,6 @@
 
       ${sel ? renderEditor(sel) : `<div class="lpr-tp-no-sel">← Select a tenant above</div>`}
     `;
-
-    gid('lpr-fill-x').onclick = closeFillPanel;
 
     gid('lpr-tp-file').onchange = e => {
       const file = e.target.files[0];
@@ -453,7 +523,8 @@
           }).join('')}
         </div>
         <div class="lpr-tp-foot">
-          <button id="lpr-tp-apply" class="lpr-tp-apply">Apply to Template</button>
+          <button id="lpr-tp-apply-rec" class="lpr-tp-apply">Apply as Recipient</button>
+          <button id="lpr-tp-apply-body" class="lpr-tp-apply-body">Body fields only</button>
         </div>
       </div>`;
   }
@@ -487,14 +558,24 @@
       };
     });
 
-    gid('lpr-tp-apply').onclick = () => {
+    gid('lpr-tp-apply-rec').onclick = () => {
+      const fresh = loadTenants()[t._id];
+      if (!fresh) return;
+      applyTenantAsRecipient(fresh);
+      const btn = gid('lpr-tp-apply-rec');
+      btn.textContent = '✓ Applied';
+      btn.classList.add('ok');
+      setTimeout(() => { btn.textContent = 'Apply as Recipient'; btn.classList.remove('ok'); }, 1800);
+    };
+
+    gid('lpr-tp-apply-body').onclick = () => {
       const fresh = loadTenants()[t._id];
       if (!fresh) return;
       applyTenant(fresh);
-      const btn = gid('lpr-tp-apply');
+      const btn = gid('lpr-tp-apply-body');
       btn.textContent = '✓ Applied';
       btn.classList.add('ok');
-      setTimeout(() => { btn.textContent = 'Apply to Template'; btn.classList.remove('ok'); }, 1800);
+      setTimeout(() => { btn.textContent = 'Body fields only'; btn.classList.remove('ok'); }, 1800);
     };
   }
 
@@ -506,6 +587,10 @@
       const key = el.getAttribute('data-tenant-field');
       if (FIELD_LABELS[key]) el.setAttribute('data-tenant-label', FIELD_LABELS[key]);
     });
+    document.querySelectorAll('[data-contact-field]').forEach(el => {
+      const key = el.getAttribute('data-contact-field');
+      if (CONTACT_FIELD_LABELS[key]) el.setAttribute('data-contact-label', CONTACT_FIELD_LABELS[key]);
+    });
   }
 
   /* ================================================================
@@ -516,11 +601,13 @@
     if (!toolbar) return;
     injectStyles();
     labelFields();
+    window.LPR_FILL_TABS = window.LPR_FILL_TABS || [];
+    window.LPR_FILL_TABS.unshift({ id: 'tenants', label: 'Tenants', render: renderTenantContent });
 
     const btn = document.createElement('button');
     btn.id          = 'lpr-fill-btn';
     btn.className   = 'tt-btn';
-    btn.textContent = 'Fill Fields';
+    btn.textContent = 'Setup';
     btn.addEventListener('click', openFillPanel);
 
     const firstBtn = toolbar.querySelector('button');
@@ -545,6 +632,24 @@
     const s = document.createElement('style');
     s.id = 'lpr-tenant-css';
     s.textContent = `
+      /* ---- Tab bar ---- */
+      .lpr-tp-tab-bar {
+        display: flex; border-bottom: 2px solid #eee; flex-shrink: 0;
+      }
+      .lpr-tp-tab-btn {
+        flex: 1; padding: 8px 4px; background: none; border: none;
+        border-bottom: 2px solid transparent; margin-bottom: -2px;
+        font-family: inherit; font-size: 11px; font-weight: 600;
+        color: #aaa; cursor: pointer; letter-spacing: .5px;
+        text-transform: uppercase; text-align: center;
+        transition: color .15s, border-color .15s;
+      }
+      .lpr-tp-tab-btn:hover { color: #283891; }
+      .lpr-tp-tab-btn.active { color: #283891; border-bottom-color: #283891; }
+      .lpr-tab-body {
+        display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden;
+      }
+
       /* ---- Shared panel base ---- */
       #lpr-insert-panel, #lpr-fill-panel {
         position: fixed; top: 0; bottom: 0; width: 272px;
@@ -646,6 +751,46 @@
       .lpr-tp-apply:hover { background: #1c2870; }
       .lpr-tp-apply.ok { background: #2a7a2a; }
 
+      /* ---- Insert sidebar group labels ---- */
+      .lpr-ins-group-label {
+        font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px;
+        text-transform: uppercase; color: #283891;
+        padding: 10px 0 4px; margin-top: 4px;
+        border-top: 1px solid #eee;
+      }
+      .lpr-ins-group-label:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+
+      /* ---- Body-only apply button (tenant panel) ---- */
+      .lpr-tp-apply-body {
+        width: 100%; padding: 7px; margin-top: 6px;
+        background: none; color: #283891;
+        border: 1.5px solid #283891; border-radius: 999px;
+        font-family: inherit; font-size: 12px; font-weight: 600;
+        cursor: pointer; transition: all .2s;
+      }
+      .lpr-tp-apply-body:hover { background: #283891; color: #fff; }
+      .lpr-tp-apply-body.ok { background: #2a7a2a; color: #fff; border-color: #2a7a2a; }
+
+      /* ---- Contact-field placeholders ---- */
+      [data-contact-field]:empty::before {
+        content: attr(data-contact-label);
+        color: rgba(40,56,145,.28);
+        font-style: italic; font-size: .9em;
+        border-bottom: 1px dashed rgba(40,56,145,.22);
+        pointer-events: none;
+      }
+      @media print { [data-contact-field]:empty::before { display: none; } }
+      .sheet.tt-editing [data-contact-field] {
+        background: rgba(40,56,145,.08);
+        outline: 1px dashed rgba(40,56,145,.4);
+        border-radius: 2px; padding: 0 2px;
+      }
+      .sheet.tt-editing [data-contact-field]:empty::before {
+        content: attr(data-contact-label);
+        color: rgba(40,56,145,.55); font-style: italic; font-size: .88em;
+        border-bottom: none;
+      }
+
       /* ---- Normal-view placeholder (subtle, non-editing) ---- */
       [data-tenant-field]:empty::before {
         content: attr(data-tenant-label);
@@ -679,5 +824,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 
-  window.LPR_TENANTS = { loadTenants, importCSV, applyTenant, insertField };
+  window.LPR_TENANTS = { loadTenants, importCSV, applyTenant, applyTenantAsRecipient, insertField };
 })();

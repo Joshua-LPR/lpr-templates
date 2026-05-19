@@ -14,10 +14,11 @@ Internal stationery and notice template system for **LPR Management, LLC**. Buil
 3. [Brand System](#brand-system)
 4. [Template Inventory](#template-inventory)
 5. [Features](#features)
-6. [File Structure](#file-structure)
-7. [Hosting & Deployment](#hosting--deployment)
-8. [Browser Storage Notes](#browser-storage-notes)
-9. [Future Considerations](#future-considerations)
+6. [Field Namespace System](#field-namespace-system)
+7. [File Structure](#file-structure)
+8. [Hosting & Deployment](#hosting--deployment)
+9. [Browser Storage Notes](#browser-storage-notes)
+10. [Future Considerations](#future-considerations)
 
 ---
 
@@ -51,11 +52,12 @@ A library of print-ready business documents and digital assets, all built on a s
 ### Working with a template
 
 1. Open the template
-2. Click **Edit** in the top toolbar → all text becomes editable
-3. Click any field and type to replace placeholders
-4. Click **Export ▾** → PDF, PNG, or HTML
-5. Or click **Save As** → save your filled-in copy to your personal Library
-6. **Print** still works for paper printing or browser-native save-as-PDF
+2. Click **Setup** in the top toolbar → opens the Setup panel (Sender / Tenants / Vendors tabs)
+3. Pick a recipient from the Tenants or Vendors tab → click **Apply as Recipient**
+4. Optionally pick a sender LLC in the Sender tab → click **Apply to Template**
+5. Click **Edit** to make any free-text changes to the body
+6. Click **Export ▾** → Print, PDF, Image, or HTML
+7. Or click **Save As** → saves a filled-in copy to your personal Library
 
 ### Switching users
 
@@ -87,22 +89,22 @@ Montserrat is bundled locally in `assets/fonts/` so templates render identically
 |----------|------|-------|
 | **Business Card** | 3.5″ × 2″ | Personal — name, title, contact w/ icons. Brand-blue back with white logo. |
 | **Business Card — Company** | 3.5″ × 2″ | No name. Centered logo + office phone, email, address. |
-| **Letterhead** | US Letter | Clean letterhead (no watermark). |
-| **Letterhead with Watermark** | US Letter | Same letterhead, ghosted logo behind body text. |
-| **Letter Watermark** | US Letter | Bulk pre-printable background. Top brand band + watermark + foot stripe. |
-| **Envelope** | 9.5″ × 4.125″ | #10 size. Minimal ivory layout. Includes on-screen print-shop spec. |
-| **Envelope — With Stripe** | 9.5″ × 4.125″ | Bolder variant with royal-blue side stripe. |
+| **Letterhead** | US Letter | Clean letterhead with watermark. Recipient block uses contact fields (works for tenants or vendors). |
+| **Letterhead Clean** | US Letter | Same layout, no watermark. |
+| **Letter Watermark** | US Letter | Bulk pre-printable background with bold brand band. |
+| **Envelope** | 9.5″ × 4.125″ | #10 size. Minimal ivory layout. Recipient filled via Setup panel. |
+| **Envelope Premium** | 9.5″ × 4.125″ | Pre-print spec variant with refined layout. Includes print-shop spec block. |
 | **Mailing Labels** | Avery 5160 | 30 labels per sheet (return-address). |
-| **Address Labels — P-touch** | DK-1201 (29×90mm) | Tenant mailing labels for Brother QL-810W. Generates a `.lbt` file per tenant — opens directly in P-touch Editor, ready to print. Size toggle included (DK-1202 large pending template). |
-| **Certificate of Mailing** | 5″ × 3″ (PS Form 3817) | Feed-and-fill overlay. Feed a blank USPS PS Form 3817 slip into the printer's manual tray; prints only the From/To text at exact field positions. Calibration sliders (±18pt) compensate for printer margin offset. From pre-filled with LPR Management address; To filled via Fill Fields. |
+| **Address Labels — P-touch** | DK-1201 (29×90mm) | Tenant or vendor mailing labels for Brother QL-810W. Generates a `.lbt` file per recipient — opens directly in P-touch Editor, ready to print. |
+| **Certificate of Mailing** | 5″ × 3″ (PS Form 3817) | Feed-and-fill overlay for USPS PS Form 3817. Calibration sliders compensate for printer margin offset. |
 | **Lease Cover Page** | US Letter | Branded title sheet with property/landlord/tenant blanks. |
 
 ### Property Management
 
 | Template | Notes |
 |----------|-------|
-| **Notice Template — Blank** | Reusable shell. Placeholders for category, title, body. |
-| **24-Hour Notice of Entry** | MD-law required entry notice. Date/time/reason/entrants. Legal footer. |
+| **Notice Template — Blank** | Reusable shell. Placeholders for category, title, body. Recipient via Setup. |
+| **24-Hour Notice of Entry** | MD-law required entry notice. Date/time/reason/entrants grid. Legal footer. |
 | **Rent Increase Notice** | Renewal letter with new monthly rent and effective date. |
 | **Non-Renewal Notice** | Lease will not renew. Vacate-by date and forwarding address request. |
 | **Security Deposit — Returned** | Full deposit + interest refunded, check enclosed. |
@@ -138,6 +140,8 @@ URL params bypass the form: `Business Card.html?name=Jane&title=Manager&phone=..
 
 Empty title is supported — `data-employee-hide-empty` collapses elements with no value.
 
+**Snapshot preservation:** when a template is saved via Save As or exported as HTML, a `data-lpr-snapshot` attribute is stamped on the HTML clone. `employee.js` skips re-applying defaults when it detects this flag, so the signer name, title, phone, and email are preserved exactly as they were when saved.
+
 ### Signature gallery
 
 - **Signatures** panel on the index holds a labeled gallery — store one per person or multiple styles (formal, casual, etc.)
@@ -146,9 +150,8 @@ Empty title is supported — `data-employee-hide-empty` collapses elements with 
 - **Leave blank** chip (always first) clears `lpr_signature` so templates print with an empty signature line for wet signing
 - × on any chip deletes that signature; if it was active, the next available sig becomes active
 - Auto-crops whitespace, resizes to ≤800px wide; saved as base64 in `lpr_sigs` array (per-user)
-- Existing single-sig users auto-migrate to the gallery on first load (labeled "My signature")
 - `mix-blend-mode: multiply` makes JPG white backgrounds disappear on white pages
-- **Drag to position + resize** in Edit mode — drag the signature to move it, drag the blue handle at the bottom-right corner to resize (aspect ratio preserved). Position and size saved per-template per-user. Signature adjustments do **not** trigger the unsaved-changes prompt.
+- **Drag to position + resize** in Edit mode — drag the signature to move it, drag the blue handle at the bottom-right corner to resize (aspect ratio preserved). Position and size saved per-template per-user.
 
 ### Star, archive, drag-reorder
 
@@ -164,24 +167,50 @@ Empty title is supported — `data-employee-hide-empty` collapses elements with 
 | Button | Action |
 |--------|--------|
 | **Edit** | Toggles `contenteditable` on the entire page so any text can be retyped |
+| **Export → Print** | Browser-native print dialog (paper or system PDF) |
 | **Export → PDF** | Saves a real PDF in the page's exact dimensions (html2pdf.js) |
 | **Export → Image** | Saves a 2× resolution PNG (html-to-image). Multi-sheet templates export as multiple files. |
 | **Export → HTML** | Saves a self-contained HTML copy with absolute asset paths |
-| **Save As** | Saves filled-in template to current user's Library |
-| **Print** | Browser-native print dialog (paper or system PDF) |
+| **Save As** | Saves filled-in template to current user's Library; all field content and signer info preserved |
+| **Setup** | Opens the Setup panel (Sender / Tenants / Vendors tabs) |
 
-### Tenant address book (Fill Fields)
+**Unfilled-field warning:** clicking Export or Save As when some field types are still empty shows a modal listing which namespaces will be blank. User can go back or continue anyway.
 
-`tenants.js` provides a 3-layer tenant data model and fills `data-tenant-field` spans across all tenant-aware templates.
+### Setup panel — Sender, Tenants, Vendors
 
-- **Import CSV** — Buildium tenant export. Smart merge: new tenants added, existing records updated, manual overrides preserved.
-- **Fill Fields panel** — search/select a tenant, edit any field, click *Apply to Template*. Works on any template that loads `tenants.js`.
-- **Insert Field sidebar** — in Edit mode, auto-opens on the right. Click any field button to paste a `<span data-tenant-field="...">` at the cursor.
-- **Placeholder display** — empty field spans show a faint italic label (e.g. *First Name*) in normal view so layout is visible before filling. More prominent dashed highlight in Edit mode. Hidden on print.
-- **Address line 2** — the address_line2 row is hidden when empty in normal view and print (`:has()` CSS), keeping layouts clean for the majority of tenants without a suite/apt. The row reappears in Edit mode so the field is clickable — the placeholder hint is visible as a cue. Affects Envelope, Address Labels P-touch, and Certificate of Mailing.
-- **Storage key:** `lpr_tenants` (namespaced per user by `user.js`).
+The **Setup** button (renamed from "Fill Fields") opens a tabbed panel that appears in every template. Tab order: Sender → Tenants → Vendors.
 
-**Templates with tenant fields:** 24-Hour Notice, Rent Increase Notice, Non-Renewal Notice, Security Deposit (all three), Envelope, Lease Cover, Address Labels P-touch.
+#### Sender tab (`owners.js`)
+
+- Lists all owner LLCs (imported from Buildium owners CSV or added manually). Default: LPR Management, LLC.
+- **Include signer name** toggle — shows/hides the employee name and title in the signoff block.
+- **Include title** sub-toggle — shows/hides just the title line when signer is included.
+- **Use office contact** sub-toggle — replaces the signer's direct phone/email with the office line (443.402.5641 / office@lasalleparkrealty.com).
+- **Apply to Template** button updates the `data-owner-field` spans and toggles CSS classes.
+- Storage key: `lpr_owners` (per user).
+- Selected owner and toggle states reset to defaults on each page load (they are applied manually per session).
+
+#### Tenants tab (`tenants.js`)
+
+- 3-layer data model: `source` (CSV import) → `overrides` (manual panel edits) → `effective` (override wins, falls back to source).
+- **Import CSV** — Buildium tenant export. Smart merge: new tenants added, existing updated, overrides preserved.
+- Overrides auto-cleared if re-import matches the override value. "Buildium: …" hint shown when override differs from source.
+- **Apply as Recipient** — fills `data-contact-field` spans (recipient address block) AND `data-tenant-field` spans (body references).
+- **Body fields only** — fills only `data-tenant-field` spans; leaves `data-contact-field` untouched for a vendor recipient.
+- Storage key: `lpr_tenants` (per user).
+
+#### Vendors tab (`vendors.js`)
+
+- Same 3-layer override model as tenants.
+- Fields: name, address_line1, address_line2, city, state, zip, email1, email2, phone, mobile.
+- **Import CSV** — Buildium vendor export (columns: "Vendor Name *", "Address Line 1 (optional)", etc.). ID: uses "Id (optional)" column, falls back to vendor name.
+- **Apply as Recipient** — fills `data-contact-field` spans (name → combined name, address, city, state, zip, email, phone) AND `data-vendor-field` spans.
+- **Body fields only** — fills only `data-vendor-field` spans.
+- Storage key: `lpr_vendors` (per user).
+
+### Field namespace system
+
+See [Field Namespace System](#field-namespace-system) below for full details.
 
 ### Unsaved-changes guard
 
@@ -198,10 +227,11 @@ Signature position/size adjustments auto-save to localStorage and do **not** cou
 ### Library (custom-saved templates)
 
 The Library section at the bottom of the index holds copies you've saved with **Save As**. Each library item:
-- Stores the full HTML snapshot in localStorage
+- Stores the full HTML snapshot in localStorage (all field content baked in)
 - Opens via a temporary blob URL (not from a real file)
 - Can be opened, edited again, exported, or deleted (× button)
-- Captures the signature position and any text edits at save time
+- Captures the signer name, owner selection, recipient address, and all body fields at save time
+- The `data-lpr-snapshot` flag prevents `employee.js` from overwriting baked-in employee values when the saved copy is reopened
 
 ### Backup & Restore
 
@@ -218,6 +248,39 @@ The red **Reset Everything** button at the very bottom of the index clears all c
 
 ---
 
+## Field Namespace System
+
+Templates use three independent field namespaces. Each can be filled independently, allowing cross-party documents (e.g. letter addressed to a vendor about a tenant's property).
+
+| Attribute | Filled by | Purpose |
+|-----------|-----------|---------|
+| `data-contact-field` | Apply as Recipient (tenant or vendor) | Recipient address block — name, address_line1, address_line2, city, state, zip, email, phone |
+| `data-tenant-field` | Tenant Apply as Recipient or Body fields only | Tenant-specific body references — first_name, last_name, address_line1, lease dates, rent amount, etc. |
+| `data-vendor-field` | Vendor Apply as Recipient or Body fields only | Vendor-specific body references — name, address, email, phone, mobile |
+| `data-owner-field` | Sender → Apply to Template | LLC name in signoff |
+| `data-employee-field` | employee.js on page load (URL params or defaults) | Signer name, title, phone, email |
+
+### Placeholder display
+
+Empty field spans show a faint italic label in normal view (e.g. *Recipient Name*, *Street Address*). More prominent dashed highlight in Edit mode. Hidden on print.
+
+- `data-contact-field` spans get `data-contact-label` attribute → placeholder via CSS `::before`
+- `data-tenant-field` spans get `data-tenant-label`
+- `data-vendor-field` spans get `data-vendor-label`
+
+### Address line 2 hide/show
+
+The address_line2 row hides when empty (`:has([data-contact-field]:empty)` CSS) and reappears in Edit mode. Affects Envelopes, Address Labels P-touch, Letterheads, and Notice templates.
+
+### Insert Field sidebar (Edit mode)
+
+While in Edit mode, the Setup panel shows an **Insert Field** sidebar with three groups:
+- **RECIPIENT** — inserts `data-contact-field` spans
+- **TENANT — body reference** — inserts `data-tenant-field` spans
+- **VENDOR — body reference** — inserts `data-vendor-field` spans (only shown when `vendors.js` is loaded)
+
+---
+
 ## File Structure
 
 ```
@@ -229,7 +292,9 @@ lpr-templates/
 ├── brand.css                           # Shared styles + bundled Montserrat @font-face
 ├── user.js                             # Multi-user namespacing (loads first)
 ├── employee.js                         # Employee-field replacement + signature injection
-├── tenants.js                          # Tenant address book, Fill Fields panel, Insert Field sidebar
+├── tenants.js                          # Tenant address book, Setup panel, Insert Field sidebar
+├── owners.js                           # Sender/owner tab in Setup panel
+├── vendors.js                          # Vendor address book, Vendors tab in Setup panel
 ├── template-tools.js                   # Edit/Export/Save As + unsaved-changes guard + signature drag
 │
 ├── Business Card.html
@@ -276,13 +341,15 @@ lpr-templates/
 </head>
 <body>
   ...
-  <script src="employee.js"></script>      <!-- field replacement + signature (omit on tenant-only templates) -->
-  <script src="tenants.js"></script>       <!-- tenant address book + Fill Fields (omit on non-tenant templates) -->
-  <script src="template-tools.js"></script><!-- toolbar (Edit/Export/Save As) -->
+  <script src="employee.js"></script>      <!-- field replacement + signature -->
+  <script src="tenants.js"></script>       <!-- tenant address book + Setup panel tabs -->
+  <script src="owners.js"></script>        <!-- sender/owner tab (registers via unshift → appears first) -->
+  <script src="vendors.js"></script>       <!-- vendor address book + Vendors tab -->
+  <script src="template-tools.js"></script><!-- toolbar (Edit/Export/Save As/Setup button) -->
 </body>
 ```
 
-The index also loads Sortable.js for drag-and-drop and inline scripts for the library, backup, and customization UI.
+Templates that don't use tenant/vendor/owner fields (Business Card, Email Signature, etc.) omit those scripts.
 
 ---
 
@@ -296,9 +363,13 @@ The index also loads Sortable.js for drag-and-drop and inline scripts for the li
 
 ### Updating
 
-1. Receive updated files (or pull from this README's "version" tag)
-2. On GitHub: **Add file → Upload files** → drag new versions → commit
-3. Updates go live in ~60 seconds
+Push changes to the `main` branch. GitHub Pages deploys automatically — live in ~60 seconds.
+
+```bash
+git add .
+git commit -m "description of changes"
+git push
+```
 
 ### Embedding in Google Sites
 
@@ -324,6 +395,9 @@ The index also loads Sortable.js for drag-and-drop and inline scripts for the li
 | Active user, user list | Browser localStorage |
 | Favorites, archive, library, presets, order | Browser localStorage (namespaced per user) |
 | Signature image + per-template positions | Browser localStorage (namespaced per user) |
+| Tenant address book | Browser localStorage (namespaced per user) |
+| Vendor address book | Browser localStorage (namespaced per user) |
+| Owner list | Browser localStorage (namespaced per user) |
 | Anything typed into a template at edit time | Browser localStorage only after "Save As" |
 
 ### What persists vs. what doesn't
@@ -340,6 +414,16 @@ The index also loads Sortable.js for drag-and-drop and inline scripts for the li
 | Different browser (Chrome → Firefox) | ❌ Separate silo |
 
 **Mitigation:** the Backup & Restore feature (above) lets you export a JSON file that can be restored after any wipe or moved between devices manually.
+
+### Per-template field persistence
+
+| Field type | Persists after navigating away? | Persists in Save As / Library? |
+|---|---|---|
+| Tenant / vendor / contact field content | ❌ Lost on page reload | ✅ Baked into HTML snapshot |
+| Owner selection + signer toggles | ❌ Resets each page load | ✅ CSS classes baked in |
+| Employee name / title / phone / email | ❌ Re-applied from URL params on load | ✅ Preserved via `data-lpr-snapshot` flag |
+| Signature image | ✅ Persists (localStorage) | ✅ Baked in at save time |
+| Signature position / size | ✅ Persists per template (localStorage) | ✅ Baked in at save time |
 
 ### Storage limits
 
@@ -361,4 +445,4 @@ For now the system is intentionally simple — no logins, no databases, no surpr
 
 ---
 
-*This document was generated as part of the brand template system. Update when major features change.*
+*Update this file when major features are added or changed.*

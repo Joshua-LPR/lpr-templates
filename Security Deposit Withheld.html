@@ -30,7 +30,6 @@
 <body>
 <div class="toolbar no-print">
   <a href="index.html" class="toolbar-back">← All templates</a>
-  <button onclick="window.print()">Print</button>
 </div>
 <div class="stage">
   <div class="label">SECURITY DEPOSIT WITHHELD — US LETTER</div>
@@ -51,13 +50,15 @@
         <p>Sincerely,</p>
         <div class="signature"></div>
         <div class="signed-name" data-employee-field="name">David Mitnick</div>
-        <div class="signed-role">LPR Management</div>
+        <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span></div>
       </div>
     </div>
   </div>
 </div>
 <script src="employee.js"></script>
 <script src="tenants.js"></script>
+<script src="owners.js"></script>
+<script src="vendors.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

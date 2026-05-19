@@ -30,11 +30,11 @@
     text-align: center; width: 100%; font-weight: 400;
   }
   /* 4-line address (addr2 present) — shrink to fit */
-  .sheet.label-card:has(.lbl-addr2 [data-tenant-field]:not(:empty)) .label-text { font-size: 18px; }
+  .sheet.label-card:has(.lbl-addr2 [data-contact-field]:not(:empty)) .label-text { font-size: 18px; }
   .label-text .lbl-name { display: block; }
   .label-text .lbl-addr2 { display: block; }
-  .label-text .lbl-addr2:has([data-tenant-field]:empty) { display: none; }
-  .sheet.tt-editing .lbl-addr2:has([data-tenant-field]:empty) { display: block; }
+  .label-text .lbl-addr2:has([data-contact-field]:empty) { display: none; }
+  .sheet.tt-editing .lbl-addr2:has([data-contact-field]:empty) { display: block; }
 
   /* Print: actual label dimensions, no decoration */
   @media print {
@@ -67,7 +67,6 @@
 <div class="toolbar no-print">
   <a href="index.html" class="toolbar-back">← All templates</a>
   <button id="lpr-lbt-btn" onclick="downloadLbt()">Download .lbt</button>
-  <button onclick="window.print()">Print preview</button>
 </div>
 
 <div class="stage">
@@ -77,12 +76,12 @@
   <div class="sheet label-card" id="label-card">
     <div class="label-text">
       <div class="lbl-name">
-        <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>
+        <span data-contact-field="name"></span>
       </div>
-      <div><span data-tenant-field="address_line1"></span></div>
-      <div class="lbl-addr2"><span data-tenant-field="address_line2"></span></div>
+      <div><span data-contact-field="address_line1"></span></div>
+      <div class="lbl-addr2"><span data-contact-field="address_line2"></span></div>
       <div>
-        <span data-tenant-field="city"></span><span id="sep-cs">, </span><span data-tenant-field="state"></span> <span data-tenant-field="zip"></span>
+        <span data-contact-field="city"></span><span id="sep-cs">, </span><span data-contact-field="state"></span> <span data-contact-field="zip"></span>
       </div>
     </div>
   </div>
@@ -135,14 +134,14 @@ function utf16leReplace(bytes, key, newValue) {
 /* ---- Download .lbt ---- */
 function downloadLbt() {
   function get(k) {
-    var el = document.querySelector('[data-tenant-field="' + k + '"]');
+    var el = document.querySelector('[data-contact-field="' + k + '"]');
     return el ? el.textContent.trim() : '';
   }
-  var firstName = get('first_name'), lastName = get('last_name');
+  var name  = get('name');
   var addr1 = get('address_line1'), addr2 = get('address_line2');
-  var city = get('city'), state = get('state'), zip = get('zip');
+  var city  = get('city'), state = get('state'), zip = get('zip');
 
-  var nameLine  = [firstName, lastName].filter(Boolean).join(' ') || 'Tenant Name';
+  var nameLine  = name || 'Recipient Name';
   var addrLine  = addr1 || 'Street Address';
   var csz       = (city && state ? city + ', ' + state : city || state || '');
   var cityLine  = [csz, zip].filter(Boolean).join(' ') || 'City, State Zip';
@@ -168,7 +167,7 @@ function downloadLbt() {
   var blob = new Blob([bytes], { type: 'application/octet-stream' });
   var a    = document.createElement('a');
   a.href   = URL.createObjectURL(blob);
-  a.download = ([lastName, firstName].filter(Boolean).join('_').replace(/[^\w]/g, '_') || 'Label') + '.lbt';
+  a.download = (name.replace(/[^\w]/g, '_') || 'Label') + '.lbt';
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -176,6 +175,7 @@ function downloadLbt() {
 </script>
 
 <script src="tenants.js"></script>
+<script src="vendors.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>
