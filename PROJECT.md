@@ -138,14 +138,17 @@ URL params bypass the form: `Business Card.html?name=Jane&title=Manager&phone=..
 
 Empty title is supported — `data-employee-hide-empty` collapses elements with no value.
 
-### Signature upload
+### Signature gallery
 
-- "My signature" panel on the index → upload JPG or PNG
-- Auto-crops whitespace, resizes to ≤800px wide
-- Saved as base64 data URL in localStorage (per-user)
-- Auto-inserted into every `.signature` slot in letter templates
+- **Signatures** panel on the index holds a labeled gallery — store one per person or multiple styles (formal, casual, etc.)
+- Click **+ Add signature** → pick JPG or PNG → prompted for a label (e.g. "Joshua", "David Mitnick", "Formal") → saved as a chip
+- Click any chip to make it active; the active sig is written to `lpr_signature` and auto-inserted into every `.signature` slot in letter templates
+- **Leave blank** chip (always first) clears `lpr_signature` so templates print with an empty signature line for wet signing
+- × on any chip deletes that signature; if it was active, the next available sig becomes active
+- Auto-crops whitespace, resizes to ≤800px wide; saved as base64 in `lpr_sigs` array (per-user)
+- Existing single-sig users auto-migrate to the gallery on first load (labeled "My signature")
 - `mix-blend-mode: multiply` makes JPG white backgrounds disappear on white pages
-- **Drag to position + resize** in Edit mode — drag the signature to move it, drag the blue handle at the bottom-right corner to resize (aspect ratio preserved). Both position and size are saved per-template per-user. Signature adjustments save automatically and do **not** trigger the unsaved-changes prompt.
+- **Drag to position + resize** in Edit mode — drag the signature to move it, drag the blue handle at the bottom-right corner to resize (aspect ratio preserved). Position and size saved per-template per-user. Signature adjustments do **not** trigger the unsaved-changes prompt.
 
 ### Star, archive, drag-reorder
 
@@ -175,6 +178,7 @@ Empty title is supported — `data-employee-hide-empty` collapses elements with 
 - **Fill Fields panel** — search/select a tenant, edit any field, click *Apply to Template*. Works on any template that loads `tenants.js`.
 - **Insert Field sidebar** — in Edit mode, auto-opens on the right. Click any field button to paste a `<span data-tenant-field="...">` at the cursor.
 - **Placeholder display** — empty field spans show a faint italic label (e.g. *First Name*) in normal view so layout is visible before filling. More prominent dashed highlight in Edit mode. Hidden on print.
+- **Address line 2** — the address_line2 row is hidden when empty in normal view and print (`:has()` CSS), keeping layouts clean for the majority of tenants without a suite/apt. The row reappears in Edit mode so the field is clickable — the placeholder hint is visible as a cue. Affects Envelope, Address Labels P-touch, and Certificate of Mailing.
 - **Storage key:** `lpr_tenants` (namespaced per user by `user.js`).
 
 **Templates with tenant fields:** 24-Hour Notice, Rent Increase Notice, Non-Renewal Notice, Security Deposit (all three), Envelope, Lease Cover, Address Labels P-touch.
