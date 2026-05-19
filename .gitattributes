@@ -1,0 +1,12 @@
+# Normalize all text files to LF on commit (web project — served on Linux)
+* text=auto eol=lf
+
+# Treat binary assets as binary (no line-ending conversion)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.woff2 binary
+*.woff binary
+*.pdf binary
+*.lbt binary
