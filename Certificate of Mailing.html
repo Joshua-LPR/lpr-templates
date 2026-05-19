@@ -61,7 +61,7 @@
   background-size:100% 100%; background-repeat:no-repeat;
   background-color:white;
   box-shadow:0 2px 14px rgba(0,0,0,.22);
-  box-sizing:border-box; flex-shrink:0; overflow:hidden;
+  box-sizing:border-box; flex-shrink:0; overflow:visible;
 }
 
 /* ── overlay text ── */
@@ -78,16 +78,17 @@
 .overlay-from { top:calc(0.686in + var(--cof-dy)); }
 .overlay-to   { top:calc(1.797in + var(--cof-dy)); }
 
-/* ── cut lines (letter mode preview, screen only) ── */
-.cut-line-h, .cut-line-v { display:none; pointer-events:none; }
+/* ── cut lines — positioned inside .sheet so they're relative to the form ── */
+.cut-line-h, .cut-line-v { display:none; pointer-events:none; position:absolute; }
+/* screen: extend 28px beyond the form edges */
 .mode-letter .cut-line-h {
-  display:block; position:absolute;
-  left:-24px; right:-24px; top:3in;
+  display:block;
+  left:-28px; right:-28px; bottom:0;
   border-top:1px dashed #bbb;
 }
 .mode-letter .cut-line-v {
-  display:block; position:absolute;
-  top:-24px; bottom:-24px; left:5in;
+  display:block;
+  top:-28px; bottom:-28px; right:0;
   border-left:1px dashed #bbb;
 }
 
@@ -215,11 +216,11 @@
         <div><span data-tenant-field="city"></span>,&nbsp;<span data-tenant-field="state"></span>&nbsp;<span data-tenant-field="zip"></span></div>
       </div>
 
-    </div>
+      <!-- cut lines inside .sheet so they're positioned relative to the form, not the container -->
+      <div class="cut-line-h"></div>
+      <div class="cut-line-v"></div>
 
-    <!-- cut lines shown in letter mode preview -->
-    <div class="cut-line-h"></div>
-    <div class="cut-line-v"></div>
+    </div>
   </div>
 
   <!-- per-mode instructions -->
