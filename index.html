@@ -1604,7 +1604,7 @@
       if (data) {
         preview.innerHTML = '<img src="' + data + '" alt="signature"/>';
       } else {
-        preview.textContent = "No signature active";
+        preview.textContent = "Blank — sign by hand";
       }
     }
     renderGallery();
@@ -1615,11 +1615,29 @@
     if (!gallery) return;
     const sigs = loadSigs();
     const activeId = getActiveId();
+    gallery.innerHTML = "";
+
+    // Permanent "Leave blank" chip — always first
+    const noneChip = document.createElement("button");
+    noneChip.className = "sig-chip" + (activeId === null ? " active" : "");
+    noneChip.type = "button";
+    noneChip.title = "Leave the signature line blank for wet signing";
+    const noneLbl = document.createElement("span");
+    noneLbl.textContent = "Leave blank";
+    noneChip.appendChild(noneLbl);
+    noneChip.addEventListener("click", function() {
+      localStorage.removeItem(SIG_KEY);
+      renderSig();
+    });
+    gallery.appendChild(noneChip);
+
     if (sigs.length === 0) {
-      gallery.innerHTML = '<span style="font-size:12px;color:var(--lpr-muted);font-style:italic;">None saved yet — click + Add signature</span>';
+      const hint = document.createElement("span");
+      hint.style.cssText = "font-size:12px;color:var(--lpr-muted);font-style:italic;";
+      hint.textContent = "No signatures saved yet — click + Add signature";
+      gallery.appendChild(hint);
       return;
     }
-    gallery.innerHTML = "";
     sigs.forEach(function(sig) {
       const chip = document.createElement("button");
       chip.className = "sig-chip" + (sig.id === activeId ? " active" : "");
