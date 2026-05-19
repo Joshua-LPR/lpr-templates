@@ -51,7 +51,7 @@ body { margin: 0; font-family: 'Montserrat', sans-serif; color: var(--lpr-text);
 
 /* Toolbar shown on screen only */
 .toolbar {
-  position: fixed; top: 16px; right: 16px; z-index: 100;
+  position: fixed; top: 16px; right: 16px; z-index: 9500;
   display: flex; gap: 8px; align-items: center;
   background: #fff; padding: 8px 10px; border-radius: 999px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.12);

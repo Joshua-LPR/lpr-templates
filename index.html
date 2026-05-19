@@ -40,8 +40,12 @@
   .mini-card .r .c { height: 2px; background: var(--lpr-rule); width: 80%; border-radius: 1px; margin-top: 4px; }
   .mini-card .r .c.s { width: 70%; }
   .mini-card .r .c.t { width: 50%; }
+  .mini-bcc { width: 80%; aspect-ratio: 3.5/2; background: #fff; border: 1px solid var(--lpr-rule); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 8px 10px 7px; display: flex; flex-direction: column; justify-content: space-between; }
+  .mini-bcc img { width: 40%; height: auto; }
+  .mini-bcc-rows { display: flex; flex-direction: column; gap: 3px; }
+  .mini-bcc-row { height: 2px; background: var(--lpr-rule); border-radius: 1px; }
 
-  .mini-letter { width: 60%; aspect-ratio: 8.5/11; background: #fff; border: 1px solid var(--lpr-rule); border-radius: 2px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden; }
+  .mini-letter { width: 60%; aspect-ratio: 8.5/11; background: #fff; border: 1px solid var(--lpr-rule); border-radius: 2px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden; align-self: flex-start; }
   .mini-letter .head { display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px solid var(--lpr-blue); padding-bottom: 6px; }
   .mini-letter .head img { height: 22px; width: auto; }
   .mini-letter .head .meta { font-size: 4px; color: var(--lpr-muted); text-align: right; line-height: 1.2; }
@@ -83,15 +87,13 @@
   .mini-cof img { width:100%; height:100%; object-fit:cover; display:block; }
 
   .mini-ptouch { width: 92%; display: flex; align-items: center; justify-content: center; }
-  .mini-pt-lbl { width: 85%; height: 34px; background: #fff; border: 1px solid #ddd; border-radius: 3px; padding: 0 9px; display: flex; flex-direction: column; justify-content: center; gap: 4px; box-shadow: 0 1px 5px rgba(0,0,0,.09); position: relative; }
-  .mini-pt-lbl::before, .mini-pt-lbl::after { content: ''; position: absolute; top: 0; bottom: 0; width: 3px; background: repeating-linear-gradient(to bottom, rgba(40,56,145,.3) 0, rgba(40,56,145,.3) 3px, transparent 3px, transparent 6px); }
-  .mini-pt-lbl::before { left: 0; } .mini-pt-lbl::after { right: 0; }
+  .mini-pt-lbl { width: 82%; aspect-ratio: 90/29; background: #fff; border-radius: 5px; padding: 0 8%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 1px 9px rgba(0,0,0,.11), 0 0 0 1px rgba(0,0,0,.06); }
   .mini-pt-lbl .ptl { border-radius: 1px; }
-  .mini-pt-lbl .ptl.n { height: 5px; width: 62%; background: var(--lpr-ink); }
-  .mini-pt-lbl .ptl.a { height: 3px; width: 80%; background: rgba(40,56,145,.30); margin-top:1px; }
-  .mini-pt-lbl .ptl.c { height: 3px; width: 52%; background: var(--lpr-rule); }
+  .mini-pt-lbl .ptl.n { height: 6px; width: 60%; background: #111; }
+  .mini-pt-lbl .ptl.a { height: 5px; width: 82%; background: #555; }
+  .mini-pt-lbl .ptl.c { height: 5px; width: 55%; background: #555; }
 
-  .mini-cover { width: 60%; aspect-ratio: 8.5/11; border: 1px solid var(--lpr-rule); border-radius: 2px; background: #fff; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; flex-direction: column; }
+  .mini-cover { width: 60%; aspect-ratio: 8.5/11; border: 1px solid var(--lpr-rule); border-radius: 2px; background: #fff; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; flex-direction: column; align-self: flex-start; }
   .mini-cover .band { background: var(--lpr-blue); height: 38%; padding: 8px 10px; color: #fff; display: flex; flex-direction: column; }
   .mini-cover .band img { height: 24px; width: auto; }
   .mini-cover .band .doc { font-size: 4px; letter-spacing: 1px; text-transform: uppercase; opacity: 0.7; margin-top: 18px; }
@@ -410,7 +412,7 @@
   </div>
   <div class="sig-manager">
     <h2>Signatures</h2>
-    <p class="sub">Upload and label signatures — yours, a colleague's, or formal vs. casual versions. Click a chip to make it active; the active one auto-fills every letter template. Tied to the current user (<span id="sig-user-name">—</span>).</p>
+    <p class="sub">Upload and label signatures — yours, a colleague's, or formal vs. casual versions. Click a chip to make it active; the active one auto-fills every letter template.</p>
     <div class="sig-row">
       <div class="sig-preview" id="sig-preview">No signature active</div>
       <div class="sig-right">
@@ -464,12 +466,12 @@
 
     <a href="Business Card Company.html" class="card">
       <div class="thumb">
-        <div class="mini-card" style="grid-template-columns: 1fr; padding: 8px; justify-items:center;">
-          <div style="display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px; width:100%;">
-            <img src="assets/logo-cropped.png" alt="" style="width:55%; max-width:60px;"/>
-            <div style="width:35%; height:1px; background:var(--lpr-rule);"></div>
-            <div style="width:55%; height:3px; background:var(--lpr-blue); border-radius:1px;"></div>
-            <div style="width:45%; height:2px; background:var(--lpr-rule); border-radius:1px;"></div>
+        <div class="mini-bcc">
+          <img src="assets/logo-cropped.png" alt=""/>
+          <div class="mini-bcc-rows">
+            <div class="mini-bcc-row" style="width:50%;"></div>
+            <div class="mini-bcc-row" style="width:70%;"></div>
+            <div class="mini-bcc-row" style="width:80%;"></div>
           </div>
         </div>
       </div>
@@ -616,7 +618,6 @@
       <div class="thumb">
         <div class="mini-cover">
           <div class="band">
-            <img src="assets/logo-white.png" alt=""/>
             <div class="doc">Residential Lease Agreement</div>
             <div class="title">Lease &<br/>Rental Agreement</div>
           </div>

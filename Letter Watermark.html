@@ -18,6 +18,27 @@
   .wm-tile { position: absolute; inset: 0.5in 0.85in 0.6in 0.85in; opacity: 0.04; background-image: repeating-linear-gradient(135deg, transparent 0, transparent 60px, var(--lpr-blue) 60px, var(--lpr-blue) 61px); pointer-events: none; }
   .wm-tag { position: absolute; top: 0.13in; left: 0.85in; color: rgba(255,255,255,0.85); font-size: 9pt; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; }
   .wm-tag-right { position: absolute; top: 0.13in; right: 0.85in; color: rgba(255,255,255,0.6); font-size: 8pt; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; }
+
+  /* ---- Notice content layer ---- */
+  .wm-content {
+    position: absolute; top: 0.65in; bottom: 0.65in;
+    left: 0.85in; right: 0.85in; z-index: 1;
+    font-size: 11pt; line-height: 1.6; color: var(--lpr-text);
+    display: flex; flex-direction: column;
+  }
+  .wm-date { color: var(--lpr-muted); font-size: 10pt; margin-bottom: 16px; }
+  .wm-recipient { margin-bottom: 20px; line-height: 1.45; font-size: 10.5pt; }
+  .wm-addr2:has([data-tenant-field]:empty) { display: none; }
+  .sheet.tt-editing .wm-addr2:has([data-tenant-field]:empty) { display: block; }
+  .wm-doc-badge { font-size: 9pt; letter-spacing: 4px; text-transform: uppercase; color: var(--lpr-blue); font-weight: 600; margin-bottom: 6px; }
+  .wm-doc-title { font-size: 24pt; font-weight: 700; letter-spacing: -0.3px; line-height: 1.05; color: var(--lpr-ink); margin-bottom: 0.25in; }
+  .wm-content p { margin: 0 0 12px; }
+  .wm-highlight { background: rgba(40,56,145,0.06); border-left: 3px solid var(--lpr-blue); padding: 10px 14px; border-radius: 3px; margin: 12px 0; font-size: 12pt; color: var(--lpr-ink); }
+  .wm-signoff { margin-top: auto; padding-top: 0.3in; }
+  .wm-signoff .signature { height: 0.5in; }
+  .wm-signoff .signed-name { font-weight: 600; color: var(--lpr-ink); }
+  .wm-signoff .signed-role { font-size: 9pt; color: var(--lpr-muted); }
+
   @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label-h { display: none; } }
 </style>
 </head>
@@ -39,8 +60,37 @@
       <span>1517 Reisterstown Rd · Pikesville, MD 21208</span>
       <span style="color: var(--lpr-blue); font-weight: 600;">443.402.5641</span>
     </div>
+
+    <div class="wm-content">
+      <div class="wm-date">[Date]</div>
+
+      <div class="wm-recipient">
+        <div><span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span></div>
+        <div><span data-tenant-field="address_line1"></span></div>
+        <div class="wm-addr2"><span data-tenant-field="address_line2"></span></div>
+        <div><span data-tenant-field="city"></span>, <span data-tenant-field="state"></span> <span data-tenant-field="zip"></span></div>
+      </div>
+
+      <div class="wm-doc-badge">[Category]</div>
+      <div class="wm-doc-title">[Notice Title]</div>
+
+      <p>Dear <span data-tenant-field="first_name"></span>,</p>
+      <p>[Opening paragraph. State the purpose of the notice clearly in the first sentence.]</p>
+      <p>[Body paragraph. Provide the relevant facts, dates, amounts, or actions required.]</p>
+      <div class="wm-highlight">[Key info highlight — use this for important amounts, dates, or required actions. Delete this block if not needed.]</div>
+      <p>[Closing paragraph. State next steps or how to contact you with questions.]</p>
+
+      <div class="wm-signoff">
+        <p>Sincerely,</p>
+        <div class="signature"></div>
+        <div class="signed-name" data-employee-field="name">David Mitnick</div>
+        <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span> · LPR Management, LLC</div>
+      </div>
+    </div>
   </div>
 </div>
+<script src="employee.js"></script>
+<script src="tenants.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

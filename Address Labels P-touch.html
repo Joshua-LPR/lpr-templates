@@ -12,77 +12,45 @@
   .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
   .label-h { font-size: 10px; letter-spacing: 3px; color: #6a6a6a; text-transform: uppercase; }
 
-  /* ---- Size toggle ---- */
-  .size-toggle {
-    display: flex; gap: 0; border-radius: 999px; overflow: hidden;
-    border: 1.5px solid var(--lpr-blue); background: #fff;
-  }
-  .size-btn {
-    padding: 8px 22px; border: none; background: none; font-family: inherit;
-    font-size: 12px; font-weight: 600; color: var(--lpr-blue);
-    cursor: pointer; transition: background .15s, color .15s; letter-spacing: .3px;
-  }
-  .size-btn + .size-btn { border-left: 1.5px solid var(--lpr-blue); }
-  .size-btn.active { background: var(--lpr-blue); color: #fff; }
-  .size-btn:not(.active):hover { background: rgba(40,56,145,.07); }
-
-  /* ---- Label preview ---- */
+  /* ---- Label preview — DK-1201: 90mm × 29mm at actual 96dpi = 340×110px ---- */
   .sheet.label-card {
-    background: #fff; position: relative;
-    display: flex; align-items: center;
-    padding: 20px 30px; box-sizing: border-box;
-    border-radius: 4px; overflow: hidden;
-    /* DK-1201 at 7.56px/mm (≈192dpi) for a good screen size */
-    width: 680px; height: 219px;
-    transition: width .25s, height .25s;
+    background: #fff;
+    border-radius: 7px;           /* die-cut rounded corners */
+    width: 340px; height: 110px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 6px 12px; box-sizing: border-box;
+    box-shadow: 0 1px 9px rgba(0,0,0,.11), 0 0 0 1px rgba(0,0,0,.06);
+    position: relative;
   }
-  /* Tape-edge perf marks */
-  .sheet.label-card::before, .sheet.label-card::after {
-    content: ''; position: absolute; top: 0; bottom: 0; width: 4px;
-    background: repeating-linear-gradient(
-      to bottom,
-      rgba(40,56,145,.25) 0, rgba(40,56,145,.25) 4px,
-      transparent 4px, transparent 9px
-    );
-  }
-  .sheet.label-card::before { left: 0; }
-  .sheet.label-card::after  { right: 0; }
 
+  /* font matches the .lbt — Century Gothic 24pt at 96dpi = 32px, all lines uniform */
   .label-text {
-    font-family: 'Montserrat', Arial, sans-serif;
-    font-size: 17px; line-height: 1.45; color: #111;
-    flex: 1; padding: 0 14px;
+    font-family: 'Century Gothic', 'AppleGothic', 'ITC Century', Century, sans-serif;
+    font-size: 24px; line-height: 1.22; color: #111;
+    text-align: center; width: 100%; font-weight: 400;
   }
-  .label-text .lbl-name { font-size: 19px; font-weight: 700; }
+  /* 4-line address (addr2 present) — shrink to fit */
+  .sheet.label-card:has(.lbl-addr2 [data-tenant-field]:not(:empty)) .label-text { font-size: 18px; }
+  .label-text .lbl-name { display: block; }
   .label-text .lbl-addr2 { display: block; }
   .label-text .lbl-addr2:has([data-tenant-field]:empty) { display: none; }
-  /* reveal in edit mode so the field is clickable */
   .sheet.tt-editing .lbl-addr2:has([data-tenant-field]:empty) { display: block; }
 
-  /* Large label variant */
-  .sheet.label-card.large {
-    width: 756px; height: 469px;
-  }
-  .sheet.label-card.large .label-text { font-size: 22px; }
-  .sheet.label-card.large .lbl-name  { font-size: 25px; }
-
-  /* Print: actual label size */
+  /* Print: actual label dimensions, no decoration */
   @media print {
     body { background: #fff; padding: 0; }
     .stage { gap: 0; }
-    .label-h, .size-toggle, .print-info, .large-notice { display: none; }
+    .label-h, .print-info { display: none; }
     .sheet.label-card {
       width: 90mm; height: 29mm;
-      border-radius: 0; padding: 2.5mm 5mm;
+      border-radius: 0; padding: 2mm 4mm;
       box-shadow: none;
     }
-    .sheet.label-card.large { width: 100mm; height: 62mm; }
-    .sheet.label-card::before, .sheet.label-card::after { display: none; }
-    .label-text { font-size: 8pt; line-height: 1.3; padding: 0; }
-    .label-text .lbl-name { font-size: 9.5pt; }
+    .label-text { font-size: 10pt; line-height: 1.3; }
+    .label-text .lbl-name { font-size: 10pt; }
   }
 
-  /* ---- Info / notice boxes ---- */
+  /* ---- Info box ---- */
   .print-info {
     background: #fff; border-radius: 8px; padding: 16px 20px;
     max-width: 680px; width: 100%;
@@ -90,21 +58,8 @@
     font-size: 12.5px; line-height: 1.65; color: var(--lpr-text);
     display: flex; gap: 14px; align-items: flex-start;
   }
-  .print-info .pi-icon {
-    font-size: 22px; line-height: 1; color: var(--lpr-blue);
-    flex-shrink: 0; margin-top: 3px;
-  }
+  .print-info .pi-icon { font-size: 22px; line-height: 1; color: var(--lpr-blue); flex-shrink: 0; margin-top: 3px; }
   .print-info strong { color: var(--lpr-ink); }
-
-  .large-notice {
-    display: none;
-    background: rgba(40,56,145,.05); border-radius: 8px;
-    padding: 14px 20px; max-width: 680px; width: 100%;
-    font-size: 12.5px; color: var(--lpr-text); line-height: 1.65;
-    border-left: 3px solid var(--lpr-blue);
-  }
-  .large-notice strong { color: var(--lpr-blue); }
-  .large-notice code { font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: 11.5px; background: rgba(40,56,145,.08); padding: 1px 5px; border-radius: 3px; }
 </style>
 </head>
 <body>
@@ -117,12 +72,7 @@
 
 <div class="stage">
 
-  <div class="size-toggle no-print">
-    <button class="size-btn active" data-size="dk1201">Standard (DK-1201 · 29×90mm)</button>
-    <button class="size-btn"        data-size="dk1202">Large (DK-1202 · 62×100mm)</button>
-  </div>
-
-  <div class="label-h" id="lbl-dims">ADDRESS LABEL — DK-1201 · 29MM × 90MM · BROTHER QL-810W</div>
+  <div class="label-h">ADDRESS LABEL — DK-1201 · 29MM × 90MM · BROTHER QL-810W</div>
 
   <div class="sheet label-card" id="label-card">
     <div class="label-text">
@@ -137,39 +87,18 @@
     </div>
   </div>
 
-  <div class="print-info no-print" id="std-info">
+  <div class="print-info no-print">
     <div class="pi-icon">⤓</div>
     <div>
       <strong>How to print:</strong> Use <em>Fill Fields</em> in the toolbar to pick a tenant — the label updates automatically. Then click <strong>Download .lbt</strong>. Double-click the downloaded file to open it in <strong>P-touch Editor Lite</strong> with the address already filled in. Make sure your QL-810W has a <strong>DK-1201</strong> standard address tape loaded (29mm × 90mm), then click Print.
       <br/><br/>
-      <strong>Font:</strong> Labels use <strong>Arial</strong> — a standard Windows font that P-touch Editor reliably supports.
+      <strong>Font:</strong> Labels print in <strong>Century Gothic</strong> — a geometric sans-serif font included with Windows and Microsoft Office.
     </div>
-  </div>
-
-  <div class="large-notice no-print" id="large-info">
-    <strong>Large label (DK-1202) template not yet configured.</strong><br/>
-    To enable it: load a DK-1202 tape in your QL-810W, open P-touch Editor, create a blank single-address label, and save it as an <code>.lbt</code> file. Send that file to Joshua and it will be wired up here.
   </div>
 
 </div>
 
 <script>
-/* ---- Size toggle ---- */
-document.querySelectorAll('.size-btn').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.size-btn').forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    var isLarge = btn.dataset.size === 'dk1202';
-    document.getElementById('std-info').style.display   = isLarge ? 'none' : '';
-    document.getElementById('large-info').style.display = isLarge ? ''     : 'none';
-    document.getElementById('lpr-lbt-btn').disabled     = isLarge;
-    document.getElementById('lbl-dims').textContent     = isLarge
-      ? 'ADDRESS LABEL — DK-1202 · 62MM × 100MM · BROTHER QL-810W'
-      : 'ADDRESS LABEL — DK-1201 · 29MM × 90MM · BROTHER QL-810W';
-    var card = document.getElementById('label-card');
-    card.classList.toggle('large', isLarge);
-  });
-});
 
 /* ---- .lbt template (DK-1201, Brother QL-810W) ---- */
 var LBT_DK1201_B64 = 'UExMAhAARAgAAAAAAAAAAP/+WwBQAHIAbwBwAGEAdAB5AF0ADQAKAFYAZQByAHMAaQBvAG4APQAxAC4AMAAwAA0ACgBEAG8AdQBiAGwAZQBGAG8AcgBtAGEAdAA9AEkARQBFAEUANwA1ADQAKAAxAC4AMQAxAC4ANQAyACkADQAKAEQAZQB2AGkAYwBlAE4AYQBtAGUAPQBCAHIAbwB0AGgAZQByACAAUQBMAC0AOAAxADAAVwANAAoAUwBlAHIAaQBlAHMAQwBvAGQAZQA9ADQADQAKAE0AbwBkAGUAbABDAG8AZABlAD0AOQANAAoAVABhAHAAZQBMAGUAbgBnAHQAaAA9ADIALAA4ADkALgA4ADMAMQAzACgAMAAuADQAMAA1AC4ANgA3ADUAMwA0ADkAMABiADkAYQBmADcAMQApAA0ACgBUAGEAcABlAFcAaQBkAHQAaAA9ADIANwAxACwAMgA4AC4AOQA1ADYAKAAwAC4ANAAwADMALgBjAGYANABiAGMANgBhADcAZQBmADkAZABhACkADQAKAFQAYQBwAGUATQBhAHIAZwBpAG4APQAxAA0ACgBUAGEAcABlAEQAaQByAGUAYwB0AD0AMQANAAoARgBpAHQAUAByAGkAbgB0AEEAcgBlAGEAPQAxAA0ACgBFAGQAaQB0AE0AYQByAGcAaQBuAD0AMwAoADAALgA0ADAAMAAuADgAMAAwADAAMAAwADAAMAAwADAAMAAwADAAKQAsADEALgA1ADIANAAoADAALgAzAGYAZgAuADgANgAyADQAZABkADIAZgAxAGEAOQBmAGMAKQAsADgANgAuADgAMwAxADMAKAAwAC4ANAAwADUALgA1AGIANQAzADQAOQAwAGIAOQBhAGYANwAxACkALAAyADcALgA0ADMAMgAoADAALgA0ADAAMwAuAGIANgBlADkANwA4AGQANABmAGQAZgAzAGEAKQANAAoATQB1AGwAdABpAE8AYgBqAGUAYwB0AE0AbwBkAGUAPQAwAA0ACgBPAGIAagBlAGMAdABDAG8AdQBuAHQAPQAxAA0ACgANAAoAWwBCAGwAbwBjAGsAXQANAAoAVAB5AHAAZQA9AFQAZQB4AHQADQAKAFIAZQBjAHQAPQA1AC4ANwAxADUAKAAwAC4ANAAwADEALgA2AGQAYwAyADgAZgA1AGMAMgA4AGYANQA4ACkALAAxAC4ANQAyADQAKAAwAC4AMwBmAGYALgA4ADYAMgA0AGQAZAAyAGYAMQBhADkAZgBjACkALAA4ADQALgAxADEANgAzACgAMAAuADQAMAA1AC4ANQAwADcANwAyADAAMQA1AGQAOAA2ADcAYwApACwAMgA2AC4AOQAyADQAKAAwAC4ANAAwADMALgBhAGUAYwA4AGIANAAzADkANQA4ADEAMAA2ACkADQAKAEEAcwBwAGUAYwB0AD0AMwAuADAAOAA2ADYANwAoADAALgA0ADAAMAAuADgAYgAxADcAZQA0AGIAMQA3AGUANABiADEAKQANAAoAUABhAHIAYQBnAHIAYQBwAGgAPQAxAA0ACgBQAGEAcgBhAGcAcgBhAHAAaABSAGUAYwB0AD0AMAAoADAALgAwADAAMAAuADAAMAAwADAAMAAwADAAMAAwADAAMAAwADAAKQAsADAAKAAwAC4AMAAwADAALgAwADAAMAAwADAAMAAwADAAMAAwADAAMAAwACkALAAwACgAMAAuADAAMAAwAC4AMAAwADAAMAAwADAAMAAwADAAMAAwADAAMAApACwAMAAoADAALgAwADAAMAAuADAAMAAwADAAMAAwADAAMAAwADAAMAAwADAAKQANAAoARABpAHIAZQBjAHQAPQAxAA0ACgBSAG8AdABhAHQAZQA9ADAADQAKAEMAZQBuAHQAZQByAFIAZQBjAHQAPQAzACgAMAAuADQAMAAwAC4AOAAwADAAMAAwADAAMAAwADAAMAAwADAAMAApACwAMQAuADUAMgA0ACgAMAAuADMAZgBmAC4AOAA2ADIANABkAGQAMgBmADEAYQA5AGYAYwApACwAOAA2AC4AOAAzADEAMwAoADAALgA0ADAANQAuADUAYgA1ADMANAA5ADAAYgA5AGEAZgA3ADEAKQAsADIANwAuADQAMwAyACgAMAAuADQAMAAzAC4AYgA2AGUAOQA3ADgAZAA0AGYAZABmADMAYQApAA0ACgBUAGUAeAB0AEwAYQB5AG8AdQB0AD0AMgANAAoAVABlAHgAdABDAG8AdQBuAHQAPQA2ADIADQAKAFQAZQB4AHQAQwB1AHIAcwBvAHIAPQAwAA0ACgBGAG8AbgB0AD0AMwA2ACwAMQA0ACwAMAAsADAALAA0ADAAMAAsADAALAAwACwAMAAsADAALAAzACwAMgAsADEALAAzADQALABBAHIAaQBhAGwADQAKAFMAaQB6AGUAPQAyADQAKAAwAC4ANAAwADMALgA4ADAAMAAwADAAMAAwADAAMAAwADAAMAAwACkADQAKAEIAbwBsAGQAPQAwAA0ACgBJAHQAYQBsAGkAYwA9ADAADQAKAFUAbgBkAGUAcgBsAGkAbgBlAD0AMAANAAoATgB1AG0AYgBlAHIAaQBuAGcAPQAwAA0ACgBDAGgAYQByAD0AUwBoAGEAbgBhAHkAIABMAHkAbgBlAHQAdABlACAAVwBhAGwAbABlAHIACQA0ADgAMQAyACAAQQBiAGUAcgBkAGUAZQBuACAAQQB2AGUAbgB1AGUACQBCAGEAbAB0AGkAbQBvAHIAZQAsACAATQBEACAAMgAxADIAMAA2AA0ACgA=';
@@ -224,8 +153,17 @@ function downloadLbt() {
   var bytes  = new Uint8Array(binStr.length);
   for (var i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
 
+  var fourLine = !!addr2;
   bytes = utf16leReplace(bytes, 'TextCount=', String(charValue.length));
+  bytes = utf16leReplace(bytes, 'TextCursor=', String(charValue.length));
   bytes = utf16leReplace(bytes, 'Char=', charValue);
+  bytes = utf16leReplace(bytes, 'Font=', fourLine ? '38,16,0,0,400,0,0,0,0,3,2,1,34,Century Gothic' : '36,14,0,0,400,0,0,0,0,3,2,1,34,Century Gothic');
+  bytes = utf16leReplace(bytes, 'Size=', fourLine ? '18(0.403.2000000000000)' : '24(0.403.8000000000000)');
+
+  // PLL2 header bytes 6-7 (little-endian 16-bit) must equal file_size - 16
+  var contentSize = bytes.length - 16;
+  bytes[6] = contentSize & 0xFF;
+  bytes[7] = (contentSize >> 8) & 0xFF;
 
   var blob = new Blob([bytes], { type: 'application/octet-stream' });
   var a    = document.createElement('a');

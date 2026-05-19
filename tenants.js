@@ -421,7 +421,10 @@
     });
 
     if (sel) wireEditor(sel);
-    if (opts?.refocus) gid('lpr-tp-q')?.focus();
+    if (opts?.refocus) {
+      const q = gid('lpr-tp-q');
+      if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+    }
   }
 
   /* ================================================================
@@ -562,7 +565,7 @@
       /* ---- Insert sidebar header ---- */
       .lpr-ins-hd {
         display: flex; align-items: center; justify-content: space-between;
-        padding: 13px 12px 13px 16px; background: #283891;
+        padding: 70px 12px 13px 16px; background: #283891;
         color: #fff; font-weight: 700; font-size: 13px;
         letter-spacing: .4px; flex-shrink: 0;
       }
@@ -570,7 +573,7 @@
       /* ---- Fill panel header ---- */
       .lpr-tp-hd {
         display: flex; align-items: center; justify-content: space-between;
-        padding: 13px 12px 13px 16px; background: #283891;
+        padding: 70px 12px 13px 16px; background: #283891;
         color: #fff; font-weight: 700; font-size: 13px;
         letter-spacing: .4px; flex-shrink: 0;
       }
