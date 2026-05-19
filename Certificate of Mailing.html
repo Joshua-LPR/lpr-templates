@@ -150,9 +150,17 @@
   /* overlay text always prints black */
   .overlay-from, .overlay-to { color:black !important; }
 }
+
+/* suppress tenant-field placeholder border lines — the form image has its own lines */
+.sheet [data-tenant-field]:empty::before { border-bottom:none !important; }
 </style>
 </head>
 <body class="mode-overlay">
+
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+  <button onclick="window.print()">Print</button>
+</div>
 
 <div class="cof-page">
 
