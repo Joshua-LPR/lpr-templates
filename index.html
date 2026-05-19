@@ -324,6 +324,24 @@
   }
   .sig-manager .sig-buttons .danger { border-color: #c33; color: #c33; background: #fff; }
   .sig-manager .sig-buttons .danger:hover { background: #c33; color: #fff; border-color: #c33; }
+  .sig-manager .sig-right { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 200px; }
+  .sig-gallery { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 34px; }
+  .sig-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 8px 5px 12px; border: 1.5px solid var(--lpr-rule); border-radius: 999px;
+    background: #f6f6f8; font-size: 12px; font-weight: 600; color: var(--lpr-ink);
+    cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s;
+  }
+  .sig-chip:hover { border-color: var(--lpr-blue); background: #eef0f8; }
+  .sig-chip.active { border-color: var(--lpr-blue); background: var(--lpr-blue); color: #fff; }
+  .sig-chip .chip-del {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(0,0,0,.12); border: none; font-size: 11px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    padding: 0; color: inherit; line-height: 1; font-family: inherit; flex-shrink: 0;
+  }
+  .sig-chip.active .chip-del { background: rgba(255,255,255,.25); }
+  .sig-chip .chip-del:hover { background: rgba(200,0,0,.35) !important; }
   .sig-manager .tip {
     margin-top: 12px; font-size: 11.5px; color: var(--lpr-muted);
     line-height: 1.55;
@@ -383,14 +401,16 @@
     </div>
   </div>
   <div class="sig-manager">
-    <h2>My signature</h2>
-    <p class="sub">Upload an image of your signature. It will auto-fill every letter you sign — letterhead, notices, lease cover. Tied to the currently signed-in user (<span id="sig-user-name">—</span>); each user has their own.</p>
+    <h2>Signatures</h2>
+    <p class="sub">Upload and label signatures — yours, a colleague's, or formal vs. casual versions. Click a chip to make it active; the active one auto-fills every letter template. Tied to the current user (<span id="sig-user-name">—</span>).</p>
     <div class="sig-row">
-      <div class="sig-preview" id="sig-preview">No signature uploaded</div>
-      <div class="sig-buttons">
-        <button id="sig-upload-btn">Upload signature</button>
-        <button id="sig-clear-btn" class="danger">Remove</button>
-        <input type="file" id="sig-input" accept="image/*" style="display:none"/>
+      <div class="sig-preview" id="sig-preview">No signature active</div>
+      <div class="sig-right">
+        <div class="sig-gallery" id="sig-gallery"></div>
+        <div class="sig-buttons">
+          <button id="sig-upload-btn">+ Add signature</button>
+          <input type="file" id="sig-input" accept="image/*" style="display:none"/>
+        </div>
       </div>
     </div>
     <div class="tip">
@@ -1445,6 +1465,8 @@
     localStorage.removeItem("lpr_sig_mode");
     localStorage.removeItem("lpr_sig_url");
     localStorage.removeItem("lpr_sig_style");
+    localStorage.removeItem("lpr_signature");
+    localStorage.removeItem("lpr_sigs");
     location.reload();
   });
 
@@ -1552,24 +1574,98 @@
     if (sigUserEl) sigUserEl.textContent = name;
   }
 
-  /* ---------- 7. Signature upload ---------- */
-  const SIG_KEY = "lpr_signature";
+  /* ---------- 7. Signature gallery ---------- */
+  const SIG_KEY  = "lpr_signature";
+  const SIGS_KEY = "lpr_sigs";
+
+  function loadSigs() {
+    try { return JSON.parse(localStorage.getItem(SIGS_KEY) || "[]"); } catch(e) { return []; }
+  }
+  function saveSigs(arr) { localStorage.setItem(SIGS_KEY, JSON.stringify(arr)); }
+
+  function getActiveId() {
+    const active = localStorage.getItem(SIG_KEY);
+    if (!active) return null;
+    const found = loadSigs().find(function(s) { return s.data === active; });
+    return found ? found.id : null;
+  }
+
+  function setActive(id) {
+    const sig = loadSigs().find(function(s) { return s.id === id; });
+    if (sig) localStorage.setItem(SIG_KEY, sig.data);
+    else localStorage.removeItem(SIG_KEY);
+    renderSig();
+  }
+
   function renderSig() {
     const data = localStorage.getItem(SIG_KEY);
     const preview = document.getElementById("sig-preview");
-    if (!preview) return;
-    if (data) {
-      preview.innerHTML = '<img src="' + data + '" alt="signature"/>';
-    } else {
-      preview.textContent = "No signature uploaded";
+    if (preview) {
+      if (data) {
+        preview.innerHTML = '<img src="' + data + '" alt="signature"/>';
+      } else {
+        preview.textContent = "No signature active";
+      }
     }
+    renderGallery();
   }
+
+  function renderGallery() {
+    const gallery = document.getElementById("sig-gallery");
+    if (!gallery) return;
+    const sigs = loadSigs();
+    const activeId = getActiveId();
+    if (sigs.length === 0) {
+      gallery.innerHTML = '<span style="font-size:12px;color:var(--lpr-muted);font-style:italic;">None saved yet — click + Add signature</span>';
+      return;
+    }
+    gallery.innerHTML = "";
+    sigs.forEach(function(sig) {
+      const chip = document.createElement("button");
+      chip.className = "sig-chip" + (sig.id === activeId ? " active" : "");
+      chip.type = "button";
+
+      const lbl = document.createElement("span");
+      lbl.textContent = sig.label;
+
+      const del = document.createElement("button");
+      del.className = "chip-del";
+      del.type = "button";
+      del.textContent = "×";
+      del.title = "Delete \"" + sig.label + "\"";
+      del.addEventListener("click", function(e) {
+        e.stopPropagation();
+        if (!confirm('Delete "' + sig.label + '"?')) return;
+        const arr = loadSigs().filter(function(s) { return s.id !== sig.id; });
+        saveSigs(arr);
+        if (sig.id === activeId) {
+          if (arr.length > 0) localStorage.setItem(SIG_KEY, arr[0].data);
+          else localStorage.removeItem(SIG_KEY);
+        }
+        renderSig();
+      });
+
+      chip.appendChild(lbl);
+      chip.appendChild(del);
+      chip.addEventListener("click", function() { setActive(sig.id); });
+      gallery.appendChild(chip);
+    });
+  }
+
+  // Migrate: if lpr_signature exists but no gallery yet, import it as "My signature"
+  (function() {
+    if (!localStorage.getItem(SIGS_KEY)) {
+      const existing = localStorage.getItem(SIG_KEY);
+      if (existing) saveSigs([{ id: "sig_" + Date.now(), label: "My signature", data: existing }]);
+    }
+  })();
+
   function processSignature(file) {
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = function(e) {
       const img = new Image();
-      img.onload = () => {
-        // 1. Find bbox of dark pixels (so we crop out whitespace borders)
+      img.onload = function() {
+        // 1. Find bbox of dark pixels (crop out whitespace borders)
         const probe = document.createElement("canvas");
         probe.width = img.width; probe.height = img.height;
         const px = probe.getContext("2d");
@@ -1579,14 +1675,11 @@
         for (let y = 0; y < probe.height; y++) {
           for (let x = 0; x < probe.width; x++) {
             const i = (y * probe.width + x) * 4;
-            // luminance + alpha check
             const a = d[i + 3];
             const lum = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
             if (a > 100 && lum < 200) {
-              if (x < minX) minX = x;
-              if (x > maxX) maxX = x;
-              if (y < minY) minY = y;
-              if (y > maxY) maxY = y;
+              if (x < minX) minX = x; if (x > maxX) maxX = x;
+              if (y < minY) minY = y; if (y > maxY) maxY = y;
               dark++;
             }
           }
@@ -1595,63 +1688,54 @@
           alert("Couldn't find a signature in that image (almost all white). Try a clearer scan with dark ink on white paper.");
           return;
         }
-        // 2. Pad the bbox a little so the signature has breathing room
+        // 2. Pad bbox
         const padX = Math.max((maxX - minX) * 0.04, 8);
         const padY = Math.max((maxY - minY) * 0.10, 8);
-        minX = Math.max(0, minX - padX);
-        minY = Math.max(0, minY - padY);
-        maxX = Math.min(probe.width, maxX + padX);
-        maxY = Math.min(probe.height, maxY + padY);
-        const cropW = maxX - minX;
-        const cropH = maxY - minY;
-
+        minX = Math.max(0, minX - padX); minY = Math.max(0, minY - padY);
+        maxX = Math.min(probe.width, maxX + padX); maxY = Math.min(probe.height, maxY + padY);
+        const cropW = maxX - minX, cropH = maxY - minY;
         // 3. Scale to max 800px wide
-        const maxOutW = 800;
-        const scale = Math.min(1, maxOutW / cropW);
-        const outW = Math.round(cropW * scale);
-        const outH = Math.round(cropH * scale);
-
-        // 4. Determine output format. PNGs (with transparency) → keep as PNG.
-        //    JPGs (likely white background) → keep as JPEG.
+        const scale = Math.min(1, 800 / cropW);
+        const outW = Math.round(cropW * scale), outH = Math.round(cropH * scale);
+        // 4. Output format
         const isPng = file.type === "image/png" || /\.png$/i.test(file.name);
         const out = document.createElement("canvas");
         out.width = outW; out.height = outH;
         const ox = out.getContext("2d");
-        if (!isPng) {
-          // White background for JPEG (so mix-blend-mode multiply works on the template page)
-          ox.fillStyle = "#ffffff";
-          ox.fillRect(0, 0, outW, outH);
-        }
+        if (!isPng) { ox.fillStyle = "#ffffff"; ox.fillRect(0, 0, outW, outH); }
         ox.drawImage(img, minX, minY, cropW, cropH, 0, 0, outW, outH);
         const dataUrl = out.toDataURL(isPng ? "image/png" : "image/jpeg", 0.9);
 
+        // 5. Label prompt → save to gallery → set as active
+        const rawLabel = prompt("Label this signature (e.g. your name or \"Formal\"):", "");
+        if (rawLabel === null) return; // user cancelled
+        const label = rawLabel.trim() || "Signature";
+        const id = "sig_" + Date.now();
+        const arr = loadSigs();
+        arr.push({ id: id, label: label, data: dataUrl });
         try {
+          saveSigs(arr);
           localStorage.setItem(SIG_KEY, dataUrl);
-        } catch (err) {
-          alert("Signature too large to save. Try a smaller image (under 800px wide).");
+        } catch(err) {
+          alert("Signature too large to save. Try a smaller image.");
+          arr.pop(); saveSigs(arr);
           return;
         }
         renderSig();
       };
-      img.onerror = () => alert("Couldn't load that image file.");
+      img.onerror = function() { alert("Couldn't load that image file."); };
       img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }
 
-  document.getElementById("sig-upload-btn").addEventListener("click", () => {
+  document.getElementById("sig-upload-btn").addEventListener("click", function() {
     document.getElementById("sig-input").click();
   });
-  document.getElementById("sig-input").addEventListener("change", e => {
+  document.getElementById("sig-input").addEventListener("change", function(e) {
     const file = e.target.files && e.target.files[0];
     if (file) processSignature(file);
     e.target.value = "";
-  });
-  document.getElementById("sig-clear-btn").addEventListener("click", () => {
-    if (!localStorage.getItem(SIG_KEY)) return;
-    if (!confirm("Remove the saved signature for this user?")) return;
-    localStorage.removeItem(SIG_KEY);
-    renderSig();
   });
   renderSig();
 })();
