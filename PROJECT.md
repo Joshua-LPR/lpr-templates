@@ -155,6 +155,10 @@ Empty title is supported — `data-employee-hide-empty` collapses elements with 
 
 A search bar on the index filters cards in real time by template name and description. Empty sections are hidden automatically. Clearing the search restores the full directory. Starred (Favorites) cards are included in search results regardless of their position in the page.
 
+When there are archived templates that match the query, an **Archived — matching results** section appears below the main results. Each card there has a **Restore** button that moves it back to its original section without leaving the page.
+
+The archive page (`archive.html`) has its own search bar that filters the archived grid in real time by name and size/role.
+
 ### Star, archive, drag-reorder
 
 - Hover any card to see action buttons
