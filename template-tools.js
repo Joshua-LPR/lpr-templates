@@ -382,6 +382,7 @@
     // Clean up edit-mode state before saving
     const clone = document.documentElement.cloneNode(true);
     clone.dataset.lprSnapshot = '1'; // tells employee.js not to overwrite baked-in values
+    clone.querySelectorAll(".toolbar, .no-print, #lpr-fill-panel").forEach(el => el.remove());
     clone.querySelectorAll("[contenteditable]").forEach(el => el.removeAttribute("contenteditable"));
     clone.querySelectorAll(".tt-editing").forEach(el => el.classList.remove("tt-editing"));
     // Make asset paths absolute so the file works from anywhere
@@ -399,17 +400,20 @@
   }
 
   async function exportPng(name) {
-    await ensureLib("https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js", "htmlToImage");
+    await ensureLib("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js", "html2canvas");
     const sheets = [...document.querySelectorAll(".sheet")].filter(s => s.offsetHeight > 0);
+    if (sheets.length === 0) return;
     for (let i = 0; i < sheets.length; i++) {
-      const blob = await window.htmlToImage.toBlob(sheets[i], {
-        pixelRatio: 2,
+      const canvas = await window.html2canvas(sheets[i], {
+        scale: 2,
+        useCORS: true,
         backgroundColor: "#ffffff",
-        cacheBust: true
+        logging: false
       });
+      const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
       const suffix = sheets.length > 1 ? "-" + (i + 1) : "";
       triggerDownload(blob, name + suffix + ".png");
-      await new Promise(r => setTimeout(r, 250));
+      await new Promise(r => setTimeout(r, 300));
     }
   }
 
