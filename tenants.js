@@ -33,7 +33,9 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'lpr_tenants';
+  const STORAGE_KEY  = 'lpr_tenants';
+  const RECENT_KEY   = 'lpr_recent_tenants';
+  const RECENT_MAX   = 5;
 
   /* ---- Field mapping: CSV column → internal key ---- */
   const CSV_MAP = {
@@ -84,6 +86,17 @@
   }
   function saveTenants(data) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+  function loadRecents() {
+    try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); }
+    catch (e) { return []; }
+  }
+  function pushRecent(id) {
+    const list = [id, ...loadRecents().filter(x => x !== id)].slice(0, RECENT_MAX);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+  }
+  function removeRecent(id) {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(loadRecents().filter(x => x !== id)));
   }
 
   /* ================================================================
@@ -428,11 +441,12 @@
   }
 
   function renderTenantContent(container, opts) {
-    const data     = loadTenants();
-    const all      = Object.values(data);
-    const named    = all.filter(t => t.effective.first_name || t.effective.last_name);
-    const q        = searchQ.toLowerCase();
-    const filtered = named
+    const data        = loadTenants();
+    const all         = Object.values(data);
+    const named       = all.filter(t => t.effective.first_name || t.effective.last_name);
+    const q           = searchQ.toLowerCase();
+    const recentItems = q ? [] : loadRecents().map(id => data[id]).filter(Boolean);
+    const filtered    = named
       .filter(t => !q || [
         t.effective.first_name, t.effective.last_name,
         t.effective.address_line1, t.effective.city
@@ -455,6 +469,18 @@
         <input id="lpr-tp-q" class="lpr-tp-q" type="text"
                placeholder="Search…" value="${esc(searchQ)}"/>
       </div>
+
+      ${recentItems.length ? `
+        <div class="lpr-tp-recent">
+          <div class="lpr-tp-sec-hd">Recent</div>
+          ${recentItems.map(t => `
+            <div class="lpr-tp-item${t._id === selectedId ? ' sel' : ''}" data-id="${esc(t._id)}">
+              <div class="lpr-tp-name">${esc(t.effective.last_name)}, ${esc(t.effective.first_name)}</div>
+              <div class="lpr-tp-addr">${esc(t.effective.address_line1)}${t.effective.city ? ' · ' + esc(t.effective.city) : ''}</div>
+              <button class="lpr-tp-recent-rm" data-id="${esc(t._id)}" title="Remove">✕</button>
+            </div>`).join('')}
+        </div>
+      ` : ''}
 
       <div class="lpr-tp-list">
         ${filtered.length === 0
@@ -488,6 +514,10 @@
 
     fillPanel.querySelectorAll('.lpr-tp-item').forEach(el => {
       el.onclick = () => { selectedId = el.dataset.id; importMsg = ''; renderFillPanel(); };
+    });
+
+    fillPanel.querySelectorAll('.lpr-tp-recent-rm').forEach(btn => {
+      btn.onclick = e => { e.stopPropagation(); removeRecent(btn.dataset.id); renderFillPanel(); };
     });
 
     if (sel) wireEditor(sel);
@@ -562,6 +592,7 @@
       const fresh = loadTenants()[t._id];
       if (!fresh) return;
       applyTenantAsRecipient(fresh);
+      pushRecent(t._id);
       const btn = gid('lpr-tp-apply-rec');
       btn.textContent = '✓ Applied';
       btn.classList.add('ok');
@@ -572,6 +603,7 @@
       const fresh = loadTenants()[t._id];
       if (!fresh) return;
       applyTenant(fresh);
+      pushRecent(t._id);
       const btn = gid('lpr-tp-apply-body');
       btn.textContent = '✓ Applied';
       btn.classList.add('ok');
@@ -750,6 +782,26 @@
       .lpr-tp-apply { width: 100%; padding: 10px; background: #283891; color: #fff; border: none; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .2s; }
       .lpr-tp-apply:hover { background: #1c2870; }
       .lpr-tp-apply.ok { background: #2a7a2a; }
+
+      /* ---- Recent section ---- */
+      .lpr-tp-recent {
+        flex-shrink: 0; background: #f7f8ff;
+        border-bottom: 2px solid #dde0f5;
+      }
+      .lpr-tp-sec-hd {
+        padding: 5px 14px 3px;
+        font-size: 9.5px; font-weight: 700; letter-spacing: 1px;
+        text-transform: uppercase; color: #283891;
+      }
+      .lpr-tp-recent .lpr-tp-item { background: #f7f8ff; position: relative; padding-right: 30px; }
+      .lpr-tp-recent .lpr-tp-item:hover { background: #eef0fb; }
+      .lpr-tp-recent-rm {
+        position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
+        background: none; border: none; color: #ccc; font-size: 10px;
+        cursor: pointer; padding: 3px 5px; border-radius: 3px; line-height: 1;
+        transition: color .15s;
+      }
+      .lpr-tp-recent-rm:hover { color: #c04; }
 
       /* ---- Insert sidebar group labels ---- */
       .lpr-ins-group-label {

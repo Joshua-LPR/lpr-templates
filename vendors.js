@@ -16,7 +16,9 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'lpr_vendors';
+  const STORAGE_KEY  = 'lpr_vendors';
+  const RECENT_KEY   = 'lpr_recent_vendors';
+  const RECENT_MAX   = 5;
 
   const CSV_MAP = {
     'Vendor Name *':                       'name',
@@ -55,6 +57,17 @@
   }
   function saveVendors(data) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+  function loadRecents() {
+    try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); }
+    catch (e) { return []; }
+  }
+  function pushRecent(id) {
+    const list = [id, ...loadRecents().filter(x => x !== id)].slice(0, RECENT_MAX);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+  }
+  function removeRecent(id) {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(loadRecents().filter(x => x !== id)));
   }
 
   /* ================================================================
@@ -205,10 +218,11 @@
      RENDER TAB CONTENT
      ================================================================ */
   function renderVendorContent(container, opts) {
-    const data     = loadVendors();
-    const all      = Object.values(data);
-    const q        = searchQ.toLowerCase();
-    const filtered = all
+    const data        = loadVendors();
+    const all         = Object.values(data);
+    const q           = searchQ.toLowerCase();
+    const recentItems = q ? [] : loadRecents().map(id => data[id]).filter(Boolean);
+    const filtered    = all
       .filter(v => !q || (v.effective.name || '').toLowerCase().includes(q))
       .sort((a, b) => (a.effective.name || '').localeCompare(b.effective.name || ''));
 
@@ -228,6 +242,18 @@
         <input id="lpr-vnd-q" class="lpr-tp-q" type="text"
                placeholder="Search…" value="${esc(searchQ)}"/>
       </div>
+
+      ${recentItems.length ? `
+        <div class="lpr-tp-recent">
+          <div class="lpr-tp-sec-hd">Recent</div>
+          ${recentItems.map(v => `
+            <div class="lpr-tp-item${v._id === selectedId ? ' sel' : ''}" data-id="${esc(v._id)}">
+              <div class="lpr-tp-name">${esc(v.effective.name || '—')}</div>
+              <div class="lpr-tp-addr">${esc(v.effective.address_line1 || '')}${v.effective.city ? ' · ' + esc(v.effective.city) : ''}</div>
+              <button class="lpr-tp-recent-rm" data-id="${esc(v._id)}" title="Remove">✕</button>
+            </div>`).join('')}
+        </div>
+      ` : ''}
 
       <div class="lpr-tp-list">
         ${filtered.length === 0
@@ -269,6 +295,15 @@
         importMsg  = '';
         const body = document.getElementById('lpr-tab-body');
         if (body) renderVendorContent(body);
+      };
+    });
+
+    container.querySelectorAll('.lpr-tp-recent-rm').forEach(btn => {
+      btn.onclick = e => {
+        e.stopPropagation();
+        removeRecent(btn.dataset.id);
+        const body = document.getElementById('lpr-tab-body');
+        if (body) renderVendorContent(body, opts);
       };
     });
 
@@ -348,6 +383,7 @@
       const fresh = loadVendors()[v._id];
       if (!fresh) return;
       applyVendorAsRecipient(fresh);
+      pushRecent(v._id);
       recBtn.textContent = '✓ Applied';
       recBtn.classList.add('ok');
       setTimeout(() => { recBtn.textContent = 'Apply as Recipient'; recBtn.classList.remove('ok'); }, 1800);
@@ -358,6 +394,7 @@
       const fresh = loadVendors()[v._id];
       if (!fresh) return;
       applyVendor(fresh);
+      pushRecent(v._id);
       bodyBtn.textContent = '✓ Applied';
       bodyBtn.classList.add('ok');
       setTimeout(() => { bodyBtn.textContent = 'Body fields only'; bodyBtn.classList.remove('ok'); }, 1800);
