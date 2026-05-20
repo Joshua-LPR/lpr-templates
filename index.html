@@ -395,6 +395,20 @@
   .tmpl-search-clear:hover { color: var(--lpr-ink); }
   .tmpl-search-none { text-align: center; color: var(--lpr-muted); font-size: 13px; padding: 32px 0; display: none; }
 
+  /* ---- Archived search results section ---- */
+  #search-archived-section { margin-top: 8px; }
+  #search-archived-section .section-title { opacity: 0.7; }
+  #search-archived-section .card { opacity: 0.72; cursor: default; }
+  #search-archived-section .card:hover { transform: none; box-shadow: 0 2px 12px rgba(0,0,0,0.05); opacity: 0.9; }
+  .arch-restore-btn {
+    display: block; width: 100%; margin-top: 12px;
+    font-family: inherit; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+    padding: 7px 10px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--lpr-blue); background: #fff; color: var(--lpr-blue);
+    transition: all .15s;
+  }
+  .arch-restore-btn:hover { background: var(--lpr-blue); color: #fff; }
+
 </style>
 </head>
 <body>
@@ -860,7 +874,10 @@
 
   </div><!-- /sections-wrap -->
 
-  
+  <div id="search-archived-section" style="display:none;">
+    <div class="section-title" style="margin-top:28px;">Archived — matching results</div>
+    <div class="grid" id="search-archived-grid"></div>
+  </div>
 
   <div class="backup-zone">
     <h2>Backup &amp; Restore</h2>
@@ -1580,6 +1597,7 @@
   }
 
   rebuild();
+  window.lprRebuild = rebuild;
 
   // Show active user badge in top-actions
   if (window.LPR_USER) {
@@ -1894,15 +1912,55 @@
 <script>
 // Template search
 (function () {
-  const input   = document.getElementById('tmpl-search');
-  const clear   = document.getElementById('tmpl-search-clear');
-  const none    = document.getElementById('tmpl-search-none');
+  const input       = document.getElementById('tmpl-search');
+  const clear       = document.getElementById('tmpl-search-clear');
+  const none        = document.getElementById('tmpl-search-none');
+  const archSection = document.getElementById('search-archived-section');
+  const archGrid    = document.getElementById('search-archived-grid');
+
+  function getArchived() {
+    try { return new Set(JSON.parse(localStorage.getItem('lpr_archived') || '[]')); }
+    catch (e) { return new Set(); }
+  }
+
+  function showArchivedMatches(q, archived) {
+    archGrid.innerHTML = '';
+    if (!q) { archSection.style.display = 'none'; return 0; }
+    let count = 0;
+    document.querySelectorAll('#sections-wrap .card[data-template-id]').forEach(function (card) {
+      const tid = card.dataset.templateId;
+      if (!archived.has(tid)) return;
+      const name = (card.querySelector('h3')?.textContent || '').toLowerCase();
+      const desc = (card.querySelector('p')?.textContent  || '').toLowerCase();
+      if (!name.includes(q) && !desc.includes(q)) return;
+      const clone = card.cloneNode(true);
+      clone.style.display = '';
+      clone.querySelectorAll('.card-actions, .star-btn').forEach(function (el) { el.remove(); });
+      const restoreBtn = document.createElement('button');
+      restoreBtn.textContent = 'Restore';
+      restoreBtn.className = 'arch-restore-btn';
+      restoreBtn.addEventListener('click', function () {
+        const a = getArchived(); a.delete(tid);
+        localStorage.setItem('lpr_archived', JSON.stringify([...a]));
+        if (window.lprRebuild) window.lprRebuild();
+        filter();
+      });
+      const body = clone.querySelector('.body');
+      if (body) body.appendChild(restoreBtn);
+      archGrid.appendChild(clone);
+      count++;
+    });
+    archSection.style.display = count ? '' : 'none';
+    return count;
+  }
 
   function filter() {
     const q = input.value.toLowerCase().trim();
     clear.style.display = q ? '' : 'none';
+    const archived = getArchived();
 
-    document.querySelectorAll('#sections-wrap .card').forEach(function (card) {
+    document.querySelectorAll('#sections-wrap .card[data-template-id]').forEach(function (card) {
+      if (archived.has(card.dataset.templateId)) return; // leave archived cards hidden
       const name = (card.querySelector('h3')?.textContent || '').toLowerCase();
       const desc = (card.querySelector('p')?.textContent  || '').toLowerCase();
       card.style.display = (!q || name.includes(q) || desc.includes(q)) ? '' : 'none';
@@ -1911,10 +1969,13 @@
     let anyVisible = false;
     document.querySelectorAll('.section-block').forEach(function (section) {
       if (!q) { section.style.display = ''; return; }
-      const has = [...section.querySelectorAll('.card')].some(c => c.style.display !== 'none');
+      const has = [...section.querySelectorAll('.card')].some(function (c) { return c.style.display !== 'none'; });
       section.style.display = has ? '' : 'none';
       if (has) anyVisible = true;
     });
+
+    const archCount = showArchivedMatches(q, archived);
+    if (archCount > 0) anyVisible = true;
 
     none.style.display = (q && !anyVisible) ? '' : 'none';
   }

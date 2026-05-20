@@ -81,6 +81,23 @@
   .toolbar-row .restore-all { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
   .toolbar-row .restore-all:hover { background: var(--lpr-blue-deep); }
   .toolbar-row .count { margin-left: auto; font-size: 12px; color: var(--lpr-muted); }
+
+  .arch-search-wrap { position: relative; margin-bottom: 20px; display: none; }
+  .arch-search-wrap input {
+    width: 100%; box-sizing: border-box; padding: 11px 38px 11px 16px;
+    border: 1.5px solid #ddd; border-radius: 8px; background: #fff;
+    font-family: inherit; font-size: 13px; color: var(--lpr-ink);
+    outline: none; transition: border-color .15s;
+  }
+  .arch-search-wrap input:focus { border-color: var(--lpr-blue); }
+  .arch-search-wrap input::placeholder { color: var(--lpr-muted); }
+  .arch-search-wrap .arch-search-clear {
+    position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: #bbb; font-size: 14px;
+    cursor: pointer; padding: 4px; line-height: 1; display: none;
+  }
+  .arch-search-wrap .arch-search-clear:hover { color: var(--lpr-ink); }
+  .arch-search-none { text-align: center; color: var(--lpr-muted); font-size: 13px; padding: 24px 0; display: none; }
 </style>
 </head>
 <body>
@@ -99,6 +116,12 @@
     <button class="restore-all" id="restore-all">Restore All</button>
     <span class="count" id="count"></span>
   </div>
+
+  <div class="arch-search-wrap" id="arch-search-wrap">
+    <input id="arch-search" type="text" placeholder="Search archived…" autocomplete="off" spellcheck="false"/>
+    <button class="arch-search-clear" id="arch-search-clear" title="Clear">✕</button>
+  </div>
+  <div class="arch-search-none" id="arch-search-none">No archived templates match your search.</div>
 
   <div id="archive-grid"></div>
 
@@ -137,6 +160,25 @@
   const getCustom = () => read(KEYS.CUSTOM, {});
   const setCustom = o => write(KEYS.CUSTOM, o);
 
+  let filterQ = '';
+
+  function applyFilter() {
+    const q = filterQ.toLowerCase().trim();
+    const clearBtn = document.getElementById('arch-search-clear');
+    if (clearBtn) clearBtn.style.display = q ? '' : 'none';
+    const cards = document.querySelectorAll('#archive-grid .card');
+    let any = false;
+    cards.forEach(function (card) {
+      const name = (card.querySelector('h3')?.textContent || '').toLowerCase();
+      const role = (card.querySelector('.role')?.textContent || '').toLowerCase();
+      const show = !q || name.includes(q) || role.includes(q);
+      card.style.display = show ? '' : 'none';
+      if (show) any = true;
+    });
+    const noneEl = document.getElementById('arch-search-none');
+    if (noneEl) noneEl.style.display = (q && !any) ? '' : 'none';
+  }
+
   function render() {
     const archived = getArchived();
     const custom = getCustom();
@@ -166,6 +208,7 @@
 
     document.getElementById("toolbar").style.display = "";
     document.getElementById("count").textContent = items.length + " template" + (items.length === 1 ? "" : "s") + " archived";
+    document.getElementById("arch-search-wrap").style.display = "";
 
     grid.className = "grid";
     grid.innerHTML = "";
@@ -199,12 +242,24 @@
       }
       grid.appendChild(card);
     }
+    applyFilter();
   }
 
   document.getElementById("restore-all").addEventListener("click", () => {
     if (!confirm("Restore all archived templates to the main page?")) return;
     setArchived(new Set());
     render();
+  });
+
+  document.getElementById('arch-search').addEventListener('input', function (e) {
+    filterQ = e.target.value;
+    applyFilter();
+  });
+  document.getElementById('arch-search-clear').addEventListener('click', function () {
+    filterQ = '';
+    document.getElementById('arch-search').value = '';
+    applyFilter();
+    document.getElementById('arch-search').focus();
   });
 
   function escapeHtml(s) {
