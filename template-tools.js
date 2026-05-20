@@ -511,7 +511,23 @@
     clone.dataset.lprSnapshot = '1'; // tells employee.js not to overwrite baked-in values
     clone.querySelectorAll("[contenteditable]").forEach(el => el.removeAttribute("contenteditable"));
     clone.querySelectorAll(".tt-editing").forEach(el => el.classList.remove("tt-editing"));
+
+    // Remove dynamically-injected toolbar buttons — template-tools.js re-adds them fresh on open,
+    // so saving them causes a duplicate set (stale + new) when the template is reopened.
+    clone.querySelectorAll(".tt-btn, .tt-export-wrap").forEach(el => el.remove());
+
     const baseUrl = location.href.substring(0, location.href.lastIndexOf("/") + 1);
+
+    // Inject <base> tag so blob:// URLs resolve CSS/JS/image paths against the original location
+    const headEl = clone.querySelector("head");
+    if (headEl) {
+      const existingBase = headEl.querySelector("base");
+      if (existingBase) existingBase.remove();
+      const baseTag = document.createElement("base");
+      baseTag.href = baseUrl;
+      headEl.insertBefore(baseTag, headEl.firstChild);
+    }
+
     clone.querySelectorAll("[src], [href]").forEach(el => {
       ["src", "href"].forEach(attr => {
         const v = el.getAttribute(attr);
