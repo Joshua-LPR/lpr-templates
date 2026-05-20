@@ -139,15 +139,15 @@
     "Envelope Premium.html":         { title: "Envelope",                   role: "9.5″ × 4.125″ · #10" },
     "Envelope.html":                 { title: "Envelope — With Stripe",     role: "9.5″ × 4.125″ · #10" },
     "Mailing Labels.html":           { title: "Mailing Labels",             role: "Avery 5160 · 30 / Sheet" },
+    "Address Labels P-touch.html":   { title: "Address Labels — P-touch",  role: "DK-1201 · 29×90mm" },
+    "Certificate of Mailing.html":   { title: "Certificate of Mailing",    role: "PS Form 3817" },
     "Lease Cover.html":              { title: "Lease Cover Page",           role: "8.5″ × 11″ · US Letter" },
     "Email Signature.html":          { title: "Email Signature",            role: "HTML · Gmail / Outlook" },
     "Notice Template.html":          { title: "Notice Template — Blank",    role: "8.5″ × 11″ · Blank" },
     "24-Hour Notice.html":           { title: "24-Hour Notice of Entry",    role: "8.5″ × 11″ · US Letter" },
     "Rent Increase Notice.html":     { title: "Rent Increase Notice",       role: "8.5″ × 11″ · US Letter" },
     "Non-Renewal Notice.html":       { title: "Non-Renewal Notice",         role: "8.5″ × 11″ · US Letter" },
-    "Security Deposit Returned.html":       { title: "Security Deposit — Returned",        role: "8.5″ × 11″ · US Letter" },
-    "Security Deposit Partial Refund.html": { title: "Security Deposit — Partial Refund",  role: "8.5″ × 11″ · US Letter" },
-    "Security Deposit Withheld.html":       { title: "Security Deposit — Withheld",        role: "8.5″ × 11″ · US Letter" },
+    "Security Deposit.html":         { title: "Security Deposit Notices",   role: "8.5″ × 11″ · US Letter" },
     "Door Hanger.html":              { title: "Door Hanger",                role: "4.25″ × 11″" },
     "Yard Sign.html":                { title: "Yard Sign — For Rent",       role: "24″ × 18″" }
   };
@@ -191,8 +191,8 @@
         const t = custom[cid];
         if (t) items.push({ id, type: "custom", customId: cid, name: t.name, role: "Saved · from " + (t.base || "template") });
       } else {
-        const t = TEMPLATES[id];
-        if (t) items.push({ id, type: "builtin", file: id, name: t.title, role: t.role });
+        const t = TEMPLATES[id] || { title: id.replace(/\.html$/i, "").replace(/-/g, " "), role: "Template" };
+        items.push({ id, type: "builtin", file: id, name: t.title, role: t.role });
       }
     }
 
@@ -260,6 +260,20 @@
     document.getElementById('arch-search').value = '';
     applyFilter();
     document.getElementById('arch-search').focus();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    const s = document.getElementById('arch-search');
+    if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA' && !document.activeElement.isContentEditable) {
+      e.preventDefault();
+      s.focus();
+    }
+    if (e.key === 'Escape' && document.activeElement === s) {
+      filterQ = '';
+      s.value = '';
+      applyFilter();
+      s.blur();
+    }
   });
 
   function escapeHtml(s) {

@@ -226,6 +226,61 @@
   }
   .reset-zone button:hover { background: #c33; color: #fff; }
 
+  /* Reset modal */
+  .reset-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .reset-modal-box {
+    background: #fff; border-radius: 14px; padding: 36px 40px;
+    max-width: 500px; width: 92%; box-shadow: 0 12px 48px rgba(0,0,0,0.18);
+    text-align: center;
+  }
+  .reset-modal-box > h3 {
+    font-size: 17px; font-weight: 700; color: var(--lpr-ink); margin: 0 0 8px;
+  }
+  .reset-modal-box > p {
+    font-size: 13px; color: var(--lpr-muted); margin: 0 0 22px; line-height: 1.5;
+  }
+  .reset-modal-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .reset-modal-opt {
+    border-radius: 10px; padding: 16px 14px; font-family: inherit;
+    cursor: pointer; text-align: left; border: 1.5px solid; transition: background .15s;
+  }
+  .reset-modal-opt strong { display: block; font-size: 13px; font-weight: 700; margin-bottom: 5px; }
+  .reset-modal-opt span { font-size: 11px; line-height: 1.5; display: block; }
+  .reset-modal-mine { border-color: var(--lpr-blue); color: var(--lpr-blue); background: #f0f3ff; }
+  .reset-modal-mine:hover { background: var(--lpr-blue); color: #fff; }
+  .reset-modal-all-btn { border-color: #c33; color: #c33; background: #fff7f7; }
+  .reset-modal-all-btn:hover { background: #c33; color: #fff; }
+  .reset-modal-cancel {
+    font-family: inherit; font-size: 12px; color: var(--lpr-muted);
+    background: none; border: none; cursor: pointer; padding: 6px 12px; margin-top: 4px;
+  }
+  .reset-modal-cancel:hover { color: var(--lpr-ink); }
+  .reset-all-panel { text-align: left; margin-bottom: 16px; }
+  .reset-all-warn {
+    background: #fff3cd; border: 1px solid #f0c060; border-radius: 8px;
+    padding: 10px 14px; font-size: 12px; color: #7a5700; margin-bottom: 14px; line-height: 1.5;
+  }
+  .reset-all-panel > p { font-size: 13px; color: var(--lpr-ink); margin: 0 0 8px; }
+  .reset-all-panel input {
+    width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 8px;
+    border: 1.5px solid #ddd; font-family: inherit; font-size: 13px;
+    color: var(--lpr-ink); margin-bottom: 12px; outline: none; transition: border-color .15s;
+  }
+  .reset-all-panel input:focus { border-color: #c33; }
+  .reset-all-panel .rm-btns { display: flex; gap: 10px; }
+  .reset-all-panel .rm-btns button {
+    font-family: inherit; font-size: 12px; font-weight: 600; padding: 9px 18px;
+    border-radius: 999px; cursor: pointer; border: 1px solid;
+  }
+  #reset-all-submit { background: #c33; color: #fff; border-color: #c33; flex: 1; }
+  #reset-all-submit:disabled { background: #e9a0a0; border-color: #e9a0a0; cursor: not-allowed; }
+  #reset-all-submit:not(:disabled):hover { background: #a00; border-color: #a00; }
+  #reset-all-back { background: none; color: var(--lpr-muted); border-color: var(--lpr-rule); }
+  #reset-all-back:hover { color: var(--lpr-ink); border-color: #aaa; }
+
   /* Backup / restore */
   .backup-zone {
     background: #fff; border-radius: 12px; padding: 28px 32px;
@@ -1206,8 +1261,35 @@
 
   <div class="reset-zone">
     <h3>Reset</h3>
-    <p>Clears all your customizations: starred favorites, archived templates, saved presets, custom-library items, and category/order changes. Built-in templates are restored to their original order.</p>
+    <p>Clears customizations: starred favorites, archived templates, saved presets, custom-library items, and order changes. Template files are not affected.</p>
     <button id="full-reset">Reset Everything</button>
+  </div>
+
+  <div id="reset-modal" class="reset-modal-overlay" style="display:none;" role="dialog" aria-modal="true">
+    <div class="reset-modal-box">
+      <h3>Reset Data</h3>
+      <p>Choose what to reset. Your template files are never affected.</p>
+      <div class="reset-modal-options" id="reset-modal-options">
+        <button class="reset-modal-opt reset-modal-mine" id="reset-mine">
+          <strong>My data only</strong>
+          <span>Clears your starred, archived, presets, and order changes. Other users are unaffected.</span>
+        </button>
+        <button class="reset-modal-opt reset-modal-all-btn" id="reset-all-open">
+          <strong>All users</strong>
+          <span>Permanently wipes everyone's data and removes all user accounts. Requires confirmation.</span>
+        </button>
+      </div>
+      <div id="reset-all-panel" class="reset-all-panel" style="display:none;">
+        <p class="reset-all-warn">⚠ This permanently deletes all data for every user and cannot be undone.</p>
+        <p>Type <strong>RESET ALL</strong> to confirm:</p>
+        <input id="reset-all-input" type="text" autocomplete="off" spellcheck="false" placeholder="RESET ALL"/>
+        <div class="rm-btns">
+          <button id="reset-all-back">← Back</button>
+          <button id="reset-all-submit" disabled>Delete Everything</button>
+        </div>
+      </div>
+      <button class="reset-modal-cancel" id="reset-modal-cancel">Cancel</button>
+    </div>
   </div>
 
 
@@ -1490,20 +1572,72 @@
   }
 
   /* ---------- 5. Full reset ---------- */
-  document.getElementById("full-reset").addEventListener("click", () => {
-    const msg = "Reset everything to original?\n\nThis will clear:\n• Starred favorites\n• Archived templates\n• Saved library items\n• Custom presets\n• Section/template order\n\nYour template files are not deleted.";
-    if (!confirm(msg)) return;
-    if (!confirm("Are you sure? This cannot be undone.")) return;
-    Object.values(KEYS).forEach(k => localStorage.removeItem(k));
-    localStorage.removeItem("lpr_presets");
-    localStorage.removeItem("lpr_employee");
-    localStorage.removeItem("lpr_sig_mode");
-    localStorage.removeItem("lpr_sig_url");
-    localStorage.removeItem("lpr_sig_style");
-    localStorage.removeItem("lpr_signature");
-    localStorage.removeItem("lpr_sigs");
-    location.reload();
-  });
+  (function () {
+    const modal      = document.getElementById('reset-modal');
+    const optWrap    = document.getElementById('reset-modal-options');
+    const allPanel   = document.getElementById('reset-all-panel');
+    const allInput   = document.getElementById('reset-all-input');
+    const submitBtn  = document.getElementById('reset-all-submit');
+
+    function openModal() {
+      optWrap.style.display = '';
+      allPanel.style.display = 'none';
+      allInput.value = '';
+      submitBtn.disabled = true;
+      modal.style.display = 'flex';
+    }
+    function closeModal() { modal.style.display = 'none'; }
+
+    document.getElementById('full-reset').addEventListener('click', openModal);
+    document.getElementById('reset-modal-cancel').addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.style.display !== 'none') closeModal(); });
+
+    // Reset current user's data only
+    document.getElementById('reset-mine').addEventListener('click', () => {
+      closeModal();
+      ['lpr_starred','lpr_archived','lpr_custom_templates','lpr_card_order','lpr_section_order',
+       'lpr_presets','lpr_employee','lpr_sig_mode','lpr_sig_url','lpr_sig_style','lpr_signature','lpr_sigs']
+        .forEach(k => localStorage.removeItem(k));
+      // Catch any remaining namespaced keys for this user
+      const myNS = 'lpr_user_' + (window.LPR_USER?.active || '') + '_';
+      const toRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(myNS)) toRemove.push(k);
+      }
+      toRemove.forEach(k => localStorage.removeItem(k));
+      location.reload();
+    });
+
+    // Show typed-confirm panel for "all users"
+    document.getElementById('reset-all-open').addEventListener('click', () => {
+      optWrap.style.display = 'none';
+      allPanel.style.display = '';
+      allInput.focus();
+    });
+
+    allInput.addEventListener('input', () => {
+      submitBtn.disabled = allInput.value.trim() !== 'RESET ALL';
+    });
+
+    document.getElementById('reset-all-back').addEventListener('click', () => {
+      allPanel.style.display = 'none';
+      optWrap.style.display = '';
+      allInput.value = '';
+      submitBtn.disabled = true;
+    });
+
+    // Wipe all users via LPR_USER.deleteUser, then clear global keys → redirect
+    submitBtn.addEventListener('click', () => {
+      if (allInput.value.trim() !== 'RESET ALL') return;
+      const users = window.LPR_USER?.getUsers() || [];
+      users.forEach(u => window.LPR_USER.deleteUser(u.id));
+      localStorage.removeItem('lpr_users');
+      localStorage.removeItem('lpr_active_user');
+      location.href = 'users.html';
+    });
+  })();
 
   /* ---------- 6. Backup / Restore ---------- */
   function buildBackup() {
@@ -1982,6 +2116,18 @@
 
   input.addEventListener('input', filter);
   clear.addEventListener('click', function () { input.value = ''; filter(); input.focus(); });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA' && !document.activeElement.isContentEditable) {
+      e.preventDefault();
+      input.focus();
+    }
+    if (e.key === 'Escape' && document.activeElement === input) {
+      input.value = '';
+      filter();
+      input.blur();
+    }
+  });
 })();
 </script>
 

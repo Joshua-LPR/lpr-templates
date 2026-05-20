@@ -387,12 +387,13 @@
   /* ================================================================
      FILL FIELDS PANEL
      ================================================================ */
-  let fillPanel  = null;
-  let activeTab  = 'tenants';
-  let selectedId = null;
-  let searchQ    = '';
-  let importMsg  = '';
-  let addMode    = false;
+  let fillPanel       = null;
+  let activeTab       = 'tenants';
+  let selectedId      = null;
+  let searchQ         = '';
+  let importMsg       = '';
+  let addMode         = false;
+  let _panelKeyHandler = null;
 
   function openFillPanel() {
     if (fillPanel) { closeFillPanel(); return; }
@@ -401,12 +402,27 @@
     fillPanel.style.right = insertPanel ? '280px' : '0';
     document.body.appendChild(fillPanel);
     document.getElementById('lpr-fill-btn')?.classList.add('tt-active');
+    _panelKeyHandler = function (e) {
+      const q = fillPanel && fillPanel.querySelector('#lpr-tp-q, #lpr-vnd-q');
+      if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA' && !document.activeElement.isContentEditable) {
+        if (q) { e.preventDefault(); q.focus(); }
+      }
+      if (e.key === 'Escape' && q && document.activeElement === q) {
+        q.value = '';
+        q.dispatchEvent(new Event('input')); // triggers each tab's own oninput → clears its searchQ
+      }
+    };
+    document.addEventListener('keydown', _panelKeyHandler);
     renderFillPanel();
   }
 
   function closeFillPanel() {
     fillPanel?.remove();
     fillPanel = null;
+    if (_panelKeyHandler) {
+      document.removeEventListener('keydown', _panelKeyHandler);
+      _panelKeyHandler = null;
+    }
     document.getElementById('lpr-fill-btn')?.classList.remove('tt-active');
   }
 

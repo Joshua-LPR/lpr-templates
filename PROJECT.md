@@ -159,6 +159,10 @@ When there are archived templates that match the query, an **Archived — matchi
 
 The archive page (`archive.html`) has its own search bar that filters the archived grid in real time by name and size/role.
 
+**Keyboard shortcuts (all search bars, including archive and Setup panel):**
+- Press `/` from anywhere on the page (when not already in a text field) to jump focus to the nearest search bar.
+- Press `Esc` while a search bar is focused to clear it and return focus to the page.
+
 ### Star, archive, drag-reorder
 
 - Hover any card to see action buttons
@@ -254,7 +258,12 @@ The **Backup & Restore** panel (above the usage instructions on the index):
 
 ### Full Reset
 
-The red **Reset Everything** button at the very bottom of the index clears all customizations for **all users** on this browser and reloads. Template files themselves are not affected. Two confirmations required.
+The red **Reset Everything** button at the very bottom of the index opens a modal with two options:
+
+- **My data only** — clears the current user's starred, archived, presets, library items, and order changes. Other users are unaffected. Takes effect immediately on click.
+- **All users** — permanently wipes every user's data and removes all user accounts from this browser, then redirects to the user picker. Requires typing `RESET ALL` into a confirmation field before the action is enabled.
+
+Template files are never affected by either option.
 
 ---
 
