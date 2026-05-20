@@ -151,6 +151,10 @@ Empty title is supported — `data-employee-hide-empty` collapses elements with 
 - `mix-blend-mode: multiply` makes JPG white backgrounds disappear on white pages
 - **Drag to position + resize** in Edit mode — drag the signature to move it, drag the blue handle at the bottom-right corner to resize (aspect ratio preserved). Position and size saved per-template per-user.
 
+### Template search
+
+A search bar on the index filters cards in real time by template name and description. Empty sections are hidden automatically. Clearing the search restores the full directory. Starred (Favorites) cards are included in search results regardless of their position in the page.
+
 ### Star, archive, drag-reorder
 
 - Hover any card to see action buttons
@@ -164,7 +168,7 @@ Empty title is supported — `data-employee-hide-empty` collapses elements with 
 
 | Button | Action |
 |--------|--------|
-| **Edit** | Toggles `contenteditable` on the entire page so any text can be retyped |
+| **Edit** | Toggles `contenteditable` on the entire page so any text can be retyped. Spell check activates automatically. |
 | **Export → Print** | Browser-native print dialog (paper or system PDF) |
 | **Export → PDF** | Saves a real PDF in the page's exact dimensions (html2pdf.js) |
 | **Export → Image** | Saves a 2× resolution PNG (html-to-image). Multi-sheet templates export as multiple files. |
@@ -195,6 +199,7 @@ The **Setup** button (renamed from "Fill Fields") opens a tabbed panel that appe
 - Overrides auto-cleared if re-import matches the override value. "Buildium: …" hint shown when override differs from source.
 - **Apply as Recipient** — fills `data-contact-field` spans (recipient address block) AND `data-tenant-field` spans (body references).
 - **Body fields only** — fills only `data-tenant-field` spans; leaves `data-contact-field` untouched for a vendor recipient.
+- **+ Add** — manually create a tenant entry directly in the browser without importing a CSV. Same fields as the editor. Saved to localStorage with a generated ID (`m_<timestamp>`). Manual entries show a **Delete** button in their editor header for removal.
 - **Recently used** — the last 5 applied tenants appear in a shaded section above the scrollable list. Hidden during search. Each entry has an ✕ to remove it individually. Persists across sessions.
 - Storage keys: `lpr_tenants` (address book), `lpr_recent_tenants` (recent list). Both per user.
 
@@ -205,6 +210,7 @@ The **Setup** button (renamed from "Fill Fields") opens a tabbed panel that appe
 - **Import CSV** — Buildium vendor export (columns: "Vendor Name *", "Address Line 1 (optional)", etc.). ID: uses "Id (optional)" column, falls back to vendor name.
 - **Apply as Recipient** — fills `data-contact-field` spans (name → combined name, address, city, state, zip, email, phone) AND `data-vendor-field` spans.
 - **Body fields only** — fills only `data-vendor-field` spans.
+- **+ Add** — manually create a vendor entry directly in the browser without importing a CSV. Same fields as the editor. Saved to localStorage with a generated ID (`m_<timestamp>`). Manual entries show a **Delete** button in their editor header for removal.
 - **Recently used** — the last 5 applied vendors appear in a shaded section above the scrollable list. Hidden during search. Each entry has an ✕ to remove it individually. Persists across sessions.
 - Storage keys: `lpr_vendors` (address book), `lpr_recent_vendors` (recent list). Both per user.
 
