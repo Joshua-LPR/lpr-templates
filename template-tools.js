@@ -317,7 +317,9 @@
   /* --------- UNFILLED FIELDS CHECK --------- */
   function checkUnfilledFields() {
     const warnings = [];
-    const hasEmpty = sel => [...document.querySelectorAll(sel)].some(el => !el.textContent.trim());
+    const hasEmpty = sel => [...document.querySelectorAll(sel)]
+      .filter(el => { const sheet = el.closest('.sheet'); return !sheet || sheet.offsetHeight > 0; })
+      .some(el => !el.textContent.trim());
     if (hasEmpty('[data-contact-field]'))  warnings.push('No recipient selected — recipient fields will be blank');
     if (hasEmpty('[data-tenant-field]'))   warnings.push('No tenant selected — tenant fields will be blank');
     if (hasEmpty('[data-vendor-field]'))   warnings.push('No vendor selected — vendor fields will be blank');
@@ -398,7 +400,7 @@
 
   async function exportPng(name) {
     await ensureLib("https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js", "htmlToImage");
-    const sheets = [...document.querySelectorAll(".sheet")];
+    const sheets = [...document.querySelectorAll(".sheet")].filter(s => s.offsetHeight > 0);
     for (let i = 0; i < sheets.length; i++) {
       const blob = await window.htmlToImage.toBlob(sheets[i], {
         pixelRatio: 2,
@@ -413,7 +415,7 @@
 
   async function exportPdf(name) {
     await ensureLib("https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js", "html2pdf");
-    const sheets = [...document.querySelectorAll(".sheet")];
+    const sheets = [...document.querySelectorAll(".sheet")].filter(s => s.offsetHeight > 0);
     if (sheets.length === 0) return;
     // Use first sheet's dimensions for the page size (assumes uniform pages)
     const r = sheets[0].getBoundingClientRect();
