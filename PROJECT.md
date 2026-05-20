@@ -107,9 +107,7 @@ Montserrat is bundled locally in `assets/fonts/` so templates render identically
 | **24-Hour Notice of Entry** | MD-law required entry notice. Date/time/reason/entrants grid. Legal footer. |
 | **Rent Increase Notice** | Renewal letter with new monthly rent and effective date. |
 | **Non-Renewal Notice** | Lease will not renew. Vacate-by date and forwarding address request. |
-| **Security Deposit — Returned** | Full deposit + interest refunded, check enclosed. |
-| **Security Deposit — Partial Refund** | Portion withheld for outstanding balance, balance refunded. |
-| **Security Deposit — Withheld** | Full deposit applied to outstanding ledger, remaining balance owed. |
+| **Security Deposit Notices** | Three variants in one file: Withheld, Partial Refund, Full Refund. Mode bar at top switches between them (same pattern as Certificate of Mailing). Save As / Export captures only the active variant via `cloneNode` override. |
 | **Door Hanger** | 4.25″ × 11″ with die-cut guide. Blank lines for handwriting. |
 | **Yard Sign — For Rent** | 24″ × 18″ landscape. Print-shop spec for vinyl/coroplast. |
 
@@ -315,9 +313,7 @@ lpr-templates/
 ├── Notice Template.html
 ├── Rent Increase Notice.html
 ├── Non-Renewal Notice.html
-├── Security Deposit Returned.html
-├── Security Deposit Partial Refund.html
-├── Security Deposit Withheld.html
+├── Security Deposit.html               # Combined — Withheld / Partial Refund / Full Refund
 ├── Door Hanger.html
 ├── Yard Sign.html
 │
