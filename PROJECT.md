@@ -197,7 +197,8 @@ The **Setup** button (renamed from "Fill Fields") opens a tabbed panel that appe
 - Overrides auto-cleared if re-import matches the override value. "Buildium: …" hint shown when override differs from source.
 - **Apply as Recipient** — fills `data-contact-field` spans (recipient address block) AND `data-tenant-field` spans (body references).
 - **Body fields only** — fills only `data-tenant-field` spans; leaves `data-contact-field` untouched for a vendor recipient.
-- Storage key: `lpr_tenants` (per user).
+- **Recently used** — the last 5 applied tenants appear in a shaded section above the scrollable list. Hidden during search. Each entry has an ✕ to remove it individually. Persists across sessions.
+- Storage keys: `lpr_tenants` (address book), `lpr_recent_tenants` (recent list). Both per user.
 
 #### Vendors tab (`vendors.js`)
 
@@ -206,7 +207,8 @@ The **Setup** button (renamed from "Fill Fields") opens a tabbed panel that appe
 - **Import CSV** — Buildium vendor export (columns: "Vendor Name *", "Address Line 1 (optional)", etc.). ID: uses "Id (optional)" column, falls back to vendor name.
 - **Apply as Recipient** — fills `data-contact-field` spans (name → combined name, address, city, state, zip, email, phone) AND `data-vendor-field` spans.
 - **Body fields only** — fills only `data-vendor-field` spans.
-- Storage key: `lpr_vendors` (per user).
+- **Recently used** — the last 5 applied vendors appear in a shaded section above the scrollable list. Hidden during search. Each entry has an ✕ to remove it individually. Persists across sessions.
+- Storage keys: `lpr_vendors` (address book), `lpr_recent_vendors` (recent list). Both per user.
 
 ### Field namespace system
 
@@ -395,8 +397,8 @@ git push
 | Active user, user list | Browser localStorage |
 | Favorites, archive, library, presets, order | Browser localStorage (namespaced per user) |
 | Signature image + per-template positions | Browser localStorage (namespaced per user) |
-| Tenant address book | Browser localStorage (namespaced per user) |
-| Vendor address book | Browser localStorage (namespaced per user) |
+| Tenant address book + recent list | Browser localStorage (namespaced per user) |
+| Vendor address book + recent list | Browser localStorage (namespaced per user) |
 | Owner list | Browser localStorage (namespaced per user) |
 | Anything typed into a template at edit time | Browser localStorage only after "Save As" |
 
