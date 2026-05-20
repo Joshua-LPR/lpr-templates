@@ -379,13 +379,28 @@
   }
 
   function exportHtml(name) {
-    // Clean up edit-mode state before saving
     const clone = document.documentElement.cloneNode(true);
-    clone.dataset.lprSnapshot = '1'; // tells employee.js not to overwrite baked-in values
+    clone.dataset.lprSnapshot = '1';
+
+    // Strip editing UI, panels, browser-extension injections
     clone.querySelectorAll(".toolbar, .no-print, #lpr-fill-panel").forEach(el => el.remove());
+    clone.querySelectorAll("[id^='automa'], [class*='automa']").forEach(el => el.remove());
+
+    // Remove all scripts — exported file is a static snapshot
+    clone.querySelectorAll("script").forEach(el => el.remove());
+
+    // Remove panel-injected style blocks (tenant/owner/vendor/modal CSS)
+    clone.querySelectorAll("style[id^='lpr-'], style[id^='tt-'], style.automa-element-selector").forEach(el => el.remove());
+
+    // Clean up edit state
     clone.querySelectorAll("[contenteditable]").forEach(el => el.removeAttribute("contenteditable"));
     clone.querySelectorAll(".tt-editing").forEach(el => el.classList.remove("tt-editing"));
-    // Make asset paths absolute so the file works from anywhere
+
+    // White background — no page chrome in exported file
+    const bodyEl = clone.querySelector("body");
+    if (bodyEl) { bodyEl.style.background = "#fff"; bodyEl.style.padding = "0"; }
+
+    // Make relative asset paths absolute
     const baseUrl = location.href.substring(0, location.href.lastIndexOf("/") + 1);
     clone.querySelectorAll("[src], [href]").forEach(el => {
       ["src", "href"].forEach(attr => {
@@ -395,8 +410,9 @@
         el.setAttribute(attr, baseUrl + v);
       });
     });
+
     const html = "<!DOCTYPE html>\n" + clone.outerHTML;
-    triggerDownload(new Blob([html], { type: "text/html" }), name + ".html");
+    triggerDownload(new Blob([html], { type: "text/html;charset=utf-8" }), name + ".html");
   }
 
   async function exportPng(name) {
