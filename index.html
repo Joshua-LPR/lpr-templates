@@ -375,6 +375,26 @@
   .usage .doc-body code { font-family: 'SF Mono', Menlo, Consolas, monospace; background: #fbf9f5; padding: 1px 6px; border-radius: 3px; font-size: 12px; color: var(--lpr-blue); }
   .usage .doc-body .tip { background: rgba(40,56,145,0.06); border-left: 2px solid var(--lpr-blue); padding: 10px 14px; margin: 10px 0; font-size: 12.5px; }
 
+  /* ---- Template search ---- */
+  .tmpl-search-wrap { position: relative; margin-bottom: 32px; }
+  #tmpl-search {
+    width: 100%; box-sizing: border-box; padding: 13px 42px 13px 18px;
+    border: 1.5px solid var(--lpr-rule); border-radius: 10px;
+    font-family: 'Montserrat', sans-serif; font-size: 14px;
+    color: var(--lpr-ink); background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    outline: none; transition: border-color .15s;
+  }
+  #tmpl-search:focus { border-color: var(--lpr-blue); }
+  #tmpl-search::placeholder { color: var(--lpr-muted); }
+  .tmpl-search-clear {
+    position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: #bbb; font-size: 15px;
+    cursor: pointer; padding: 4px; line-height: 1; display: none;
+  }
+  .tmpl-search-clear:hover { color: var(--lpr-ink); }
+  .tmpl-search-none { text-align: center; color: var(--lpr-muted); font-size: 13px; padding: 32px 0; display: none; }
+
 </style>
 </head>
 <body>
@@ -434,6 +454,12 @@
     <a href="users.html" id="switch-user-link">↻ Switch user</a>
     <a href="archive.html" id="archive-link">⌫ Archive <span class="archive-count" id="archive-count" style="display:none;">0</span></a>
   </div>
+
+  <div class="tmpl-search-wrap">
+    <input id="tmpl-search" type="text" placeholder="Search templates…" autocomplete="off" spellcheck="false"/>
+    <button class="tmpl-search-clear" id="tmpl-search-clear" title="Clear">✕</button>
+  </div>
+  <div class="tmpl-search-none" id="tmpl-search-none">No templates match your search.</div>
 
   <div id="sections-wrap">
 
@@ -1862,6 +1888,39 @@
   });
 
   load();
+})();
+</script>
+
+<script>
+// Template search
+(function () {
+  const input   = document.getElementById('tmpl-search');
+  const clear   = document.getElementById('tmpl-search-clear');
+  const none    = document.getElementById('tmpl-search-none');
+
+  function filter() {
+    const q = input.value.toLowerCase().trim();
+    clear.style.display = q ? '' : 'none';
+
+    document.querySelectorAll('#sections-wrap .card').forEach(function (card) {
+      const name = (card.querySelector('h3')?.textContent || '').toLowerCase();
+      const desc = (card.querySelector('p')?.textContent  || '').toLowerCase();
+      card.style.display = (!q || name.includes(q) || desc.includes(q)) ? '' : 'none';
+    });
+
+    let anyVisible = false;
+    document.querySelectorAll('.section-block').forEach(function (section) {
+      if (!q) { section.style.display = ''; return; }
+      const has = [...section.querySelectorAll('.card')].some(c => c.style.display !== 'none');
+      section.style.display = has ? '' : 'none';
+      if (has) anyVisible = true;
+    });
+
+    none.style.display = (q && !anyVisible) ? '' : 'none';
+  }
+
+  input.addEventListener('input', filter);
+  clear.addEventListener('click', function () { input.value = ''; filter(); input.focus(); });
 })();
 </script>
 
