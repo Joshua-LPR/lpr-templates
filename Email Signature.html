@@ -230,12 +230,39 @@
   document.getElementById('style-company').addEventListener('click', () => setStyle('company'));
   setTimeout(() => setStyle(localStorage.getItem('lpr_sig_style') || 'personal'), 60);
 
+  // Converts an <img src="data:image/svg+xml;base64,..."> to a PNG data URI via canvas
+  function svgImgToPng(imgEl) {
+    return new Promise(function (resolve) {
+      const svgText = atob(imgEl.getAttribute('src').split(',')[1]);
+      const blob = new Blob([svgText], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const tmp = new Image();
+      tmp.onload = function () {
+        const w = imgEl.width || 13, h = imgEl.height || 13;
+        const cv = document.createElement('canvas');
+        cv.width = w * 2; cv.height = h * 2;
+        cv.getContext('2d').drawImage(tmp, 0, 0, cv.width, cv.height);
+        URL.revokeObjectURL(url);
+        resolve(cv.toDataURL('image/png'));
+      };
+      tmp.onerror = function () { URL.revokeObjectURL(url); resolve(imgEl.getAttribute('src')); };
+      tmp.src = url;
+    });
+  }
+
   // Copy as rich text — pastes as a formatted signature in Gmail's editor
   async function copyForGmail() {
-    const html = sigEl.outerHTML;
-    const text = sigEl.innerText;
     const copied = document.getElementById('copied');
     try {
+      // Clone sig and replace any SVG data-URI img tags with PNG so Gmail renders them
+      const clone = sigEl.cloneNode(true);
+      const svgImgs = [...sigEl.querySelectorAll('img[src^="data:image/svg+xml"]')];
+      const cloneImgs = [...clone.querySelectorAll('img[src^="data:image/svg+xml"]')];
+      for (let i = 0; i < svgImgs.length; i++) {
+        cloneImgs[i].setAttribute('src', await svgImgToPng(svgImgs[i]));
+      }
+      const html = clone.outerHTML;
+      const text = sigEl.innerText;
       await navigator.clipboard.write([
         new ClipboardItem({
           'text/html':  new Blob([html], { type: 'text/html' }),
