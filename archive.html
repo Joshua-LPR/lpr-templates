@@ -176,7 +176,7 @@
       if (show) any = true;
     });
     const noneEl = document.getElementById('arch-search-none');
-    if (noneEl) noneEl.style.display = (q && !any) ? '' : 'none';
+    if (noneEl) noneEl.style.display = (q && !any) ? 'block' : 'none';
   }
 
   function render() {
@@ -208,7 +208,7 @@
 
     document.getElementById("toolbar").style.display = "";
     document.getElementById("count").textContent = items.length + " template" + (items.length === 1 ? "" : "s") + " archived";
-    document.getElementById("arch-search-wrap").style.display = "";
+    document.getElementById("arch-search-wrap").style.display = "block";
 
     grid.className = "grid";
     grid.innerHTML = "";
