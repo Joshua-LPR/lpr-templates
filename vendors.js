@@ -213,6 +213,7 @@
   let selectedId = null;
   let searchQ    = '';
   let importMsg  = '';
+  let addMode    = false;
 
   /* ================================================================
      RENDER TAB CONTENT
@@ -234,6 +235,7 @@
           <input type="file" accept=".csv" id="lpr-vnd-file" hidden/>
           ↑ Import CSV
         </label>
+        <button class="lpr-tp-add-btn" id="lpr-vnd-add">+ Add</button>
         <span class="lpr-tp-count">${all.length} vendor${all.length !== 1 ? 's' : ''}</span>
       </div>
       ${importMsg ? `<div class="lpr-tp-msg">${esc(importMsg)}</div>` : ''}
@@ -265,7 +267,7 @@
               </div>`).join('')}
       </div>
 
-      ${sel ? renderEditor(sel) : `<div class="lpr-tp-no-sel">← Select a vendor above</div>`}
+      ${addMode ? renderAddForm() : sel ? renderEditor(sel) : `<div class="lpr-tp-no-sel">← Select a vendor above</div>`}
     `;
 
     const fileInput = document.getElementById('lpr-vnd-file');
@@ -282,6 +284,16 @@
       reader.readAsText(file);
     };
 
+    const addBtn = document.getElementById('lpr-vnd-add');
+    if (addBtn) addBtn.onclick = () => {
+      addMode = true;
+      selectedId = null;
+      searchQ = '';
+      importMsg = '';
+      const body = document.getElementById('lpr-tab-body');
+      if (body) renderVendorContent(body);
+    };
+
     const qEl = document.getElementById('lpr-vnd-q');
     if (qEl) qEl.oninput = e => {
       searchQ = e.target.value;
@@ -292,6 +304,7 @@
     container.querySelectorAll('.lpr-tp-item').forEach(el => {
       el.onclick = () => {
         selectedId = el.dataset.id;
+        addMode    = false;
         importMsg  = '';
         const body = document.getElementById('lpr-tab-body');
         if (body) renderVendorContent(body);
@@ -308,6 +321,7 @@
     });
 
     if (sel) wireEditor(sel);
+    if (addMode) wireAddForm();
     if (opts?.refocus) {
       const q = document.getElementById('lpr-vnd-q');
       if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
@@ -327,6 +341,7 @@
         <div class="lpr-tp-ed-hd">
           <span>${esc(v.effective.name || '—')}</span>
           ${editedCount ? `<span class="lpr-tp-badge">⚠ ${editedCount} edited</span>` : ''}
+          ${v._manual ? `<button class="lpr-tp-del-btn" id="lpr-vnd-del" title="Delete vendor">Delete</button>` : ''}
         </div>
         <div class="lpr-tp-fields">
           ${ALL_FIELDS.map(f => {
@@ -398,6 +413,65 @@
       bodyBtn.textContent = '✓ Applied';
       bodyBtn.classList.add('ok');
       setTimeout(() => { bodyBtn.textContent = 'Body fields only'; bodyBtn.classList.remove('ok'); }, 1800);
+    };
+
+    const delBtn = document.getElementById('lpr-vnd-del');
+    if (delBtn) delBtn.onclick = () => {
+      if (!confirm('Delete this vendor?')) return;
+      const data = loadVendors();
+      delete data[v._id];
+      saveVendors(data);
+      removeRecent(v._id);
+      selectedId = null;
+      importMsg = '';
+      const body = document.getElementById('lpr-tab-body');
+      if (body) renderVendorContent(body);
+    };
+  }
+
+  function renderAddForm() {
+    return `
+      <div class="lpr-tp-ed">
+        <div class="lpr-tp-ed-hd">
+          <span>New Vendor</span>
+        </div>
+        <div class="lpr-tp-fields">
+          ${ALL_FIELDS.map(f => `
+            <div class="lpr-tp-field">
+              <label class="lpr-tp-lbl">${esc(FIELD_LABELS[f])}</label>
+              <input class="lpr-tp-inp lpr-tp-new-inp" data-field="${esc(f)}" value="" placeholder="${esc(FIELD_LABELS[f])}"/>
+            </div>`).join('')}
+        </div>
+        <div class="lpr-tp-foot">
+          <button id="lpr-vnd-new-save" class="lpr-tp-apply">Save Vendor</button>
+          <button id="lpr-vnd-new-cancel" class="lpr-tp-apply-body">Cancel</button>
+        </div>
+      </div>`;
+  }
+
+  function wireAddForm() {
+    const cancelBtn = document.getElementById('lpr-vnd-new-cancel');
+    if (cancelBtn) cancelBtn.onclick = () => {
+      addMode = false;
+      const body = document.getElementById('lpr-tab-body');
+      if (body) renderVendorContent(body);
+    };
+    const saveBtn = document.getElementById('lpr-vnd-new-save');
+    if (saveBtn) saveBtn.onclick = () => {
+      const source = {};
+      const panel = document.getElementById('lpr-fill-panel');
+      if (panel) panel.querySelectorAll('.lpr-tp-new-inp').forEach(inp => {
+        source[inp.dataset.field] = inp.value.trim();
+      });
+      const id = 'm_' + Date.now();
+      const data = loadVendors();
+      data[id] = { _id: id, _manual: true, source, overrides: {}, effective: { ...source } };
+      saveVendors(data);
+      addMode = false;
+      selectedId = id;
+      importMsg = '✓ Vendor added';
+      const body = document.getElementById('lpr-tab-body');
+      if (body) renderVendorContent(body);
     };
   }
 

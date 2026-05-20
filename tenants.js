@@ -392,6 +392,7 @@
   let selectedId = null;
   let searchQ    = '';
   let importMsg  = '';
+  let addMode    = false;
 
   function openFillPanel() {
     if (fillPanel) { closeFillPanel(); return; }
@@ -461,6 +462,7 @@
           <input type="file" accept=".csv" id="lpr-tp-file" hidden/>
           ↑ Import CSV
         </label>
+        <button class="lpr-tp-add-btn" id="lpr-tp-add">+ Add</button>
         <span class="lpr-tp-count">${named.length} tenant${named.length !== 1 ? 's' : ''}</span>
       </div>
       ${importMsg ? `<div class="lpr-tp-msg">${esc(importMsg)}</div>` : ''}
@@ -492,7 +494,7 @@
               </div>`).join('')}
       </div>
 
-      ${sel ? renderEditor(sel) : `<div class="lpr-tp-no-sel">← Select a tenant above</div>`}
+      ${addMode ? renderAddForm() : sel ? renderEditor(sel) : `<div class="lpr-tp-no-sel">← Select a tenant above</div>`}
     `;
 
     gid('lpr-tp-file').onchange = e => {
@@ -507,13 +509,21 @@
       reader.readAsText(file);
     };
 
+    gid('lpr-tp-add').onclick = () => {
+      addMode = true;
+      selectedId = null;
+      searchQ = '';
+      importMsg = '';
+      renderFillPanel();
+    };
+
     gid('lpr-tp-q').oninput = e => {
       searchQ = e.target.value;
       renderFillPanel({ refocus: true });
     };
 
     fillPanel.querySelectorAll('.lpr-tp-item').forEach(el => {
-      el.onclick = () => { selectedId = el.dataset.id; importMsg = ''; renderFillPanel(); };
+      el.onclick = () => { selectedId = el.dataset.id; addMode = false; importMsg = ''; renderFillPanel(); };
     });
 
     fillPanel.querySelectorAll('.lpr-tp-recent-rm').forEach(btn => {
@@ -521,6 +531,7 @@
     });
 
     if (sel) wireEditor(sel);
+    if (addMode) wireAddForm();
     if (opts?.refocus) {
       const q = gid('lpr-tp-q');
       if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
@@ -540,6 +551,7 @@
         <div class="lpr-tp-ed-hd">
           <span>${esc(t.effective.first_name)} ${esc(t.effective.last_name)}</span>
           ${editedCount ? `<span class="lpr-tp-badge">⚠ ${editedCount} edited</span>` : ''}
+          ${t._manual ? `<button class="lpr-tp-del-btn" id="lpr-tp-del" title="Delete tenant">Delete</button>` : ''}
         </div>
         <div class="lpr-tp-fields">
           ${ALL_FIELDS.map(f => {
@@ -608,6 +620,59 @@
       btn.textContent = '✓ Applied';
       btn.classList.add('ok');
       setTimeout(() => { btn.textContent = 'Body fields only'; btn.classList.remove('ok'); }, 1800);
+    };
+
+    const delBtn = gid('lpr-tp-del');
+    if (delBtn) delBtn.onclick = () => {
+      if (!confirm('Delete this tenant?')) return;
+      const data = loadTenants();
+      delete data[t._id];
+      saveTenants(data);
+      removeRecent(t._id);
+      selectedId = null;
+      importMsg = '';
+      renderFillPanel();
+    };
+  }
+
+  function renderAddForm() {
+    return `
+      <div class="lpr-tp-ed">
+        <div class="lpr-tp-ed-hd">
+          <span>New Tenant</span>
+        </div>
+        <div class="lpr-tp-fields">
+          ${ALL_FIELDS.map(f => `
+            <div class="lpr-tp-field">
+              <label class="lpr-tp-lbl">${esc(FIELD_LABELS[f])}</label>
+              <input class="lpr-tp-inp lpr-tp-new-inp" data-field="${esc(f)}" value="" placeholder="${esc(FIELD_LABELS[f])}"/>
+            </div>`).join('')}
+        </div>
+        <div class="lpr-tp-foot">
+          <button id="lpr-tp-new-save" class="lpr-tp-apply">Save Tenant</button>
+          <button id="lpr-tp-new-cancel" class="lpr-tp-apply-body">Cancel</button>
+        </div>
+      </div>`;
+  }
+
+  function wireAddForm() {
+    gid('lpr-tp-new-cancel').onclick = () => {
+      addMode = false;
+      renderFillPanel();
+    };
+    gid('lpr-tp-new-save').onclick = () => {
+      const source = {};
+      fillPanel.querySelectorAll('.lpr-tp-new-inp').forEach(inp => {
+        source[inp.dataset.field] = inp.value.trim();
+      });
+      const id = 'm_' + Date.now();
+      const data = loadTenants();
+      data[id] = { _id: id, _manual: true, source, overrides: {}, effective: { ...source } };
+      saveTenants(data);
+      addMode = false;
+      selectedId = id;
+      importMsg = '✓ Tenant added';
+      renderFillPanel();
     };
   }
 
@@ -802,6 +867,21 @@
         transition: color .15s;
       }
       .lpr-tp-recent-rm:hover { color: #c04; }
+
+      /* ---- Add / delete buttons ---- */
+      .lpr-tp-add-btn {
+        background: none; border: 1.5px solid #283891; border-radius: 999px;
+        color: #283891; font-family: inherit; font-size: 11px; font-weight: 600;
+        padding: 4px 10px; cursor: pointer; white-space: nowrap; transition: all .15s;
+      }
+      .lpr-tp-add-btn:hover { background: #283891; color: #fff; }
+      .lpr-tp-del-btn {
+        margin-left: auto; padding: 3px 9px; background: none;
+        border: 1px solid #e0b0b0; border-radius: 5px;
+        color: #b03020; font-family: inherit; font-size: 10px;
+        font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap;
+      }
+      .lpr-tp-del-btn:hover { background: #ffeaea; border-color: #c03030; }
 
       /* ---- Insert sidebar group labels ---- */
       .lpr-ins-group-label {
