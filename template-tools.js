@@ -71,6 +71,7 @@
     const sheets = document.querySelectorAll(".sheet");
     sheets.forEach(s => {
       s.setAttribute("contenteditable", editing);
+      s.setAttribute("spellcheck", editing);
       s.classList.toggle("tt-editing", editing);
     });
     const btn = document.getElementById("tt-edit-btn");
