@@ -71,10 +71,10 @@
     <div class="doc-badge">Security Deposit Notice</div>
     <div class="doc-title">Security Deposit <br/>Withheld</div>
     <div class="lh-body">
-      <div class="date">[Date]</div>
+      <div class="date"><span data-fill-field="date" data-fill-label="Notice Date"></span></div>
       <p>Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</p>
       <p>This letter is to notify you that your security deposit and accrued security deposit interest have been applied to your outstanding ledger balance for <strong><span data-tenant-field="address_line1"></span></strong>.</p>
-      <p>Attached is your account statement detailing the deductions made. After applying the security deposit and interest, a remaining balance of <strong>$[Amount]</strong> is due. If any additional charges are incurred, you will be notified.</p>
+      <p>Attached is your account statement detailing the deductions made. After applying the security deposit and interest, a remaining balance of <strong>$<span data-fill-field="amount" data-fill-label="Outstanding Balance"></span></strong> is due. If any additional charges are incurred, you will be notified.</p>
       <div class="highlight">Please submit payment as soon as possible.</div>
       <div class="signoff">
         <p>Sincerely,</p>
@@ -94,7 +94,7 @@
     <div class="doc-badge">Security Deposit Notice</div>
     <div class="doc-title">Security Deposit <br/>Partial Refund</div>
     <div class="lh-body">
-      <div class="date">[Date]</div>
+      <div class="date"><span data-fill-field="date" data-fill-label="Notice Date"></span></div>
       <p>Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</p>
       <p>This letter is to inform you that a portion of your security deposit has been withheld to cover the outstanding balance on your account.</p>
       <p>Please find your account statement attached, which outlines the deductions that have been made.</p>
@@ -118,10 +118,10 @@
     <div class="doc-badge">Security Deposit Notice</div>
     <div class="doc-title">Security Deposit <br/>Returned</div>
     <div class="lh-body">
-      <div class="date">[Date]</div>
+      <div class="date"><span data-fill-field="date" data-fill-label="Notice Date"></span></div>
       <p>Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</p>
       <p>This letter is to inform you that your security deposit and accrued interest are being returned to you in full for the property at <strong><span data-tenant-field="address_line1"></span></strong>.</p>
-      <p>Enclosed is a check in the amount of <strong>$[Amount]</strong>, representing your security deposit and all applicable interest.</p>
+      <p>Enclosed is a check in the amount of <strong>$<span data-fill-field="amount" data-fill-label="Refund Amount"></span></strong>, representing your security deposit and all applicable interest.</p>
       <p>We appreciated having you as a tenant, and we wish you all the best in your future endeavors.</p>
       <div class="signoff">
         <p>Sincerely,</p>
@@ -164,6 +164,7 @@
 <script src="tenants.js"></script>
 <script src="owners.js"></script>
 <script src="vendors.js"></script>
+<script src="fill-fields.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

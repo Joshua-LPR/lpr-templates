@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -61,7 +61,7 @@
     </div>
 
     <div class="wm-content">
-      <div class="wm-date">[Date]</div>
+      <div class="wm-date"><span data-fill-field="date" data-fill-label="Notice Date"></span></div>
 
       <div class="wm-recipient">
         <div><span data-contact-field="name"></span></div>
@@ -70,8 +70,8 @@
         <div><span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span></div>
       </div>
 
-      <div class="wm-doc-badge">[Category]</div>
-      <div class="wm-doc-title">[Notice Title]</div>
+      <div class="wm-doc-badge"><span data-fill-field="text" data-fill-label="Document Category"></span></div>
+      <div class="wm-doc-title"><span data-fill-field="text" data-fill-label="Notice Title"></span></div>
 
       <p>Dear <span data-contact-field="name"></span>,</p>
       <p>[Opening paragraph. State the purpose of the notice clearly in the first sentence.]</p>
@@ -92,6 +92,7 @@
 <script src="tenants.js"></script>
 <script src="owners.js"></script>
 <script src="vendors.js"></script>
+<script src="fill-fields.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -42,7 +42,7 @@
     <div class="doc-badge">Lease Notice</div>
     <div class="doc-title">Notice of Non-Renewal</div>
     <div class="lh-body">
-      <div class="date">[Date]</div>
+      <div class="date"><span data-fill-field="date" data-fill-label="Notice Date"></span></div>
       <div class="recipient">
         <span data-contact-field="name"></span><br/>
         <span data-contact-field="address_line1"></span><br/>
@@ -51,7 +51,7 @@
       <div class="subject">Re: Notice of Non-Renewal of Lease Agreement</div>
       <p>Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</p>
       <p>Please be advised that your lease agreement will not be renewed for the property located at <strong><span data-tenant-field="address_line1"></span></strong>. This letter serves as the required notice of non-renewal.</p>
-      <p>Accordingly, we request that you vacate the premises and return the keys to the property on or before <strong>[Move-Out Date]</strong>.</p>
+      <p>Accordingly, we request that you vacate the premises and return the keys to the property on or before <strong><span data-fill-field="date" data-fill-label="Move-Out Date"></span></strong>.</p>
       <p>Please provide us with your forwarding address once available so we can send any future correspondence, including the return of your security deposit if applicable.</p>
       <p>If you have any questions or concerns, please do not hesitate to contact us at <strong>(443) 402-5641</strong> or <strong>office@lasalleparkrealty.com</strong>.</p>
       <div class="signoff">
@@ -67,6 +67,7 @@
 <script src="tenants.js"></script>
 <script src="owners.js"></script>
 <script src="vendors.js"></script>
+<script src="fill-fields.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -88,7 +88,7 @@
 
     <div class="n-body">
 
-      <div class="date">[Date of Notice]</div>
+      <div class="date"><span data-fill-field="date" data-fill-label="Notice Date"></span></div>
 
       <div class="to">
         <strong>To:</strong> <span data-contact-field="name"></span><br/>
@@ -100,16 +100,16 @@
 
       <div class="info-grid">
         <div class="key">Entry Date</div>
-        <div class="val"><span class="placeholder">[Day, Month Date, Year]</span></div>
+        <div class="val"><span data-fill-field="date" data-fill-label="Entry Date"></span></div>
 
         <div class="key">Time Window</div>
-        <div class="val"><span class="placeholder">[e.g. 10:00 AM – 12:00 PM]</span></div>
+        <div class="val"><span data-fill-field="text" data-fill-label="Time Window"></span></div>
 
         <div class="key">Reason</div>
-        <div class="val"><span class="placeholder">[e.g. Routine inspection, repair, contractor, showing]</span></div>
+        <div class="val"><span data-fill-field="text" data-fill-label="Reason for Entry"></span></div>
 
         <div class="key">Persons Entering</div>
-        <div class="val"><span class="placeholder">[Name(s), e.g. David Mitnick + plumber from ABC Plumbing]</span></div>
+        <div class="val"><span data-fill-field="text" data-fill-label="Persons Entering"></span></div>
       </div>
 
       <p>If you have any questions, please contact us at <strong>443-402-5641</strong> or <strong>office@lasalleparkrealty.com</strong>.</p>
@@ -133,6 +133,7 @@
 <script src="tenants.js"></script>
 <script src="owners.js"></script>
 <script src="vendors.js"></script>
+<script src="fill-fields.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

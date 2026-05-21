@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -42,10 +42,10 @@
     <div class="doc-badge">Lease Renewal</div>
     <div class="doc-title">Notice of Rent Increase</div>
     <div class="lh-body">
-      <div class="date">[Date]</div>
+      <div class="date"><span data-fill-field="date" data-fill-label="Notice Date"></span></div>
       <div class="recipient">Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</div>
-      <p>I hope this letter finds you well. I am writing to inform you that, upon the renewal of your lease at <strong><span data-tenant-field="address_line1"></span></strong> on <strong>[Renewal Date]</strong>, there will be a monthly rent increase.</p>
-      <div class="highlight">The new monthly rent will be $[Amount].</div>
+      <p>I hope this letter finds you well. I am writing to inform you that, upon the renewal of your lease at <strong><span data-tenant-field="address_line1"></span></strong> on <strong><span data-fill-field="date" data-fill-label="Renewal Date"></span></strong>, there will be a monthly rent increase.</p>
+      <div class="highlight">The new monthly rent will be $<span data-fill-field="amount" data-fill-label="New Monthly Rent"></span>.</div>
       <p>This rent increase will not affect any other terms of the lease.</p>
       <p>We appreciate your continued tenancy.</p>
       <div class="signoff">
@@ -61,6 +61,7 @@
 <script src="tenants.js"></script>
 <script src="owners.js"></script>
 <script src="vendors.js"></script>
+<script src="fill-fields.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

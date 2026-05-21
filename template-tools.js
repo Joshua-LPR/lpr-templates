@@ -73,6 +73,37 @@
       <button class="tt-btn tt-fmt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
       <button class="tt-btn tt-fmt-btn" data-cmd="italic" title="Italic"><i>I</i></button>
       <button class="tt-btn tt-fmt-btn" data-cmd="removeFormat" title="Plain — remove all formatting">Plain</button>
+      <span class="tt-fmt-sep"></span>
+      <select id="tt-font-size" class="tt-size-select" title="Change font size of selected text">
+        <option value="">Size</option>
+        <option value="7">7pt</option>
+        <option value="8">8pt</option>
+        <option value="9">9pt</option>
+        <option value="10">10pt</option>
+        <option value="11">11pt</option>
+        <option value="12">12pt</option>
+        <option value="14">14pt</option>
+        <option value="16">16pt</option>
+        <option value="18">18pt</option>
+        <option value="20">20pt</option>
+        <option value="24">24pt</option>
+        <option value="28">28pt</option>
+        <option value="32">32pt</option>
+        <option value="36">36pt</option>
+      </select>
+      <div id="tt-color-wrap" class="tt-color-wrap" title="Text color">
+        <span class="tt-color-preview" id="tt-color-preview"></span>
+        <span class="tt-color-label">Color</span>
+        <div class="tt-color-menu" id="tt-color-menu" hidden>
+          <button class="tt-color-chip" data-color="#283891" title="Royal Blue" style="background:#283891;"></button>
+          <button class="tt-color-chip" data-color="#d6a35a" title="Gold Bronze" style="background:#d6a35a;"></button>
+          <button class="tt-color-chip" data-color="#0e1430" title="Ink" style="background:#0e1430;"></button>
+          <button class="tt-color-chip" data-color="#1a1a1a" title="Body Text" style="background:#1a1a1a;"></button>
+          <button class="tt-color-chip" data-color="#5a5f72" title="Muted" style="background:#5a5f72;"></button>
+          <button class="tt-color-chip" data-color="#cc2222" title="Red" style="background:#cc2222;"></button>
+          <button class="tt-color-chip tt-color-chip-clear" data-color="" title="Remove color" style="background:#fff;">✕</button>
+        </div>
+      </div>
     `;
     toolbar.appendChild(fmtBar);
     fmtBar.querySelectorAll(".tt-fmt-btn").forEach(btn => {
@@ -82,6 +113,91 @@
       });
     });
 
+    // Font size — track last non-collapsed selection while editing so the
+    // dropdown open doesn't lose it, then restore + apply on change.
+    let _savedSizeRange = null;
+    document.addEventListener("selectionchange", () => {
+      if (!editing) return;
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0 || sel.getRangeAt(0).collapsed) return;
+      const range = sel.getRangeAt(0);
+      const sheet = document.querySelector(".sheet");
+      if (sheet && sheet.contains(range.commonAncestorContainer)) {
+        _savedSizeRange = range.cloneRange();
+      }
+    });
+    const sizeSelect = document.getElementById("tt-font-size");
+    sizeSelect.addEventListener("mousedown", () => {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0 && !sel.getRangeAt(0).collapsed) {
+        _savedSizeRange = sel.getRangeAt(0).cloneRange();
+      }
+    });
+    sizeSelect.addEventListener("change", function () {
+      const pt = this.value;
+      this.value = ""; // reset immediately so it reads "Size" again
+      if (!pt || !_savedSizeRange) return;
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(_savedSizeRange.cloneRange());
+      applyFontSize(pt);
+      _savedSizeRange = null;
+    });
+
+    // Color picker — same saved-selection pattern as font size
+    let _savedColorRange = null;
+    document.addEventListener("selectionchange", () => {
+      if (!editing) return;
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0 || sel.getRangeAt(0).collapsed) return;
+      const range = sel.getRangeAt(0);
+      const sheet = document.querySelector(".sheet");
+      if (sheet && sheet.contains(range.commonAncestorContainer)) {
+        _savedColorRange = range.cloneRange();
+        // Keep both in sync — one selectionchange listener, two consumers
+        _savedSizeRange = _savedColorRange;
+      }
+    });
+
+    const colorWrap = document.getElementById("tt-color-wrap");
+    const colorMenu = document.getElementById("tt-color-menu");
+    const colorPreview = document.getElementById("tt-color-preview");
+
+    colorWrap.addEventListener("mousedown", e => {
+      if (e.target.closest(".tt-color-menu")) return;
+      e.preventDefault();
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0 && !sel.getRangeAt(0).collapsed) {
+        _savedColorRange = sel.getRangeAt(0).cloneRange();
+      }
+      colorMenu.hidden = !colorMenu.hidden;
+    });
+
+    colorMenu.querySelectorAll(".tt-color-chip").forEach(chip => {
+      chip.addEventListener("mousedown", e => {
+        e.preventDefault();
+        e.stopPropagation();
+        const color = chip.dataset.color;
+        colorMenu.hidden = true;
+        if (!_savedColorRange) return;
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(_savedColorRange.cloneRange());
+        if (color) {
+          applyTextColor(color);
+          colorPreview.style.background = color;
+          colorPreview.style.display = "inline-block";
+        } else {
+          document.execCommand("removeFormat", false, null);
+          colorPreview.style.display = "none";
+        }
+        _savedColorRange = null;
+      });
+    });
+
+    document.addEventListener("click", e => {
+      if (!colorWrap.contains(e.target)) colorMenu.hidden = true;
+    });
     // Close edit mode if user triggers browser print shortcut (Ctrl+P) while editing
     window.addEventListener("beforeprint", () => { if (editing) toggleEdit(); });
 
@@ -114,6 +230,50 @@
     if (fmtBar) fmtBar.style.display = editing ? "contents" : "none";
     if (editing) setupSignatureDrag();
     else teardownSignatureDrag();
+  }
+
+  /* Apply a pt font size to the current selection */
+  function applyFontSize(pt) {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) return;
+    const span = document.createElement("span");
+    span.style.fontSize = pt + "pt";
+    try {
+      range.surroundContents(span);
+    } catch (e) {
+      // Selection crosses element boundaries — extract and re-wrap
+      const frag = range.extractContents();
+      span.appendChild(frag);
+      range.insertNode(span);
+    }
+    // Re-select the wrapped content
+    const newRange = document.createRange();
+    newRange.selectNodeContents(span);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+  }
+
+  /* Apply a hex color to the current selection */
+  function applyTextColor(hex) {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) return;
+    const span = document.createElement("span");
+    span.style.color = hex;
+    try {
+      range.surroundContents(span);
+    } catch (e) {
+      const frag = range.extractContents();
+      span.appendChild(frag);
+      range.insertNode(span);
+    }
+    const newRange = document.createRange();
+    newRange.selectNodeContents(span);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
   }
 
   /* Signature drag-to-nudge + resize (in edit mode only) */
@@ -326,6 +486,51 @@
       .tt-fmt-btn { min-width: 32px; padding-left: 8px; padding-right: 8px; }
       .tt-fmt-btn b, .tt-fmt-btn i { pointer-events: none; font-style: normal; }
       .tt-fmt-btn[data-cmd="italic"] i { font-style: italic; }
+      /* Font size picker */
+      .tt-size-select {
+        height: 28px; padding: 0 8px;
+        border: 1px solid rgba(40,56,145,0.25); border-radius: 6px;
+        background: #fff; font-family: Montserrat, sans-serif;
+        font-size: 12px; font-weight: 500; color: #0e1430;
+        cursor: pointer; outline: none; vertical-align: middle;
+        appearance: none; -webkit-appearance: none;
+      }
+      .tt-size-select:hover { border-color: #283891; background: #f6f7fd; }
+      .tt-size-select:focus { border-color: #283891; }
+      /* Color picker */
+      .tt-color-wrap {
+        position: relative; display: inline-flex; align-items: center; gap: 5px;
+        height: 28px; padding: 0 10px;
+        border: 1px solid rgba(40,56,145,0.25); border-radius: 6px;
+        background: #fff; cursor: pointer; vertical-align: middle;
+        font-size: 12px; font-weight: 500; color: #0e1430;
+        user-select: none;
+      }
+      .tt-color-wrap:hover { border-color: #283891; background: #f6f7fd; }
+      .tt-color-preview {
+        display: none; width: 10px; height: 10px; border-radius: 50%;
+        border: 1px solid rgba(0,0,0,0.15); flex-shrink: 0;
+      }
+      .tt-color-label { pointer-events: none; }
+      .tt-color-menu {
+        position: absolute; top: calc(100% + 6px); left: 0;
+        background: #fff; border-radius: 8px; padding: 8px;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+        display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+        min-width: 170px; z-index: 200;
+      }
+      .tt-color-menu[hidden] { display: none; }
+      .tt-color-chip {
+        width: 24px; height: 24px; border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.9);
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.18);
+        cursor: pointer; flex-shrink: 0; transition: transform .12s;
+      }
+      .tt-color-chip:hover { transform: scale(1.2); }
+      .tt-color-chip-clear {
+        border-radius: 50%; font-size: 11px; line-height: 20px;
+        color: #888; box-shadow: 0 0 0 1px rgba(0,0,0,0.12);
+      }
     `;
     document.head.appendChild(s);
   }
