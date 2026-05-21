@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brand Style Guide — LPR Management</title>
+<link rel="stylesheet" href="brand.css">
+<style>
+/* ── page ── */
+body { background: #efeae0; min-height: 100vh; }
+.container { max-width: 960px; margin: 0 auto; padding: 56px 32px 100px; }
+
+/* ── hero ── */
+.sg-hero {
+  background: var(--lpr-blue);
+  border-radius: 14px;
+  padding: 52px 56px;
+  margin-bottom: 48px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+.sg-hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 5px;
+  background: linear-gradient(to right, #1c2870 0%, #1c2870 30%, #d6a35a 30%, #d6a35a 36%, rgba(255,255,255,0.12) 36%);
+}
+.sg-hero-logo { flex-shrink: 0; }
+.sg-hero-logo img { width: 180px; height: auto; display: block; filter: brightness(0) invert(1); opacity: 0.95; }
+.sg-hero-text { flex: 1; }
+.sg-hero h1 {
+  font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+  font-weight: 600; color: rgba(255,255,255,0.55); margin: 0 0 10px;
+}
+.sg-hero h2 {
+  font-size: 34px; font-weight: 800; color: #fff;
+  margin: 0 0 12px; letter-spacing: -0.6px; line-height: 1.05;
+}
+.sg-hero p {
+  font-size: 13px; line-height: 1.65; color: rgba(255,255,255,0.65);
+  margin: 0; max-width: 440px;
+}
+
+/* ── section layout ── */
+.sg-section { margin-bottom: 48px; }
+.sg-label {
+  font-size: 10px; letter-spacing: 3.5px; text-transform: uppercase;
+  font-weight: 700; color: var(--lpr-muted);
+  margin: 0 0 20px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--lpr-rule);
+  display: flex; align-items: center; gap: 10px;
+}
+.sg-label::before {
+  content: ''; display: inline-block;
+  width: 3px; height: 12px;
+  background: var(--lpr-blue); border-radius: 2px; flex-shrink: 0;
+}
+
+/* ── color palette ── */
+.color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 16px; }
+.color-swatch {
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+  background: #fff;
+}
+.color-swatch .chip {
+  height: 72px;
+  position: relative;
+}
+.color-swatch .chip.primary    { background: #283891; }
+.color-swatch .chip.deep       { background: #1c2870; }
+.color-swatch .chip.gold       { background: #d6a35a; }
+.color-swatch .chip.ink        { background: #0e1430; }
+.color-swatch .chip.text       { background: #1a1a1a; }
+.color-swatch .chip.muted      { background: #5a5f72; }
+.color-swatch .chip.paper      { background: #ffffff; border-bottom: 1px solid rgba(0,0,0,0.06); }
+.color-swatch .chip.warm       { background: #fbf9f5; border-bottom: 1px solid rgba(0,0,0,0.06); }
+.color-swatch .chip.page       { background: #efeae0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+.color-swatch .chip.rule       { background: rgba(40,56,145,0.18); border-bottom: 1px solid rgba(0,0,0,0.06); }
+
+/* Primary badge on the chip */
+.color-swatch .chip.primary::after {
+  content: 'Primary';
+  position: absolute; bottom: 8px; right: 8px;
+  font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: rgba(255,255,255,0.65); font-weight: 600;
+}
+.color-swatch .chip.gold::after {
+  content: 'Accent';
+  position: absolute; bottom: 8px; right: 8px;
+  font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: rgba(255,255,255,0.75); font-weight: 600;
+}
+
+.color-swatch .info { padding: 10px 12px 12px; }
+.color-swatch .info .name {
+  font-size: 11px; font-weight: 700; color: var(--lpr-ink);
+  margin-bottom: 2px; letter-spacing: -0.1px;
+}
+.color-swatch .info .hex {
+  font-size: 10.5px; color: var(--lpr-muted);
+  font-family: 'Courier New', monospace; letter-spacing: 0.5px;
+}
+.color-swatch .info .role {
+  font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--lpr-muted); margin-top: 4px; opacity: 0.8;
+}
+
+/* ── typography ── */
+.type-stack { display: flex; flex-direction: column; gap: 0; }
+.type-row {
+  display: grid; grid-template-columns: 200px 1fr 100px;
+  gap: 24px; align-items: center;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--lpr-rule);
+}
+.type-row:last-child { border-bottom: none; }
+.type-row .spec { }
+.type-row .spec .wlabel {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--lpr-blue); font-weight: 600; margin-bottom: 4px;
+}
+.type-row .spec .wname {
+  font-size: 11px; color: var(--lpr-muted);
+}
+.type-row .sample {
+  font-family: 'Montserrat', sans-serif;
+  color: var(--lpr-ink);
+  white-space: nowrap; overflow: hidden;
+  line-height: 1;
+}
+.type-row .usage {
+  font-size: 10px; color: var(--lpr-muted); line-height: 1.5;
+  text-align: right;
+}
+
+.type-family-banner {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 36px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  display: flex; align-items: baseline; gap: 24px;
+  flex-wrap: wrap;
+}
+.type-family-name {
+  font-size: 48px; font-weight: 800; letter-spacing: -1px;
+  color: var(--lpr-ink); line-height: 1;
+}
+.type-family-meta {
+  font-size: 12px; color: var(--lpr-muted); line-height: 1.7;
+}
+.type-family-meta strong { color: var(--lpr-blue); display: block; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+
+.type-card {
+  background: #fff; border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  overflow: hidden;
+  margin-bottom: 0;
+}
+.type-card-head {
+  background: var(--lpr-paper-warm);
+  padding: 12px 24px;
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--lpr-muted); font-weight: 600;
+  border-bottom: 1px solid var(--lpr-rule);
+  display: grid; grid-template-columns: 180px 1fr 110px;
+  gap: 24px;
+}
+
+/* ── spacing scale ── */
+.spacing-grid { display: flex; flex-direction: column; gap: 12px; }
+.spacing-row { display: flex; align-items: center; gap: 20px; }
+.spacing-bar-wrap { flex: 1; }
+.spacing-bar {
+  background: rgba(40,56,145,0.13);
+  border-radius: 4px;
+  height: 28px;
+  position: relative;
+  display: flex; align-items: center; padding-left: 10px;
+  transition: background 0.15s;
+}
+.spacing-bar:hover { background: rgba(40,56,145,0.22); }
+.spacing-bar .tick {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  width: 1px; background: rgba(40,56,145,0.3);
+}
+.spacing-label {
+  font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  font-weight: 700; color: var(--lpr-blue);
+  width: 52px; flex-shrink: 0; text-align: right;
+}
+.spacing-desc {
+  font-size: 11px; color: var(--lpr-muted);
+  width: 180px; flex-shrink: 0;
+}
+.spacing-bar-text {
+  font-size: 10px; font-weight: 600; color: var(--lpr-ink);
+  font-family: 'Courier New', monospace;
+}
+
+/* ── design elements ── */
+.elements-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .elements-grid { grid-template-columns: 1fr; } }
+
+.el-card {
+  background: #fff; border-radius: 12px; padding: 24px 28px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+.el-card h4 {
+  font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--lpr-blue); font-weight: 700; margin: 0 0 18px;
+}
+.el-card .el-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 8px 0; border-bottom: 1px solid var(--lpr-rule);
+}
+.el-card .el-item:last-child { border-bottom: none; padding-bottom: 0; }
+.el-card .el-demo { flex-shrink: 0; width: 64px; display: flex; align-items: center; justify-content: center; }
+.el-card .el-meta { font-size: 11px; color: var(--lpr-muted); line-height: 1.5; }
+.el-card .el-meta strong { display: block; font-size: 11.5px; color: var(--lpr-ink); font-weight: 600; margin-bottom: 1px; }
+
+/* radius demos */
+.r-demo { width: 40px; height: 28px; background: var(--lpr-blue); opacity: 0.85; }
+.r-4   { border-radius: 4px; }
+.r-6   { border-radius: 6px; }
+.r-8   { border-radius: 8px; }
+.r-10  { border-radius: 10px; }
+.r-12  { border-radius: 12px; }
+.r-999 { border-radius: 999px; }
+
+/* shadow demos */
+.sh-demo { width: 48px; height: 28px; background: #fff; border-radius: 6px; }
+.sh-sm  { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.sh-md  { box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
+.sh-lg  { box-shadow: 0 8px 32px rgba(0,0,0,0.13); }
+.sh-xl  { box-shadow: 0 12px 48px rgba(0,0,0,0.18); }
+
+/* rule demos */
+.rule-demo { flex: 1; height: 1px; }
+.rule-solid { background: var(--lpr-ink); opacity: 0.15; }
+.rule-blue  { background: var(--lpr-rule); }
+.rule-thick { height: 2px; background: var(--lpr-blue); }
+.rule-gold  { height: 2px; background: #d6a35a; }
+
+/* ── logo usage ── */
+.logo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+@media (max-width: 700px) { .logo-grid { grid-template-columns: 1fr 1fr; } }
+.logo-well {
+  border-radius: 10px; padding: 28px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+.logo-well.on-white  { background: #fff; border: 1px solid var(--lpr-rule); }
+.logo-well.on-warm   { background: #fbf9f5; border: 1px solid var(--lpr-rule); }
+.logo-well.on-blue   { background: var(--lpr-blue); }
+.logo-well.on-dark   { background: var(--lpr-ink); }
+.logo-well.on-page   { background: #efeae0; border: 1px solid rgba(0,0,0,0.06); }
+.logo-well img { width: 100%; max-width: 180px; height: auto; display: block; }
+.logo-well.on-blue  img,
+.logo-well.on-dark  img { filter: brightness(0) invert(1); }
+.logo-well .lo-label {
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--lpr-muted); font-weight: 600;
+}
+.logo-well.on-blue .lo-label,
+.logo-well.on-dark .lo-label { color: rgba(255,255,255,0.5); }
+
+/* ── accent stripe (watermark motif) ── */
+.accent-stripe-demo {
+  height: 8px; border-radius: 4px;
+  background: linear-gradient(to right, #283891 0%, #283891 55%, #d6a35a 55%, #d6a35a 67%, transparent 67%);
+  margin-bottom: 8px;
+}
+
+/* ── footer ── */
+.sg-footer {
+  text-align: center; margin-top: 64px; padding-top: 28px;
+  border-top: 1px solid var(--lpr-rule);
+  font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--lpr-muted);
+}
+
+/* ── toolbar ── */
+@media print { .no-print { display: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+</div>
+
+<div class="container">
+
+  <!-- ── Hero ── -->
+  <div class="sg-hero">
+    <div class="sg-hero-logo">
+      <img src="assets/logo-cropped.png" alt="LPR Management, LLC">
+    </div>
+    <div class="sg-hero-text">
+      <h1>LPR Management, LLC</h1>
+      <h2>Brand Style Guide</h2>
+      <p>The visual foundation shared across all stationery, notices, and digital assets. Use these tokens to keep every document consistent and on-brand.</p>
+    </div>
+  </div>
+
+
+  <!-- ── Logo ── -->
+  <div class="sg-section">
+    <div class="sg-label">Logo Usage</div>
+
+    <div class="logo-grid">
+      <div class="logo-well on-white">
+        <img src="assets/logo-cropped.png" alt="Logo on white">
+        <div class="lo-label">On White</div>
+      </div>
+      <div class="logo-well on-warm">
+        <img src="assets/logo-cropped.png" alt="Logo on warm">
+        <div class="lo-label">On Warm Paper</div>
+      </div>
+      <div class="logo-well on-page">
+        <img src="assets/logo-cropped.png" alt="Logo on page">
+        <div class="lo-label">On Page Background</div>
+      </div>
+      <div class="logo-well on-blue">
+        <img src="assets/logo-cropped.png" alt="Logo on blue">
+        <div class="lo-label">On Brand Blue</div>
+      </div>
+      <div class="logo-well on-dark">
+        <img src="assets/logo-cropped.png" alt="Logo on dark">
+        <div class="lo-label">On Dark / Ink</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── Colors ── -->
+  <div class="sg-section">
+    <div class="sg-label">Color Palette</div>
+
+    <div class="color-grid">
+
+      <div class="color-swatch">
+        <div class="chip primary"></div>
+        <div class="info">
+          <div class="name">Royal Blue</div>
+          <div class="hex">#283891</div>
+          <div class="role">Primary brand color</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="chip deep"></div>
+        <div class="info">
+          <div class="name">Deep Blue</div>
+          <div class="hex">#1c2870</div>
+          <div class="role">Hover / pressed state</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="chip gold"></div>
+        <div class="info">
+          <div class="name">Gold Bronze</div>
+          <div class="hex">#d6a35a</div>
+          <div class="role">Accent / watermark stripe</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="chip ink"></div>
+        <div class="info">
+          <div class="name">Ink</div>
+          <div class="hex">#0e1430</div>
+          <div class="role">Headings &amp; UI chrome</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="chip text"></div>
+        <div class="info">
+          <div class="name">Body Text</div>
+          <div class="hex">#1a1a1a</div>
+          <div class="role">Paragraph copy</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="chip muted"></div>
+        <div class="info">
+          <div class="name">Muted</div>
+          <div class="hex">#5a5f72</div>
+          <div class="role">Captions &amp; meta labels</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="chip paper"></div>
+        <div class="info">
+          <div class="name">Paper White</div>
+          <div class="hex">#ffffff</div>
+          <div class="role">Document background</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="chip warm"></div>
+        <div class="info">
+          <div class="name">Warm Paper</div>
+          <div class="hex">#fbf9f5</div>
+          <div class="role">Cards &amp; input fields</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="chip page"></div>
+        <div class="info">
+          <div class="name">Page Background</div>
+          <div class="hex">#efeae0</div>
+          <div class="role">App shell / canvas</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="chip rule"></div>
+        <div class="info">
+          <div class="name">Rule / Border</div>
+          <div class="hex">rgba(40,56,145, .18)</div>
+          <div class="role">Dividers &amp; borders</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Accent stripe callout -->
+    <div style="background:#fff; border-radius:10px; padding:20px 24px; margin-top:16px; box-shadow:0 2px 10px rgba(0,0,0,.05);">
+      <div class="accent-stripe-demo"></div>
+      <div style="font-size:11px; color:var(--lpr-muted); line-height:1.6;">
+        <strong style="color:var(--lpr-ink); font-size:12px;">Accent stripe motif</strong> — used on the Watermark letterhead footer. Royal Blue fills ~55%, Gold Bronze fills ~12%, then fades to transparent. Appears as a subtle premium detail; use sparingly.
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── Typography ── -->
+  <div class="sg-section">
+    <div class="sg-label">Typography</div>
+
+    <div class="type-family-banner">
+      <div class="type-family-name">Montserrat</div>
+      <div class="type-family-meta">
+        <strong>Typeface</strong>
+        Geometric sans-serif · 6 weights bundled locally<br>
+        Works fully offline · No external font requests
+      </div>
+    </div>
+
+    <div class="type-card">
+      <div class="type-card-head">
+        <span>Weight</span>
+        <span>Sample</span>
+        <span style="text-align:right;">Used for</span>
+      </div>
+      <div style="padding: 0 24px;">
+        <div class="type-stack">
+
+          <div class="type-row">
+            <div class="spec">
+              <div class="wlabel">300 · Light</div>
+              <div class="wname">font-weight: 300</div>
+            </div>
+            <div class="sample" style="font-weight:300; font-size:22px;">Brand Template Library</div>
+            <div class="usage">Subheadings<br>Long-form body</div>
+          </div>
+
+          <div class="type-row">
+            <div class="spec">
+              <div class="wlabel">400 · Regular</div>
+              <div class="wname">font-weight: 400</div>
+            </div>
+            <div class="sample" style="font-weight:400; font-size:22px;">Brand Template Library</div>
+            <div class="usage">Notice body<br>Paragraph copy</div>
+          </div>
+
+          <div class="type-row">
+            <div class="spec">
+              <div class="wlabel">500 · Medium</div>
+              <div class="wname">font-weight: 500</div>
+            </div>
+            <div class="sample" style="font-weight:500; font-size:22px;">Brand Template Library</div>
+            <div class="usage">UI labels<br>Table values</div>
+          </div>
+
+          <div class="type-row">
+            <div class="spec">
+              <div class="wlabel">600 · SemiBold</div>
+              <div class="wname">font-weight: 600</div>
+            </div>
+            <div class="sample" style="font-weight:600; font-size:22px;">Brand Template Library</div>
+            <div class="usage">Signoff names<br>Caps labels</div>
+          </div>
+
+          <div class="type-row">
+            <div class="spec">
+              <div class="wlabel">700 · Bold</div>
+              <div class="wname">font-weight: 700</div>
+            </div>
+            <div class="sample" style="font-weight:700; font-size:22px;">Brand Template Library</div>
+            <div class="usage">Card titles<br>Section heads</div>
+          </div>
+
+          <div class="type-row">
+            <div class="spec">
+              <div class="wlabel">800 · ExtraBold</div>
+              <div class="wname">font-weight: 800</div>
+            </div>
+            <div class="sample" style="font-weight:800; font-size:22px;">Brand Template Library</div>
+            <div class="usage">Hero titles<br>Cover pages</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Size scale -->
+    <div style="background:#fff; border-radius:12px; padding:28px 32px; margin-top:16px; box-shadow:0 2px 12px rgba(0,0,0,.05);">
+      <div style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-blue); font-weight:700; margin-bottom:20px;">Type Size Scale</div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:baseline; gap:20px; border-bottom:1px solid var(--lpr-rule); padding-bottom:10px;">
+          <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-muted); font-weight:600; width:80px; flex-shrink:0;">Display</span>
+          <span style="font-family:Montserrat,sans-serif; font-size:36px; font-weight:800; color:var(--lpr-ink); line-height:1;">36px / 800</span>
+          <span style="font-size:10px; color:var(--lpr-muted);">Cover sheets, hero headings</span>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:20px; border-bottom:1px solid var(--lpr-rule); padding-bottom:10px;">
+          <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-muted); font-weight:600; width:80px; flex-shrink:0;">H1</span>
+          <span style="font-family:Montserrat,sans-serif; font-size:24px; font-weight:700; color:var(--lpr-ink); line-height:1;">24px / 700</span>
+          <span style="font-size:10px; color:var(--lpr-muted);">Notice titles, card headings</span>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:20px; border-bottom:1px solid var(--lpr-rule); padding-bottom:10px;">
+          <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-muted); font-weight:600; width:80px; flex-shrink:0;">H2</span>
+          <span style="font-family:Montserrat,sans-serif; font-size:18px; font-weight:600; color:var(--lpr-ink); line-height:1;">18px / 600</span>
+          <span style="font-size:10px; color:var(--lpr-muted);">Section subheadings</span>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:20px; border-bottom:1px solid var(--lpr-rule); padding-bottom:10px;">
+          <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-muted); font-weight:600; width:80px; flex-shrink:0;">Body</span>
+          <span style="font-family:Montserrat,sans-serif; font-size:13px; font-weight:400; color:var(--lpr-ink); line-height:1;">13–14px / 400</span>
+          <span style="font-size:10px; color:var(--lpr-muted);">Letter body, notice paragraphs</span>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:20px; border-bottom:1px solid var(--lpr-rule); padding-bottom:10px;">
+          <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-muted); font-weight:600; width:80px; flex-shrink:0;">Small</span>
+          <span style="font-family:Montserrat,sans-serif; font-size:11px; font-weight:500; color:var(--lpr-ink); line-height:1;">11–12px / 500</span>
+          <span style="font-size:10px; color:var(--lpr-muted);">Meta fields, captions, UI labels</span>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:20px;">
+          <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-muted); font-weight:600; width:80px; flex-shrink:0;">Label</span>
+          <span style="font-family:Montserrat,sans-serif; font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--lpr-blue); line-height:1;">9–10px / 700 CAPS</span>
+          <span style="font-size:10px; color:var(--lpr-muted);">Allcaps section labels, eyebrows</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── Spacing ── -->
+  <div class="sg-section">
+    <div class="sg-label">Spacing Scale</div>
+
+    <div style="background:#fff; border-radius:12px; padding:28px 32px; box-shadow:0 2px 12px rgba(0,0,0,.05);">
+      <div class="spacing-grid">
+
+        <div class="spacing-row">
+          <div class="spacing-label">4px</div>
+          <div class="spacing-bar-wrap">
+            <div class="spacing-bar" style="width:4%;">
+              <span class="spacing-bar-text">4</span>
+            </div>
+          </div>
+          <div class="spacing-desc">Icon gaps, tight nudges</div>
+        </div>
+
+        <div class="spacing-row">
+          <div class="spacing-label">8px</div>
+          <div class="spacing-bar-wrap">
+            <div class="spacing-bar" style="width:8%;">
+              <span class="spacing-bar-text">8</span>
+            </div>
+          </div>
+          <div class="spacing-desc">Toolbar button gap</div>
+        </div>
+
+        <div class="spacing-row">
+          <div class="spacing-label">12px</div>
+          <div class="spacing-bar-wrap">
+            <div class="spacing-bar" style="width:12%;">
+              <span class="spacing-bar-text">12</span>
+            </div>
+          </div>
+          <div class="spacing-desc">Inline padding (buttons, pills)</div>
+        </div>
+
+        <div class="spacing-row">
+          <div class="spacing-label">16px</div>
+          <div class="spacing-bar-wrap">
+            <div class="spacing-bar" style="width:16%;">
+              <span class="spacing-bar-text">16</span>
+            </div>
+          </div>
+          <div class="spacing-desc">Card grid gaps</div>
+        </div>
+
+        <div class="spacing-row">
+          <div class="spacing-label">24px</div>
+          <div class="spacing-bar-wrap">
+            <div class="spacing-bar" style="width:24%;">
+              <span class="spacing-bar-text">24</span>
+            </div>
+          </div>
+          <div class="spacing-desc">Card body padding, sheet margin</div>
+        </div>
+
+        <div class="spacing-row">
+          <div class="spacing-label">32px</div>
+          <div class="spacing-bar-wrap">
+            <div class="spacing-bar" style="width:32%;">
+              <span class="spacing-bar-text">32</span>
+            </div>
+          </div>
+          <div class="spacing-desc">Page horizontal padding</div>
+        </div>
+
+        <div class="spacing-row">
+          <div class="spacing-label">48px</div>
+          <div class="spacing-bar-wrap">
+            <div class="spacing-bar" style="width:48%;">
+              <span class="spacing-bar-text">48</span>
+            </div>
+          </div>
+          <div class="spacing-desc">Hero section gaps, major sections</div>
+        </div>
+
+        <div class="spacing-row">
+          <div class="spacing-label">56px</div>
+          <div class="spacing-bar-wrap">
+            <div class="spacing-bar" style="width:56%;">
+              <span class="spacing-bar-text">56</span>
+            </div>
+          </div>
+          <div class="spacing-desc">Page top padding</div>
+        </div>
+
+        <div class="spacing-row">
+          <div class="spacing-label">80px</div>
+          <div class="spacing-bar-wrap">
+            <div class="spacing-bar" style="width:80%;">
+              <span class="spacing-bar-text">80</span>
+            </div>
+          </div>
+          <div class="spacing-desc">Page bottom padding</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── Design Elements ── -->
+  <div class="sg-section">
+    <div class="sg-label">Design Elements</div>
+
+    <div class="elements-grid">
+
+      <!-- Border radius -->
+      <div class="el-card">
+        <h4>Border Radius</h4>
+
+        <div class="el-item">
+          <div class="el-demo"><div class="r-demo r-4"></div></div>
+          <div class="el-meta"><strong>4px</strong>Tight — form inputs, small chips</div>
+        </div>
+        <div class="el-item">
+          <div class="el-demo"><div class="r-demo r-6"></div></div>
+          <div class="el-meta"><strong>6px</strong>Menu items, tags</div>
+        </div>
+        <div class="el-item">
+          <div class="el-demo"><div class="r-demo r-8"></div></div>
+          <div class="el-meta"><strong>8px</strong>Panels, dropdowns</div>
+        </div>
+        <div class="el-item">
+          <div class="el-demo"><div class="r-demo r-10"></div></div>
+          <div class="el-meta"><strong>10px</strong>Template cards</div>
+        </div>
+        <div class="el-item">
+          <div class="el-demo"><div class="r-demo r-12"></div></div>
+          <div class="el-meta"><strong>12px</strong>Hero &amp; section panels</div>
+        </div>
+        <div class="el-item">
+          <div class="el-demo"><div class="r-demo r-999" style="width:48px; height:22px;"></div></div>
+          <div class="el-meta"><strong>999px (pill)</strong>Toolbar buttons, badges</div>
+        </div>
+      </div>
+
+      <!-- Shadows -->
+      <div class="el-card">
+        <h4>Elevation / Shadow</h4>
+
+        <div class="el-item">
+          <div class="el-demo"><div class="sh-demo sh-sm"></div></div>
+          <div class="el-meta"><strong>Small</strong>0 2px 8px · rgba(0,0,0,.06) — cards at rest</div>
+        </div>
+        <div class="el-item">
+          <div class="el-demo"><div class="sh-demo sh-md"></div></div>
+          <div class="el-meta"><strong>Medium</strong>0 4px 16px · rgba(0,0,0,.10) — toolbar</div>
+        </div>
+        <div class="el-item">
+          <div class="el-demo"><div class="sh-demo sh-lg"></div></div>
+          <div class="el-meta"><strong>Large</strong>0 8px 32px · rgba(0,0,0,.13) — cards on hover</div>
+        </div>
+        <div class="el-item">
+          <div class="el-demo"><div class="sh-demo sh-xl"></div></div>
+          <div class="el-meta"><strong>XL</strong>0 12px 48px · rgba(0,0,0,.18) — modals &amp; dropdowns</div>
+        </div>
+      </div>
+
+      <!-- Rules / dividers -->
+      <div class="el-card">
+        <h4>Rules &amp; Dividers</h4>
+
+        <div class="el-item">
+          <div class="el-demo" style="flex:1; padding-right:0;">
+            <div class="rule-demo rule-blue" style="width:100%;"></div>
+          </div>
+          <div class="el-meta" style="flex:2;"><strong>Rule (default)</strong>rgba(40,56,145,.18) · 1px — all borders &amp; dividers</div>
+        </div>
+        <div class="el-item">
+          <div class="el-demo" style="flex:1; padding-right:0;">
+            <div class="rule-demo rule-solid" style="width:100%;"></div>
+          </div>
+          <div class="el-meta" style="flex:2;"><strong>Soft rule</strong>rgba(0,0,0,.15) · 1px — neutral separators</div>
+        </div>
+        <div class="el-item">
+          <div class="el-demo" style="flex:1; padding-right:0;">
+            <div class="rule-demo rule-thick" style="width:100%;"></div>
+          </div>
+          <div class="el-meta" style="flex:2;"><strong>Brand rule</strong>#283891 · 2px — letterhead header border</div>
+        </div>
+        <div class="el-item">
+          <div class="el-demo" style="flex:1; padding-right:0;">
+            <div class="rule-demo rule-gold" style="width:100%;"></div>
+          </div>
+          <div class="el-meta" style="flex:2;"><strong>Accent rule</strong>#d6a35a · 2px — watermark stripe accent</div>
+        </div>
+      </div>
+
+      <!-- Brand address -->
+      <div class="el-card">
+        <h4>Brand Address</h4>
+        <div style="padding: 8px 0;">
+          <div style="font-size:13px; font-weight:700; color:var(--lpr-ink); margin-bottom:6px;">LPR Management, LLC</div>
+          <div style="font-size:12.5px; color:var(--lpr-muted); line-height:1.8;">
+            1517 Reisterstown Road, 2nd Floor<br>
+            Pikesville, MD 21208<br>
+            <span style="color:var(--lpr-blue);">443.402.5641</span><br>
+            <span style="color:var(--lpr-blue);">joshua@lasalleparkrealty.com</span>
+          </div>
+        </div>
+        <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--lpr-rule);">
+          <div style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-muted); font-weight:600; margin-bottom:6px;">Default signatory</div>
+          <div style="font-size:12px; color:var(--lpr-muted);">David Mitnick — Senior Property Manager<br>
+          <span style="font-size:11px; color:var(--lpr-muted); opacity:.75;">(configurable per employee on index)</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <div class="sg-footer">
+    LPR Management, LLC &nbsp;·&nbsp; Internal Brand Reference &nbsp;·&nbsp; Not for external distribution
+  </div>
+
+</div>
+</body>
+</html>
