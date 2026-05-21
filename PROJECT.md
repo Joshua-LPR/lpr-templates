@@ -115,7 +115,7 @@ Montserrat is bundled locally in `assets/fonts/` so templates render identically
 
 | Template | Notes |
 |----------|-------|
-| **Email Signature** | HTML signature for Gmail/Outlook. Personal/Company toggle. Logo embed (base64) or hosted URL option. |
+| **Email Signature** | HTML signature for Gmail/Outlook. Personal/Company toggle. Logo embed (base64) or hosted URL option. Copy-paste tool — Export menu shows HTML only (Print/PDF/PNG removed; they export useless page UI). |
 
 ---
 

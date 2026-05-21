@@ -291,5 +291,15 @@
 </script>
 <script src="employee.js"></script>
 <script src="template-tools.js"></script>
+<script>
+// Email Signature is a copy-paste tool, not a printable document.
+// Remove Print / PDF / PNG from the export menu; keep only HTML download.
+document.addEventListener('DOMContentLoaded', function () {
+  ['print','pdf','png'].forEach(function (key) {
+    var item = document.querySelector('.tt-menu-item[data-export="' + key + '"]');
+    if (item) item.remove();
+  });
+});
+</script>
 </body>
 </html>
