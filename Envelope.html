@@ -10,66 +10,192 @@
   @page { size: 9.5in 4.125in; margin: 0; }
   .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
   .label { font-size: 10px; letter-spacing: 3px; color: #5a5f72; text-transform: uppercase; }
-  .envelope { width: 9.5in; height: 4.125in; background: #fff; position: relative; overflow: hidden; page-break-after: always; }
-  .env-stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 0.45in; background: var(--lpr-blue); }
-  .env-return { position: absolute; top: 0.42in; left: 0.85in; display: flex; gap: 14px; align-items: center; }
-  .env-return img { height: 0.7in; width: auto; flex-shrink: 0; }
-  .env-return .addr { font-size: 8pt; line-height: 1.55; color: var(--lpr-ink); border-left: 1px solid var(--lpr-rule); padding-left: 12px; }
-  .env-return .addr .name { font-weight: 700; color: var(--lpr-blue); font-size: 9pt; letter-spacing: 0.3px; }
-  .env-recipient { position: absolute; left: 4in; top: 1.85in; font-size: 11pt; line-height: 1.5; color: var(--lpr-text); font-weight: 400; }
-  .env-recipient .placeholder { color: #c8c8c8; font-style: italic; }
-  /* hide address line 2 row when the span is empty */
-  .env-line2:has([data-contact-field]:empty) { display: none; }
-  /* …but reveal it in edit mode so the field is clickable */
-  .sheet.tt-editing .env-line2:has([data-contact-field]:empty) { display: block; }
-  /* hide the comma when city is empty */
-  .env-csl:has([data-contact-field="city"]:empty) .env-comma { display: none; }
-  /* print nothing when no address has been filled in */
-  @media print { .env-recipient:not(.env-rec-filled) { visibility: hidden; } }
-  .env-stamp { position: absolute; top: 0.3in; right: 0.4in; width: 0.85in; height: 1in; border: 1px dashed rgba(40,56,145,0.25); display: flex; align-items: center; justify-content: center; font-size: 7pt; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(40,56,145,0.45); text-align: center; }
-  .env-mark { position: absolute; bottom: 0.32in; right: 0.4in; font-size: 7pt; letter-spacing: 2.5px; text-transform: uppercase; color: var(--lpr-muted); font-weight: 500; }
-  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label { display: none; } }
+
+  /* ── mode bar ── */
+  .mode-bar {
+    background:#fff; border:1px solid #dde; border-radius:8px;
+    padding:14px 20px; width:9.5in; max-width:calc(100vw - 40px);
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+  }
+  .mode-bar strong { font-size:12px; color:#283891; margin-right:4px; white-space:nowrap; }
+  .mode-btn {
+    padding:6px 14px; border:1.5px solid #c8cce0; border-radius:20px;
+    background:#f6f6f8; font-family:Montserrat,sans-serif;
+    font-size:12px; cursor:pointer; color:#555; white-space:nowrap; transition:all .15s;
+  }
+  .mode-btn.active { background:#283891; color:#fff; border-color:#283891; }
+  .mode-btn:hover:not(.active) { background:#eef0f8; border-color:#aab; }
+
+  /* ── base envelope shell ── */
+  .envelope {
+    width:9.5in; height:4.125in; background:#fff;
+    position:relative; overflow:hidden; page-break-after:always;
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+
+  /* ── elements — hidden by default, shown per mode ── */
+  .env-stripe   { display:none; position:absolute; left:0; top:0; bottom:0; width:0.45in; background:var(--lpr-blue); }
+  .env-stamp    { display:none; position:absolute; top:0.3in; right:0.4in; width:0.85in; height:1in;
+                  border:1px dashed rgba(40,56,145,0.25); align-items:center; justify-content:center;
+                  font-size:7pt; letter-spacing:2.5px; text-transform:uppercase; color:rgba(40,56,145,0.45); text-align:center; }
+  .env-mark     { display:none; position:absolute; bottom:0.32in; right:0.4in;
+                  font-size:7pt; letter-spacing:2.5px; text-transform:uppercase; color:var(--lpr-muted); font-weight:500; }
+  .env-baseline { display:none; position:absolute; bottom:0.32in; left:0.5in; right:0.5in;
+                  height:1px; background:var(--lpr-blue); opacity:0.4; }
+  .env-baseline::after { content:""; position:absolute; left:0; bottom:0; height:3px; width:0.4in; background:var(--lpr-blue); }
+
+  /* ── return address block ── */
+  .env-return { position:absolute; top:0.42in; left:0.85in; display:flex; gap:14px; align-items:center; }
+  .env-return img { height:0.7in; width:auto; flex-shrink:0; }
+  .env-return .vrule { display:none; width:1px; background:var(--lpr-blue); align-self:stretch; margin:2px 0; }
+  .env-return .addr { font-size:8pt; line-height:1.55; color:var(--lpr-ink); }
+  .env-return .addr .name { display:none; font-weight:700; color:var(--lpr-blue); font-size:9pt; letter-spacing:0.3px; }
+
+  /* ── recipient ── */
+  .env-recipient { position:absolute; left:4in; top:1.85in; font-size:11pt; line-height:1.5; color:var(--lpr-text); font-weight:400; }
+  .env-line2:has([data-contact-field]:empty) { display:none; }
+  .sheet.tt-editing .env-line2:has([data-contact-field]:empty) { display:block; }
+  .env-csl:has([data-contact-field="city"]:empty) .env-comma { display:none; }
+  @media print { .env-recipient:not(.env-rec-filled) { visibility:hidden; } }
+
+  /* ══ MODE: STANDARD (stripe) ══ */
+  .mode-stripe .env-stripe                          { display:block; }
+  .mode-stripe .env-return                          { left:0.85in; }
+  .mode-stripe .env-return .addr                    { border-left:1px solid var(--lpr-rule); padding-left:12px; }
+  .mode-stripe .env-return .addr .name              { display:block; }
+  .mode-stripe .env-stamp                           { display:flex; }
+  .mode-stripe .env-mark                            { display:block; }
+
+  /* ══ MODE: PREMIUM (ivory) ══ */
+  .mode-premium .envelope                           { background:#fbf9f5; }
+  .mode-premium .env-return                         { left:0.5in; }
+  .mode-premium .env-return img                     { height:0.5in; }
+  .mode-premium .env-return .vrule                  { display:block; }
+  .mode-premium .env-return .addr                   { font-size:8.5pt; font-weight:400; letter-spacing:0.2px; }
+  .mode-premium .env-baseline                       { display:block; }
+
+  /* ══ MODE: SEND ADDRESS ONLY ══ */
+  .mode-sendonly .env-return                        { display:none; }
+  .mode-sendonly .env-stamp                         { display:flex; }
+
+  /* ── print overrides ── */
+  @media print {
+    body { background:#fff; padding:0; }
+    .stage { gap:0; }
+    .label, .mode-bar, .specs { display:none !important; }
+    .mode-premium .envelope { background:#fbf9f5 !important; }
+  }
+
+  /* ── print-shop spec block ── */
+  .specs {
+    display:none; font-size:10px; color:#5a5f72; line-height:1.55;
+    width:9.5in; max-width:calc(100vw - 40px);
+  }
+  .specs strong { color:var(--lpr-ink); letter-spacing:1.5px; text-transform:uppercase; font-size:9px; }
+  .mode-premium .specs-premium { display:block; }
+  .mode-sendonly .specs-sendonly { display:block; }
 </style>
 </head>
 <body>
 <div class="toolbar no-print">
   <a href="index.html" class="toolbar-back">← All templates</a>
 </div>
-<div class="stage">
-  <div class="label">#10 ENVELOPE — 9.5″ × 4.125″</div>
+
+<div class="stage mode-stripe">
+
+  <div class="mode-bar no-print">
+    <strong>Style:</strong>
+    <button class="mode-btn active" data-mode="stripe">Standard — blue stripe</button>
+    <button class="mode-btn" data-mode="premium">Premium — ivory</button>
+    <button class="mode-btn" data-mode="sendonly">Send address only</button>
+  </div>
+
+  <div class="label" id="env-label">#10 ENVELOPE — 9.5″ × 4.125″</div>
+
   <div class="sheet envelope">
     <div class="env-stripe"></div>
+
     <div class="env-return">
       <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
+      <div class="vrule"></div>
       <div class="addr">
+        <div class="name">LPR Management, LLC</div>
         1517 Reisterstown Road, 2nd Floor<br/>
-        Pikesville, MD 21208
+        Pikesville, MD&nbsp;21208
       </div>
     </div>
+
     <div class="env-stamp">Postage</div>
+
     <div class="env-recipient" id="env-rec">
       <div><span data-contact-field="name"></span></div>
       <div><span data-contact-field="address_line1"></span></div>
       <div class="env-line2"><span data-contact-field="address_line2"></span></div>
       <div class="env-csl"><span data-contact-field="city"></span><span class="env-comma">, </span><span data-contact-field="state"></span> <span data-contact-field="zip"></span></div>
     </div>
+
     <div class="env-mark">Pikesville · Maryland</div>
+    <div class="env-baseline"></div>
   </div>
+
+  <!-- Premium print-shop spec -->
+  <div class="specs specs-premium no-print">
+    <p><strong>Print-shop spec</strong> · Send this file to your printer with the notes below.</p>
+    <p>
+      <strong>Size:</strong> #10 commercial envelope, 9.5″ × 4.125″ ·
+      <strong>Stock:</strong> 70–80lb warm white wove (Mohawk Strathmore Bright White or Classic Crest Natural White) ·
+      <strong>Ink:</strong> 1-color, PMS 287 C (closest to #283891) — or 4/0 CMYK ·
+      <strong>Print area:</strong> front only (1/0) ·
+      <strong>Finish:</strong> regular gum, no window ·
+      <strong>Bleed:</strong> none required
+    </p>
+    <p>Recipient address is intentionally blank — write, label, or merge after printing. Postage area top-right is clear for stamp / meter / indicia.</p>
+  </div>
+
+  <!-- Send-only usage note -->
+  <div class="specs specs-sendonly no-print">
+    <p><strong>Send address only</strong> · For envelopes with a pre-printed or embossed return address. Only the recipient block prints — the rest of the page is blank so your envelope's existing artwork shows through.</p>
+  </div>
+
 </div>
+
 <script src="tenants.js"></script>
 <script src="vendors.js"></script>
 <script src="template-tools.js"></script>
 <script>
 (function () {
-  var rec = document.getElementById('env-rec');
-  if (!rec) return;
-  function check() {
-    var filled = Array.from(rec.querySelectorAll('[data-contact-field]'))
-      .some(function (s) { return s.textContent.trim(); });
-    rec.classList.toggle('env-rec-filled', filled);
+  var stage = document.querySelector('.stage');
+  var btns  = document.querySelectorAll('.mode-btn[data-mode]');
+  var lbl   = document.getElementById('env-label');
+  var LABELS = {
+    stripe:   '#10 ENVELOPE — 9.5″ × 4.125″',
+    premium:  '#10 ENVELOPE — PREMIUM / PRE-PRINT',
+    sendonly: '#10 ENVELOPE — SEND ADDRESS ONLY'
+  };
+
+  function setMode(mode) {
+    stage.className = stage.className.replace(/\bmode-\S+/g, '').trim() + ' mode-' + mode;
+    btns.forEach(function (b) { b.classList.toggle('active', b.dataset.mode === mode); });
+    if (lbl) lbl.textContent = LABELS[mode] || LABELS.stripe;
+    localStorage.setItem('lpr_env_mode', mode);
   }
-  new MutationObserver(check).observe(rec, { subtree: true, childList: true, characterData: true });
-  check();
+
+  btns.forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.mode); }); });
+
+  var saved = localStorage.getItem('lpr_env_mode');
+  if (saved && LABELS[saved]) setMode(saved);
+
+  /* filled-in detection for print hiding */
+  var rec = document.getElementById('env-rec');
+  if (rec) {
+    function check() {
+      var filled = Array.from(rec.querySelectorAll('[data-contact-field]'))
+        .some(function (s) { return s.textContent.trim(); });
+      rec.classList.toggle('env-rec-filled', filled);
+    }
+    new MutationObserver(check).observe(rec, { subtree: true, childList: true, characterData: true });
+    check();
+  }
 })();
 </script>
 </body>

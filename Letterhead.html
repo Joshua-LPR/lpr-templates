@@ -28,7 +28,22 @@
   .lh-body .signed-role { font-size: 9pt; color: var(--lpr-muted); }
   .lh-footer { padding-top: 12px; display: flex; justify-content: center; align-items: center; }
   .lh-footer .stripe { width: 1.4in; height: 2px; background: var(--lpr-blue); border-radius: 1px; }
-  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label { display: none; } }
+  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label, .mode-bar { display: none; } }
+
+  /* ── watermark toggle bar ── */
+  .mode-bar {
+    background:#fff; border:1px solid #dde; border-radius:8px;
+    padding:14px 20px; width:8.5in; max-width:calc(100vw - 64px);
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+  }
+  .mode-bar strong { font-size:12px; color:#283891; margin-right:4px; white-space:nowrap; }
+  .mode-btn {
+    padding:6px 14px; border:1.5px solid #c8cce0; border-radius:20px;
+    background:#f6f6f8; font-family:Montserrat,sans-serif;
+    font-size:12px; cursor:pointer; color:#555; white-space:nowrap; transition:all .15s;
+  }
+  .mode-btn.active { background:#283891; color:#fff; border-color:#283891; }
+  .mode-btn:hover:not(.active) { background:#eef0f8; border-color:#aab; }
 </style>
 </head>
 <body>
@@ -36,6 +51,11 @@
   <a href="index.html" class="toolbar-back">← All templates</a>
 </div>
 <div class="stage">
+  <div class="mode-bar no-print">
+    <strong>Watermark:</strong>
+    <button class="mode-btn active" data-wm="on">With watermark</button>
+    <button class="mode-btn" data-wm="off">Clean (none)</button>
+  </div>
   <div class="label">LETTERHEAD — US LETTER (8.5″ × 11″)</div>
   <div class="sheet letter">
     <img class="watermark" src="assets/logo-cropped.png" alt=""/>
@@ -75,5 +95,18 @@
 <script src="owners.js"></script>
 <script src="vendors.js"></script>
 <script src="template-tools.js"></script>
+<script>
+(function () {
+  var wm = document.querySelector('.watermark');
+  var btns = document.querySelectorAll('[data-wm]');
+  function set(on) {
+    wm.style.display = on ? '' : 'none';
+    btns.forEach(function (b) { b.classList.toggle('active', (b.dataset.wm === 'on') === on); });
+    localStorage.setItem('lpr_lh_wm', on ? '1' : '0');
+  }
+  btns.forEach(function (b) { b.addEventListener('click', function () { set(b.dataset.wm === 'on'); }); });
+  set(localStorage.getItem('lpr_lh_wm') !== '0');
+})();
+</script>
 </body>
 </html>

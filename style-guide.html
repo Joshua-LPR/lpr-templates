@@ -335,6 +335,29 @@ body { background: #efeae0; min-height: 100vh; }
         <img src="assets/logo-cropped.png" alt="Logo on dark">
         <div class="lo-label">On Dark / Ink</div>
       </div>
+      <div class="logo-well on-white">
+        <img src="assets/logo-cropped.png" alt="Logo grayscale" style="filter:grayscale(100%);">
+        <div class="lo-label">Grayscale / B&amp;W Print</div>
+      </div>
+    </div>
+
+    <!-- Watermark usage note -->
+    <div style="background:#fff; border-radius:10px; padding:20px 24px; margin-top:16px; box-shadow:0 2px 10px rgba(0,0,0,.05); display:flex; gap:28px; align-items:center; flex-wrap:wrap;">
+      <div style="flex-shrink:0; width:180px; height:120px; background:#fff; border:1px solid var(--lpr-rule); border-radius:6px; position:relative; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.06);">
+        <img src="assets/logo-cropped.png" alt="" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:75%; opacity:0.06; pointer-events:none;">
+        <div style="position:absolute; inset:0; padding:12px 14px; display:flex; flex-direction:column; gap:5px; padding-top:24px;">
+          <div style="height:2px; background:var(--lpr-rule); width:80%; border-radius:1px;"></div>
+          <div style="height:2px; background:var(--lpr-rule); width:90%; border-radius:1px;"></div>
+          <div style="height:2px; background:var(--lpr-rule); width:70%; border-radius:1px;"></div>
+          <div style="height:2px; background:var(--lpr-rule); width:85%; border-radius:1px;"></div>
+          <div style="height:2px; background:var(--lpr-rule); width:60%; border-radius:1px;"></div>
+        </div>
+      </div>
+      <div style="flex:1; min-width:200px;">
+        <div style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-blue); font-weight:700; margin-bottom:6px;">Watermark</div>
+        <div style="font-size:12.5px; font-weight:700; color:var(--lpr-ink); margin-bottom:6px;">Ghosted logo behind body copy</div>
+        <div style="font-size:11px; color:var(--lpr-muted); line-height:1.65;">The logo is placed at <strong style="color:var(--lpr-ink);">6 in wide</strong>, centered on the sheet, at <strong style="color:var(--lpr-ink);">opacity 0.06</strong> — barely visible but unmistakable when held to light. Used on the Letterhead (toggle on/off) to add visual identity to formal correspondence without competing with the content.</div>
+      </div>
     </div>
   </div>
 
