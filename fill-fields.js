@@ -153,15 +153,119 @@
       getFieldDefs().forEach(function (def) { applyField(def, ''); });
       render(container);
     };
+
+    /* ---- Replace native date inputs with flatpickr ---- */
+    var hasPickers = defs.some(function (d) { return d.type === 'date' || d.type === 'time'; });
+    if (hasPickers) {
+      loadFlatpickr().then(function () {
+        defs.forEach(function (def) {
+          if (def.type !== 'date' && def.type !== 'time') return;
+          var inp = container.querySelector('[data-ff-key="' + def.key + '"]');
+          if (!inp || inp._flatpickr) return;
+          var opts = {
+            disableMobile: true,
+            defaultDate: vals[def.key] || null,
+            onChange: function (selectedDates, dateStr) {
+              saveValue(def.key, dateStr);
+              applyField(def, dateStr);
+            }
+          };
+          if (def.type === 'date') {
+            opts.dateFormat   = 'Y-m-d';
+            opts.altInput     = true;
+            opts.altFormat    = 'F j, Y';
+            opts.altInputClass = 'lpr-ff-inp lpr-ff-has-icon';
+          } else {
+            opts.enableTime   = true;
+            opts.noCalendar   = true;
+            opts.dateFormat   = 'H:i';
+            opts.time_24hr    = false;
+            opts.altInput     = true;
+            opts.altFormat    = 'h:i K';
+            opts.altInputClass = 'lpr-ff-inp lpr-ff-has-icon';
+          }
+          flatpickr(inp, opts);
+        });
+      }).catch(function () {}); // silently fall back to native picker on network error
+    }
   }
+
+  /* ================================================================
+     FLATPICKR LOADER
+     ================================================================ */
+  function loadFlatpickr() {
+    if (window.flatpickr) return Promise.resolve();
+    if (window._lpr_fp_promise) return window._lpr_fp_promise;
+    if (!document.getElementById('lpr-fp-css')) {
+      var link = document.createElement('link');
+      link.id = 'lpr-fp-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css';
+      document.head.appendChild(link);
+    }
+    window._lpr_fp_promise = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js';
+      s.onload = function () { injectFlatpickrTheme(); resolve(); };
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    return window._lpr_fp_promise;
+  }
+
+  function injectFlatpickrTheme() {
+    if (document.getElementById('lpr-fp-theme')) return;
+    var s = document.createElement('style');
+    s.id = 'lpr-fp-theme';
+    s.textContent = [
+      '.flatpickr-calendar{font-family:\'Montserrat\',sans-serif!important;border-radius:10px!important;',
+      '  box-shadow:0 8px 32px rgba(0,0,0,.22)!important;border:1px solid rgba(40,56,145,.15)!important;}',
+      '.flatpickr-months{background:#283891;border-radius:9px 9px 0 0;}',
+      '.flatpickr-month,.flatpickr-prev-month,.flatpickr-next-month{color:#fff!important;fill:#fff!important;}',
+      '.flatpickr-prev-month:hover svg,.flatpickr-next-month:hover svg{fill:#fff!important;}',
+      '.flatpickr-prev-month:hover,.flatpickr-next-month:hover{background:rgba(255,255,255,.15)!important;}',
+      '.flatpickr-current-month{color:#fff;font-size:13px!important;font-weight:700!important;}',
+      '.flatpickr-current-month .numInputWrapper input{color:#fff!important;font-weight:700;}',
+      '.flatpickr-weekday{color:rgba(40,56,145,.65)!important;font-weight:700;}',
+      '.flatpickr-day{border-radius:6px!important;font-size:12px;}',
+      '.flatpickr-day:hover:not(.selected){background:#eef0fb!important;border-color:#eef0fb!important;}',
+      '.flatpickr-day.selected,.flatpickr-day.selected:hover{background:#283891!important;border-color:#283891!important;color:#fff!important;}',
+      '.flatpickr-day.today{border-color:#d6a35a!important;font-weight:700;}',
+      '.flatpickr-day.today:not(.selected){color:#b07800!important;}',
+      '.flatpickr-day.today.selected{background:#283891!important;border-color:#283891!important;color:#fff!important;}',
+      '.flatpickr-day.prevMonthDay,.flatpickr-day.nextMonthDay{color:#ccc!important;}',
+      /* alt input (date display) — inherits lpr-ff-inp styling; just add pointer cursor */
+      'input.flatpickr-input.lpr-ff-inp,.lpr-ff-inp.lpr-ff-has-icon.flatpickr-input{cursor:pointer;}',
+      /* time-only picker popup */
+      '.flatpickr-calendar.noCalendar{border-radius:10px!important;min-width:160px;}',
+      '.flatpickr-time{border-top:none;padding:12px 10px;display:flex;align-items:center;gap:4px;}',
+      '.flatpickr-time .numInputWrapper{flex:1;}',
+      '.flatpickr-time input.flatpickr-hour,.flatpickr-time input.flatpickr-minute{',
+      '  font-family:\'Montserrat\',sans-serif!important;font-size:20px!important;font-weight:700!important;',
+      '  color:#283891!important;background:transparent!important;border:none!important;text-align:center;}',
+      '.flatpickr-time .flatpickr-am-pm{font-family:\'Montserrat\',sans-serif!important;font-weight:700;',
+      '  color:#283891!important;background:#eef0fb;border-radius:6px;padding:2px 6px;font-size:13px!important;}',
+      '.flatpickr-time .flatpickr-am-pm:hover{background:#283891!important;color:#fff!important;}',
+      '.flatpickr-time .numInputWrapper span{border-color:rgba(40,56,145,.2);}',
+      '.flatpickr-time .numInputWrapper span.arrowUp:after{border-bottom-color:#283891;}',
+      '.flatpickr-time .numInputWrapper span.arrowDown:after{border-top-color:#283891;}',
+      '.flatpickr-time-separator{color:#283891!important;font-weight:700;font-size:18px;}',
+      /* flatpickr wrapper should be block so icon-wrap height tracks the input */
+      '.lpr-ff-icon-wrap .flatpickr-wrapper{display:block;width:100%;}',
+    ].join('');
+    document.head.appendChild(s);
+  }
+
+  var CAL_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#283891" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="14" height="12" rx="2"/><path d="M1 7h14M5 1v4M11 1v4"/></svg>';
+  var CLK_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#283891" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="7"/><path d="M8 4v4l3 2"/></svg>';
 
   function renderField(def, raw) {
     var k = esc(def.key);
     var input;
     if (def.type === 'date') {
-      input = '<input type="date" class="lpr-ff-inp" data-ff-key="' + k + '" value="' + esc(raw) + '" />';
+      input = '<div class="lpr-ff-icon-wrap"><input type="date" class="lpr-ff-inp lpr-ff-has-icon" data-ff-key="' + k + '" value="' + esc(raw) + '" /><span class="lpr-ff-icon" aria-hidden="true">' + CAL_ICON + '</span></div>';
     } else if (def.type === 'time') {
-      input = '<input type="time" class="lpr-ff-inp" data-ff-key="' + k + '" value="' + esc(raw) + '" />';
+      input = '<div class="lpr-ff-icon-wrap"><input type="time" class="lpr-ff-inp lpr-ff-has-icon" data-ff-key="' + k + '" value="' + esc(raw) + '" /><span class="lpr-ff-icon" aria-hidden="true">' + CLK_ICON + '</span></div>';
     } else if (def.type === 'amount') {
       input =
         '<div class="lpr-ff-money">' +
@@ -229,6 +333,11 @@
       '  font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}',
       '.lpr-ff-clear:hover{background:#ffeaea;border-color:#c33;color:#c33;}',
 
+      /* ---- date/time icon wrapper ---- */
+      '.lpr-ff-icon-wrap{position:relative;}',
+      '.lpr-ff-has-icon{padding-right:30px!important;}',
+      '.lpr-ff-icon{position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;display:flex;align-items:center;opacity:.6;}',
+
       /* ---- placeholder on unfilled spans (screen only) ---- */
       '[data-fill-field]:empty::before{',
       '  content:attr(data-fill-placeholder);color:rgba(40,56,145,.3);',
@@ -256,6 +365,8 @@
 
     window.LPR_FILL_TABS = window.LPR_FILL_TABS || [];
     window.LPR_FILL_TABS.push({ id: 'fill-fields', label: 'Fields', render: render });
+
+    window.LPR_FILL_APPLY = applyAll; // lets insert sidebar trigger a re-apply after inserting a span
   }
 
   if (document.readyState === 'loading') {

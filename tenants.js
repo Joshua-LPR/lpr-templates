@@ -276,6 +276,37 @@
   }
 
   /* ================================================================
+     INSERT FILL FIELD AT CURSOR
+     ================================================================ */
+  var FILL_FIELD_LABELS = { date: 'Date', time: 'Time', amount: 'Amount', text: 'Text' };
+
+  function insertFillField(type) {
+    var sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return false;
+    var range = sel.getRangeAt(0);
+    var sheet = document.querySelector('.sheet');
+    if (!sheet || !sheet.contains(range.commonAncestorContainer)) return false;
+
+    range.deleteContents();
+    var span = document.createElement('span');
+    var label = FILL_FIELD_LABELS[type] || type;
+    span.setAttribute('data-fill-field', type);
+    span.setAttribute('data-fill-label', label);
+    span.setAttribute('data-fill-placeholder', label);
+    range.insertNode(span);
+
+    var after = range.cloneRange();
+    after.setStartAfter(span);
+    after.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(after);
+
+    // Re-apply any saved fill-field values so the new span gets populated if its key exists
+    if (window.LPR_FILL_APPLY) window.LPR_FILL_APPLY();
+    return true;
+  }
+
+  /* ================================================================
      EDIT MODE — auto-managed insert sidebar
      ================================================================ */
   let isEditMode  = false;
@@ -335,6 +366,13 @@
         <button class="lpr-tp-x" id="lpr-ins-x">✕</button>
       </div>
       <div class="lpr-ins-body">
+        <div class="lpr-ins-group-label" style="border-top:none;margin-top:0;padding-top:0">FILL FIELDS</div>
+        <div class="lpr-ins-grid lpr-ins-grid-2col">
+          <button class="lpr-ins-btn" data-ff-type="date">Date</button>
+          <button class="lpr-ins-btn" data-ff-type="time">Time</button>
+          <button class="lpr-ins-btn" data-ff-type="amount">Amount</button>
+          <button class="lpr-ins-btn" data-ff-type="text">Text</button>
+        </div>
         ${insGroup('RECIPIENT', Object.entries(CONTACT_FIELD_LABELS), 'contact')}
         ${insGroup('TENANT — body reference', Object.entries(FIELD_LABELS), 'tenant')}
         ${Object.keys(vendorLabels).length ? insGroup('VENDOR — body reference', Object.entries(vendorLabels), 'vendor') : ''}
@@ -358,7 +396,26 @@
       setTimeout(() => { btn.textContent = 'Clear All Fields'; }, 1500);
     };
 
-    insertPanel.querySelectorAll('.lpr-ins-btn').forEach(btn => {
+    insertPanel.querySelectorAll('.lpr-ins-btn[data-ff-type]').forEach(btn => {
+      btn.addEventListener('mousedown', e => {
+        e.preventDefault();
+        const ok = insertFillField(btn.dataset.ffType);
+        if (ok) {
+          btn.classList.add('inserted');
+          setTimeout(() => btn.classList.remove('inserted'), 500);
+        } else {
+          const hint = document.getElementById('lpr-ins-hint');
+          if (hint) {
+            hint.textContent = 'Click inside the template first.';
+            hint.style.opacity = '1';
+            clearTimeout(hint._t);
+            hint._t = setTimeout(() => { hint.style.opacity = '0'; }, 2500);
+          }
+        }
+      });
+    });
+
+    insertPanel.querySelectorAll('.lpr-ins-btn[data-field]').forEach(btn => {
       btn.addEventListener('mousedown', e => {
         e.preventDefault(); // keep focus in contenteditable
         const ok = insertField(btn.dataset.field, btn.dataset.ns);
@@ -806,6 +863,7 @@
       .lpr-ins-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
       .lpr-ins-tip { font-size: 11.5px; color: #283891; background: #eef0fb; border-radius: 6px; padding: 9px 11px; line-height: 1.6; margin: 0; }
       .lpr-ins-grid { display: flex; flex-direction: column; gap: 4px; }
+      .lpr-ins-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
       .lpr-ins-btn {
         width: 100%; text-align: left; padding: 8px 12px;
         background: #f4f5fb; border: 1px solid #dde0f5; border-radius: 6px;

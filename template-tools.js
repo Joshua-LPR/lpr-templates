@@ -101,7 +101,7 @@
           <button class="tt-color-chip" data-color="#1a1a1a" title="Body Text" style="background:#1a1a1a;"></button>
           <button class="tt-color-chip" data-color="#5a5f72" title="Muted" style="background:#5a5f72;"></button>
           <button class="tt-color-chip" data-color="#cc2222" title="Red" style="background:#cc2222;"></button>
-          <button class="tt-color-chip tt-color-chip-clear" data-color="" title="Remove color" style="background:#fff;">✕</button>
+          <button class="tt-color-chip tt-color-chip-clear" data-color="" title="Remove color" style="background:#fff;">⊘</button>
         </div>
       </div>
     `;
@@ -529,9 +529,9 @@
       }
       .tt-color-chip:hover { transform: scale(1.2); }
       .tt-color-chip-clear {
-        border-radius: 50%; font-size: 11px; line-height: 1;
-        color: #888; box-shadow: 0 0 0 1px rgba(0,0,0,0.12);
+        border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
         display: inline-flex; align-items: center; justify-content: center;
+        font-size: 15px; line-height: 1; color: #1a1a1a; font-weight: 400;
       }
     `;
     document.head.appendChild(s);
