@@ -331,12 +331,176 @@ details[open] .dev-chevron { transform: rotate(90deg); }
 
 /* ── toolbar ── */
 @media print { .no-print { display: none !important; } }
+
+/* ── print button (screen only) ── */
+.sg-print-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 999px;
+  background: #fff; border: 1.5px solid var(--lpr-rule);
+  font-family: Montserrat, sans-serif; font-size: 12px;
+  font-weight: 500; color: var(--lpr-muted);
+  cursor: pointer; text-decoration: none;
+  transition: all .15s; white-space: nowrap; margin-left: auto;
+}
+.sg-print-btn:hover { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
+.sg-print-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+/* ── print reference sheet (hidden on screen) ── */
+.print-sheet { display: none; }
+
+@media print {
+  @page { size: 8.5in 11in; margin: 0; }
+  body { background: #fff !important; margin: 0; padding: 0; }
+  .container { padding: 0 !important; max-width: none; margin: 0; }
+  .container > *:not(.print-sheet) { display: none !important; }
+
+  .print-sheet {
+    display: block;
+    font-family: Montserrat, sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color: #0e1430;
+  }
+
+  /* header */
+  .ps-hdr { background: #283891; padding: 0.2in 0.42in; display: flex; align-items: center; gap: 0.15in; }
+  .ps-hdr-logo { height: 0.48in; width: auto; filter: brightness(0) invert(1); opacity: 0.92; flex-shrink: 0; }
+  .ps-hdr-sep { width: 1px; height: 0.4in; background: rgba(255,255,255,0.25); flex-shrink: 0; align-self: center; }
+  .ps-hdr-text { flex: 1; }
+  .ps-eyebrow { font-size: 6.5pt; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.5); font-weight: 600; margin-bottom: 2pt; }
+  .ps-htitle { font-size: 19pt; font-weight: 800; color: #fff; letter-spacing: -0.5px; line-height: 1; }
+  .ps-hdr-meta { font-size: 7pt; color: rgba(255,255,255,0.45); text-align: right; line-height: 1.7; }
+
+  /* body */
+  .ps-body { padding: 0.24in 0.42in 0.16in; }
+
+  /* section label */
+  .ps-lbl {
+    font-size: 6.5pt; letter-spacing: 3px; text-transform: uppercase;
+    font-weight: 700; color: #5a5f72;
+    border-bottom: 1px solid rgba(40,56,145,0.18);
+    padding-bottom: 3pt; margin-bottom: 7pt;
+    display: flex; align-items: center; gap: 5pt;
+  }
+  .ps-lbl::before {
+    content: ''; display: inline-block; width: 2.5pt; height: 9pt;
+    background: #283891; border-radius: 1.5pt; flex-shrink: 0;
+  }
+
+  .ps-gap { height: 0.13in; }
+
+  /* color swatches */
+  .ps-colors { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5pt; margin-bottom: 6pt; }
+  .ps-sw { border-radius: 4pt; overflow: hidden; border: 0.5pt solid rgba(0,0,0,0.08); }
+  .ps-chip { height: 21pt; }
+  .ps-ci { padding: 3pt 4pt 4.5pt; }
+  .ps-cn { font-size: 6pt; font-weight: 700; color: #0e1430; margin-bottom: 1pt; }
+  .ps-ch { font-size: 5.5pt; color: #5a5f72; font-family: 'Courier New', monospace; }
+  .ps-cr { font-size: 5pt; color: #5a5f72; margin-top: 1pt; letter-spacing: 0.3px; }
+
+  /* accent stripe */
+  .ps-stripe {
+    height: 4pt; border-radius: 2pt;
+    background: linear-gradient(to right, #283891 0%, #283891 55%, #d6a35a 55%, #d6a35a 67%, transparent 67%);
+    margin-bottom: 3pt;
+  }
+  .ps-stripe-note { font-size: 6.5pt; color: #5a5f72; }
+
+  /* two-col row */
+  .ps-row { display: flex; gap: 0.22in; }
+  .ps-col-type { flex: 1.65; min-width: 0; }
+  .ps-col-side { flex: 1; min-width: 0; }
+
+  /* type table */
+  .ps-tbl { width: 100%; border-collapse: collapse; }
+  .ps-tbl th {
+    font-size: 5.5pt; letter-spacing: 2px; text-transform: uppercase;
+    color: #5a5f72; font-weight: 600; padding: 2.5pt 4pt;
+    text-align: left; border-bottom: 0.75pt solid rgba(40,56,145,0.22);
+  }
+  .ps-tbl th:last-child { text-align: right; }
+  .ps-tbl td { padding: 3pt 4pt; border-bottom: 0.5pt solid rgba(40,56,145,0.1); vertical-align: middle; }
+  .ps-tbl tr:last-child td { border-bottom: none; }
+  .tc-w { font-size: 7pt; font-weight: 700; color: #283891; letter-spacing: 0.3px; white-space: nowrap; }
+  .tc-n { font-size: 6pt; color: #5a5f72; }
+  .tc-s { font-family: Montserrat, sans-serif; color: #0e1430; white-space: nowrap; font-size: 13pt; line-height: 1; }
+  .tc-u { font-size: 6.5pt; color: #5a5f72; text-align: right; white-space: nowrap; }
+  .ps-scale {
+    font-size: 6pt; color: #5a5f72; margin-top: 4pt; line-height: 1.6;
+    border-top: 0.5pt solid rgba(40,56,145,0.1); padding-top: 4pt;
+  }
+  .ps-scale b { color: #283891; font-weight: 700; }
+
+  /* logo grid */
+  .ps-logo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5pt; margin-bottom: 0.1in; }
+  .ps-lw {
+    border-radius: 4pt; padding: 7pt 5pt 5pt;
+    display: flex; flex-direction: column; align-items: center; gap: 4pt;
+  }
+  .ps-lw.pw { background: #fff; border: 0.5pt solid rgba(40,56,145,0.18); }
+  .ps-lw.pb { background: #283891; }
+  .ps-lw.pg { background: #fff; border: 0.5pt solid rgba(40,56,145,0.18); }
+  .ps-lw.pgb { background: #283891; filter: grayscale(100%); }
+  .ps-lw img { width: 100%; max-width: 0.72in; height: auto; display: block; }
+  .lw-lbl { font-size: 5pt; letter-spacing: 1.5px; text-transform: uppercase; color: #5a5f72; font-weight: 600; text-align: center; line-height: 1.4; }
+  .ps-lw.pb .lw-lbl, .ps-lw.pgb .lw-lbl { color: rgba(255,255,255,0.55); }
+
+  /* address */
+  .ps-addr { font-size: 8pt; line-height: 1.75; color: #0e1430; }
+  .pa-n { font-weight: 700; font-size: 8.5pt; }
+  .pa-b { color: #283891; }
+
+  /* doc elements 3-col */
+  .ps-els { display: flex; gap: 0.18in; }
+  .ps-el { flex: 1; min-width: 0; }
+  .ps-el-subhead { font-size: 6pt; letter-spacing: 2px; text-transform: uppercase; color: #283891; font-weight: 700; margin-bottom: 4pt; }
+
+  /* rules */
+  .ps-rrow { display: flex; align-items: center; gap: 6pt; padding: 2.5pt 0; border-bottom: 0.5pt solid rgba(40,56,145,0.08); }
+  .ps-rrow:last-child { border-bottom: none; }
+  .ps-rdemo { flex-shrink: 0; width: 26pt; }
+  .ps-rmeta { font-size: 6.5pt; color: #5a5f72; line-height: 1.4; }
+  .ps-rmeta strong { color: #0e1430; display: block; font-size: 7pt; }
+
+  /* callouts */
+  .ps-clout { border-left: 2pt solid #283891; background: rgba(40,56,145,0.05); padding: 3.5pt 5.5pt; border-radius: 0 2pt 2pt 0; font-size: 6.5pt; color: #0e1430; margin-bottom: 3pt; line-height: 1.35; }
+  .ps-clout.gold { border-color: #d6a35a; background: rgba(214,163,90,0.07); }
+  .ps-clout-note { font-size: 6pt; color: #5a5f72; margin-bottom: 5pt; line-height: 1.4; }
+  .ps-wm { font-size: 6.5pt; color: #5a5f72; line-height: 1.5; padding: 4pt 7pt; border-left: 2pt solid rgba(40,56,145,0.2); margin-top: 6pt; }
+  .ps-wm strong { color: #0e1430; }
+
+  /* dimensions */
+  .ps-drow { display: flex; justify-content: space-between; padding: 2.5pt 0; border-bottom: 0.5pt solid rgba(40,56,145,0.08); }
+  .ps-drow:last-child { border-bottom: none; }
+  .ps-dname { font-size: 7pt; font-weight: 600; color: #0e1430; }
+  .ps-dsize { font-size: 6.5pt; font-family: 'Courier New', monospace; color: #5a5f72; }
+
+  /* footer */
+  .ps-footer {
+    padding: 0.07in 0.42in 0;
+    border-top: 0.5pt solid rgba(40,56,145,0.18);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 6pt; color: #5a5f72; letter-spacing: 1.5px; text-transform: uppercase;
+  }
+  .ps-bar {
+    height: 4pt; margin-top: 0.06in;
+    background: linear-gradient(to right, #283891 0%, #283891 70%, #d6a35a 70%, #d6a35a 84%, rgba(255,255,255,0) 84%);
+  }
+}
 </style>
 </head>
 <body>
 
 <div class="toolbar no-print">
   <a href="index.html" class="toolbar-back">← All templates</a>
+  <button class="sg-print-btn" onclick="window.print()">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="9" width="10" height="6" rx="1"/>
+      <path d="M3 9V5h10v4"/>
+      <path d="M5 2h6v3H5z"/>
+    </svg>
+    Print reference card
+  </button>
 </div>
 
 <div class="container">
@@ -864,6 +1028,149 @@ details[open] .dev-chevron { transform: rotate(90deg); }
 
   <div class="sg-footer">
     LPR Management, LLC &nbsp;·&nbsp; Internal Brand Reference &nbsp;·&nbsp; Not for external distribution
+  </div>
+
+  <!-- ══ Print Reference Card (hidden on screen, shown on print) ══ -->
+  <div class="print-sheet">
+
+    <div class="ps-hdr">
+      <img class="ps-hdr-logo" src="assets/logo-cropped.png" alt="LPR Management, LLC">
+      <div class="ps-hdr-sep"></div>
+      <div class="ps-hdr-text">
+        <div class="ps-eyebrow">LPR Management, LLC</div>
+        <div class="ps-htitle">Brand Style Guide</div>
+      </div>
+      <div class="ps-hdr-meta">Internal Reference<br>2025</div>
+    </div>
+
+    <div class="ps-body">
+
+      <!-- Colors -->
+      <div class="ps-lbl">Color Palette</div>
+      <div class="ps-colors">
+        <div class="ps-sw"><div class="ps-chip" style="background:#283891;"></div><div class="ps-ci"><div class="ps-cn">Royal Blue</div><div class="ps-ch">#283891</div><div class="ps-cr">Primary brand</div></div></div>
+        <div class="ps-sw"><div class="ps-chip" style="background:#d6a35a;"></div><div class="ps-ci"><div class="ps-cn">Gold Bronze</div><div class="ps-ch">#d6a35a</div><div class="ps-cr">Accent · stripe</div></div></div>
+        <div class="ps-sw"><div class="ps-chip" style="background:#0e1430;"></div><div class="ps-ci"><div class="ps-cn">Ink</div><div class="ps-ch">#0e1430</div><div class="ps-cr">Headings</div></div></div>
+        <div class="ps-sw"><div class="ps-chip" style="background:#1a1a1a;"></div><div class="ps-ci"><div class="ps-cn">Body Text</div><div class="ps-ch">#1a1a1a</div><div class="ps-cr">Paragraphs</div></div></div>
+        <div class="ps-sw"><div class="ps-chip" style="background:#5a5f72;"></div><div class="ps-ci"><div class="ps-cn">Muted</div><div class="ps-ch">#5a5f72</div><div class="ps-cr">Dates · captions</div></div></div>
+        <div class="ps-sw"><div class="ps-chip" style="background:#ffffff; border-bottom:0.5pt solid rgba(0,0,0,0.1);"></div><div class="ps-ci"><div class="ps-cn">Paper White</div><div class="ps-ch">#ffffff</div><div class="ps-cr">Document bg</div></div></div>
+        <div class="ps-sw"><div class="ps-chip" style="background:rgba(40,56,145,0.18);"></div><div class="ps-ci"><div class="ps-cn">Rule</div><div class="ps-ch">rgba(40,56,145, .18)</div><div class="ps-cr">Borders · dividers</div></div></div>
+      </div>
+      <div class="ps-stripe"></div>
+      <div class="ps-stripe-note">Accent stripe motif — Royal Blue 55% &middot; Gold Bronze 12% &middot; fades to transparent &middot; used on letterhead footer</div>
+
+      <div class="ps-gap"></div>
+
+      <!-- Typography + Logo/Address -->
+      <div class="ps-row">
+
+        <div class="ps-col-type">
+          <div class="ps-lbl">Typography &mdash; Montserrat</div>
+          <table class="ps-tbl">
+            <thead>
+              <tr><th>Weight</th><th>Sample</th><th>Used for</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><div class="tc-w">300 &middot; Light</div><div class="tc-n">font-weight: 300</div></td><td><div class="tc-s" style="font-weight:300;">Brand Template Library</div></td><td class="tc-u">Subheadings &middot; body</td></tr>
+              <tr><td><div class="tc-w">400 &middot; Regular</div><div class="tc-n">font-weight: 400</div></td><td><div class="tc-s" style="font-weight:400;">Brand Template Library</div></td><td class="tc-u">Notice body &middot; copy</td></tr>
+              <tr><td><div class="tc-w">500 &middot; Medium</div><div class="tc-n">font-weight: 500</div></td><td><div class="tc-s" style="font-weight:500;">Brand Template Library</div></td><td class="tc-u">Env. marks &middot; captions</td></tr>
+              <tr><td><div class="tc-w">600 &middot; SemiBold</div><div class="tc-n">font-weight: 600</div></td><td><div class="tc-s" style="font-weight:600;">Brand Template Library</div></td><td class="tc-u">Signoff &middot; caps labels</td></tr>
+              <tr><td><div class="tc-w">700 &middot; Bold</div><div class="tc-n">font-weight: 700</div></td><td><div class="tc-s" style="font-weight:700;">Brand Template Library</div></td><td class="tc-u">Notice heads &middot; docs</td></tr>
+              <tr><td><div class="tc-w">800 &middot; ExtraBold</div><div class="tc-n">font-weight: 800</div></td><td><div class="tc-s" style="font-weight:800;">Brand Template Library</div></td><td class="tc-u">Lease cover &middot; display</td></tr>
+            </tbody>
+          </table>
+          <div class="ps-scale">
+            <b>H1</b> 24px / 700 &nbsp;&middot;&nbsp; <b>H2</b> 18px / 600 &nbsp;&middot;&nbsp; <b>Body</b> 13px / 400 &nbsp;&middot;&nbsp; <b>Small</b> 11px / 500 &nbsp;&middot;&nbsp; <b>Label</b> 9px / 700 CAPS
+          </div>
+        </div>
+
+        <div class="ps-col-side">
+          <div class="ps-lbl">Logo Usage</div>
+          <div class="ps-logo-grid">
+            <div class="ps-lw pw">
+              <img src="assets/logo-cropped.png" alt="">
+              <div class="lw-lbl">On White</div>
+            </div>
+            <div class="ps-lw pb">
+              <img src="assets/logo-cropped.png" alt="" style="filter:brightness(0) invert(1);">
+              <div class="lw-lbl">On Brand Blue</div>
+            </div>
+            <div class="ps-lw pg">
+              <img src="assets/logo-cropped.png" alt="" style="filter:grayscale(100%);">
+              <div class="lw-lbl">Grayscale / B&amp;W</div>
+            </div>
+            <div class="ps-lw pgb">
+              <img src="assets/logo-white.png" alt="">
+              <div class="lw-lbl">B&amp;W on Blue</div>
+            </div>
+          </div>
+          <div class="ps-lbl">Brand Address</div>
+          <div class="ps-addr">
+            <div class="pa-n">LPR Management, LLC</div>
+            1517 Reisterstown Road, 2nd Floor<br>
+            Pikesville, MD&nbsp;21208<br>
+            <span class="pa-b">443.402.5641</span><br>
+            <span class="pa-b">office@lasalleparkrealty.com</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="ps-gap"></div>
+
+      <!-- Document Elements -->
+      <div class="ps-lbl">Document Elements</div>
+      <div class="ps-els">
+
+        <div class="ps-el">
+          <div class="ps-el-subhead">Rules &amp; Dividers</div>
+          <div class="ps-rrow">
+            <div class="ps-rdemo"><div style="height:2pt;background:#283891;border-radius:1pt;"></div></div>
+            <div class="ps-rmeta"><strong>Brand rule</strong>#283891 &middot; 2px &middot; letterhead header</div>
+          </div>
+          <div class="ps-rrow">
+            <div class="ps-rdemo"><div style="height:2pt;background:#d6a35a;border-radius:1pt;"></div></div>
+            <div class="ps-rmeta"><strong>Accent rule</strong>#d6a35a &middot; 2px &middot; stripe accent</div>
+          </div>
+          <div class="ps-rrow">
+            <div class="ps-rdemo"><div style="height:0.75pt;background:rgba(40,56,145,0.22);"></div></div>
+            <div class="ps-rmeta"><strong>Rule (default)</strong>rgba(40,56,145,.18) &middot; 1px</div>
+          </div>
+          <div class="ps-rrow">
+            <div class="ps-rdemo"><div style="height:0.75pt;background:rgba(0,0,0,0.18);"></div></div>
+            <div class="ps-rmeta"><strong>Soft rule</strong>rgba(0,0,0,.15) &middot; 1px &middot; neutral</div>
+          </div>
+        </div>
+
+        <div class="ps-el">
+          <div class="ps-el-subhead">Callout Blocks</div>
+          <div class="ps-clout">Important notice text or key information.</div>
+          <div class="ps-clout-note">Left border 3px &middot; #283891 &middot; tinted bg — notices &amp; key info</div>
+          <div class="ps-clout gold">Lease terms, rent amounts, key dates.</div>
+          <div class="ps-clout-note">Left border 3px &middot; #d6a35a &middot; tinted bg — financial figures</div>
+          <div class="ps-wm"><strong>Watermark</strong> &middot; Logo centered 6 in wide &middot; opacity 0.06 &middot; letterhead only</div>
+        </div>
+
+        <div class="ps-el">
+          <div class="ps-el-subhead">Print Dimensions</div>
+          <div class="ps-drow"><span class="ps-dname">Letter</span><span class="ps-dsize">8.5″ &times; 11″</span></div>
+          <div class="ps-drow"><span class="ps-dname">Envelope (#10)</span><span class="ps-dsize">9.5″ &times; 4.125″</span></div>
+          <div class="ps-drow"><span class="ps-dname">Business Card</span><span class="ps-dsize">3.5″ &times; 2″</span></div>
+          <div class="ps-drow"><span class="ps-dname">Cert. of Mailing</span><span class="ps-dsize">5″ &times; 3″</span></div>
+          <div class="ps-drow"><span class="ps-dname">Address Label</span><span class="ps-dsize">62mm &times; varies</span></div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="ps-footer">
+      <span>LPR Management, LLC</span>
+      <span>Brand Style Guide &mdash; Internal Reference</span>
+      <span>2025</span>
+    </div>
+    <div class="ps-bar"></div>
+
   </div>
 
 </div>
