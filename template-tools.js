@@ -513,11 +513,12 @@
       }
       .tt-color-label { pointer-events: none; }
       .tt-color-menu {
-        position: absolute; top: calc(100% + 6px); left: 0;
-        background: #fff; border-radius: 8px; padding: 8px;
+        position: absolute; top: calc(100% + 6px); right: 0;
+        background: #fff; border-radius: 8px; padding: 8px 10px;
         box-shadow: 0 6px 24px rgba(0,0,0,0.18);
-        display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
-        min-width: 170px; z-index: 200;
+        border: 1px solid rgba(40,56,145,0.12);
+        display: flex; gap: 7px; align-items: center; flex-wrap: nowrap;
+        z-index: 9999;
       }
       .tt-color-menu[hidden] { display: none; }
       .tt-color-chip {
