@@ -40,15 +40,12 @@
                   font-size:7pt; letter-spacing:2.5px; text-transform:uppercase; color:rgba(40,56,145,0.45); text-align:center; }
   .env-mark     { display:none; position:absolute; bottom:0.32in; right:0.4in;
                   font-size:7pt; letter-spacing:2.5px; text-transform:uppercase; color:var(--lpr-muted); font-weight:500; }
-  .env-baseline { display:none; position:absolute; bottom:0.32in; left:0.5in; right:0.5in;
-                  height:1px; background:var(--lpr-blue); opacity:0.4; }
-  .env-baseline::after { content:""; position:absolute; left:0; bottom:0; height:3px; width:0.4in; background:var(--lpr-blue); }
 
-  /* ── return address block ── */
-  .env-return { position:absolute; top:0.42in; left:0.85in; display:flex; gap:14px; align-items:center; }
-  .env-return img { height:0.7in; width:auto; flex-shrink:0; }
-  .env-return .vrule { display:none; width:1px; background:var(--lpr-blue); align-self:stretch; margin:2px 0; }
-  .env-return .addr { font-size:8pt; line-height:1.55; color:var(--lpr-ink); }
+  /* ── return address — default: clean layout with vrule, no stripe ── */
+  .env-return { position:absolute; top:0.42in; left:0.5in; display:flex; gap:14px; align-items:center; }
+  .env-return img { height:0.5in; width:auto; flex-shrink:0; }
+  .env-return .vrule { display:block; width:1px; background:var(--lpr-blue); align-self:stretch; margin:2px 0; }
+  .env-return .addr { font-size:8.5pt; line-height:1.55; color:var(--lpr-ink); font-weight:400; letter-spacing:0.2px; }
   .env-return .addr .name { display:none; font-weight:700; color:var(--lpr-blue); font-size:9pt; letter-spacing:0.3px; }
 
   /* ── recipient ── */
@@ -58,21 +55,15 @@
   .env-csl:has([data-contact-field="city"]:empty) .env-comma { display:none; }
   @media print { .env-recipient:not(.env-rec-filled) { visibility:hidden; } }
 
-  /* ══ MODE: STANDARD (stripe) ══ */
+  /* ══ MODE: WITH STRIPE ══ */
   .mode-stripe .env-stripe                          { display:block; }
   .mode-stripe .env-return                          { left:0.85in; }
+  .mode-stripe .env-return img                      { height:0.7in; }
+  .mode-stripe .env-return .vrule                   { display:none; }
   .mode-stripe .env-return .addr                    { border-left:1px solid var(--lpr-rule); padding-left:12px; }
   .mode-stripe .env-return .addr .name              { display:block; }
   .mode-stripe .env-stamp                           { display:flex; }
   .mode-stripe .env-mark                            { display:block; }
-
-  /* ══ MODE: PREMIUM (ivory) ══ */
-  .mode-premium .envelope                           { background:#fbf9f5; }
-  .mode-premium .env-return                         { left:0.5in; }
-  .mode-premium .env-return img                     { height:0.5in; }
-  .mode-premium .env-return .vrule                  { display:block; }
-  .mode-premium .env-return .addr                   { font-size:8.5pt; font-weight:400; letter-spacing:0.2px; }
-  /* .mode-premium .env-baseline intentionally omitted — baseline removed per design */
 
   /* ══ MODE: SEND ADDRESS ONLY ══ */
   .mode-sendonly .env-return                        { display:none; }
@@ -83,16 +74,14 @@
     body { background:#fff; padding:0; }
     .stage { gap:0; }
     .label, .mode-bar, .specs { display:none !important; }
-    .mode-premium .envelope { background:#fbf9f5 !important; }
   }
 
-  /* ── print-shop spec block ── */
+  /* ── usage note block ── */
   .specs {
     display:none; font-size:10px; color:#5a5f72; line-height:1.55;
     width:9.5in; max-width:calc(100vw - 40px);
   }
   .specs strong { color:var(--lpr-ink); letter-spacing:1.5px; text-transform:uppercase; font-size:9px; }
-  .mode-premium .specs-premium { display:block; }
   .mode-sendonly .specs-sendonly { display:block; }
 </style>
 </head>
@@ -101,13 +90,13 @@
   <a href="index.html" class="toolbar-back">← All templates</a>
 </div>
 
-<div class="stage mode-stripe">
+<div class="stage mode-standard">
 
   <div class="mode-bar no-print">
     <strong>Style:</strong>
-    <button class="mode-btn active" data-mode="stripe">Standard — blue stripe</button>
-    <button class="mode-btn" data-mode="premium">Premium — ivory</button>
-    <button class="mode-btn" data-mode="sendonly">Send address only</button>
+    <button class="mode-btn active" data-mode="standard">Standard</button>
+    <button class="mode-btn" data-mode="stripe">With Stripe</button>
+    <button class="mode-btn" data-mode="sendonly">Send Address Only</button>
   </div>
 
   <div class="label" id="env-label">#10 ENVELOPE — 9.5″ × 4.125″</div>
@@ -135,21 +124,6 @@
     </div>
 
     <div class="env-mark">Pikesville · Maryland</div>
-    <div class="env-baseline"></div>
-  </div>
-
-  <!-- Premium print-shop spec -->
-  <div class="specs specs-premium no-print">
-    <p><strong>Print-shop spec</strong> · Send this file to your printer with the notes below.</p>
-    <p>
-      <strong>Size:</strong> #10 commercial envelope, 9.5″ × 4.125″ ·
-      <strong>Stock:</strong> 70–80lb warm white wove (Mohawk Strathmore Bright White or Classic Crest Natural White) ·
-      <strong>Ink:</strong> 1-color, PMS 287 C (closest to #283891) — or 4/0 CMYK ·
-      <strong>Print area:</strong> front only (1/0) ·
-      <strong>Finish:</strong> regular gum, no window ·
-      <strong>Bleed:</strong> none required
-    </p>
-    <p>Recipient address is intentionally blank — write, label, or merge after printing. Postage area top-right is clear for stamp / meter / indicia.</p>
   </div>
 
   <!-- Send-only usage note -->
@@ -168,15 +142,15 @@
   var btns  = document.querySelectorAll('.mode-btn[data-mode]');
   var lbl   = document.getElementById('env-label');
   var LABELS = {
-    stripe:   '#10 ENVELOPE — 9.5″ × 4.125″',
-    premium:  '#10 ENVELOPE — PREMIUM / PRE-PRINT',
+    standard: '#10 ENVELOPE — 9.5″ × 4.125″',
+    stripe:   '#10 ENVELOPE — WITH STRIPE',
     sendonly: '#10 ENVELOPE — SEND ADDRESS ONLY'
   };
 
   function setMode(mode) {
     stage.className = stage.className.replace(/\bmode-\S+/g, '').trim() + ' mode-' + mode;
     btns.forEach(function (b) { b.classList.toggle('active', b.dataset.mode === mode); });
-    if (lbl) lbl.textContent = LABELS[mode] || LABELS.stripe;
+    if (lbl) lbl.textContent = LABELS[mode] || LABELS.standard;
     localStorage.setItem('lpr_env_mode', mode);
   }
 

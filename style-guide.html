@@ -61,7 +61,8 @@ body { background: #efeae0; min-height: 100vh; }
 }
 
 /* ── color palette ── */
-.color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 16px; }
+.color-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+@media (max-width: 700px) { .color-grid { grid-template-columns: repeat(2, 1fr); } }
 .color-swatch {
   border-radius: 10px; overflow: hidden;
   box-shadow: 0 2px 10px rgba(0,0,0,0.07);
@@ -263,13 +264,19 @@ body { background: #efeae0; min-height: 100vh; }
 .dim-size { font-family: 'Courier New', monospace; font-size: 10.5px; color: var(--lpr-muted); }
 
 /* developer appendix */
-.dev-appendix { background: #f4f4f6; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 24px 28px; margin-top: 48px; }
-.dev-appendix-title {
+.dev-appendix { background: #f4f4f6; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 16px 28px; margin-top: 48px; }
+.dev-appendix summary {
+  cursor: pointer; list-style: none; user-select: none;
+  display: flex; align-items: center; gap: 8px; padding: 6px 0;
   font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
-  font-weight: 700; color: var(--lpr-muted); margin: 0 0 16px;
-  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; color: var(--lpr-muted);
 }
-.dev-appendix-title::before { content: '{ }'; font-family: 'Courier New', monospace; font-size: 11px; color: var(--lpr-blue); letter-spacing: 0; }
+.dev-appendix summary::-webkit-details-marker { display: none; }
+.dev-appendix summary::marker { content: ''; }
+.dev-appendix summary .dev-code { font-family: 'Courier New', monospace; font-size: 11px; color: var(--lpr-blue); letter-spacing: 0; font-weight: 400; }
+.dev-appendix summary .dev-chevron { margin-left: auto; font-size: 10px; color: var(--lpr-blue); transition: transform 0.2s; display: inline-block; line-height: 1; }
+details[open] .dev-chevron { transform: rotate(90deg); }
+.dev-body { margin-top: 20px; display: flex; flex-direction: column; gap: 20px; }
 .dev-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 @media (max-width: 640px) { .dev-cols { grid-template-columns: 1fr; } }
 .dev-block h5 { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--lpr-blue); font-weight: 700; margin: 0 0 10px; }
@@ -286,8 +293,7 @@ body { background: #efeae0; min-height: 100vh; }
 .sh-xl2 { box-shadow: 0 12px 48px rgba(0,0,0,0.18); }
 
 /* ── logo usage ── */
-.logo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-@media (max-width: 700px) { .logo-grid { grid-template-columns: 1fr 1fr; } }
+.logo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .logo-well {
   border-radius: 10px; padding: 28px 20px;
   display: flex; flex-direction: column; align-items: center; gap: 14px;
@@ -357,25 +363,17 @@ body { background: #efeae0; min-height: 100vh; }
         <img src="assets/logo-cropped.png" alt="Logo on white">
         <div class="lo-label">On White</div>
       </div>
-      <div class="logo-well on-warm">
-        <img src="assets/logo-cropped.png" alt="Logo on warm">
-        <div class="lo-label">On Warm Paper</div>
-      </div>
-      <div class="logo-well on-page">
-        <img src="assets/logo-cropped.png" alt="Logo on page">
-        <div class="lo-label">On Page Background</div>
-      </div>
       <div class="logo-well on-blue">
         <img src="assets/logo-cropped.png" alt="Logo on blue">
         <div class="lo-label">On Brand Blue</div>
       </div>
-      <div class="logo-well on-dark">
-        <img src="assets/logo-cropped.png" alt="Logo on dark">
-        <div class="lo-label">On Dark / Ink</div>
-      </div>
       <div class="logo-well on-white">
         <img src="assets/logo-cropped.png" alt="Logo grayscale" style="filter:grayscale(100%);">
         <div class="lo-label">Grayscale / B&amp;W Print</div>
+      </div>
+      <div class="logo-well on-blue" style="filter:grayscale(100%);">
+        <img src="assets/logo-white.png" alt="Logo B&amp;W on blue">
+        <div class="lo-label">B&amp;W Print on Blue</div>
       </div>
     </div>
 
@@ -412,15 +410,6 @@ body { background: #efeae0; min-height: 100vh; }
           <div class="name">Royal Blue</div>
           <div class="hex">#283891</div>
           <div class="role">Primary brand color</div>
-        </div>
-      </div>
-
-      <div class="color-swatch">
-        <div class="chip deep"></div>
-        <div class="info">
-          <div class="name">Deep Blue</div>
-          <div class="hex">#1c2870</div>
-          <div class="role">Hover / pressed state</div>
         </div>
       </div>
 
@@ -466,24 +455,6 @@ body { background: #efeae0; min-height: 100vh; }
           <div class="name">Paper White</div>
           <div class="hex">#ffffff</div>
           <div class="role">Document background</div>
-        </div>
-      </div>
-
-      <div class="color-swatch">
-        <div class="chip warm"></div>
-        <div class="info">
-          <div class="name">Warm Paper</div>
-          <div class="hex">#fbf9f5</div>
-          <div class="role">Cards &amp; input fields</div>
-        </div>
-      </div>
-
-      <div class="color-swatch">
-        <div class="chip page"></div>
-        <div class="info">
-          <div class="name">Page Background</div>
-          <div class="hex">#efeae0</div>
-          <div class="role">App shell / canvas</div>
         </div>
       </div>
 
@@ -593,11 +564,6 @@ body { background: #efeae0; min-height: 100vh; }
       <div style="font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-blue); font-weight:700; margin-bottom:20px;">Type Size Scale</div>
       <div style="display:flex; flex-direction:column; gap:10px;">
         <div style="display:flex; align-items:baseline; gap:20px; border-bottom:1px solid var(--lpr-rule); padding-bottom:10px;">
-          <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-muted); font-weight:600; width:80px; flex-shrink:0;">Display</span>
-          <span style="font-family:Montserrat,sans-serif; font-size:36px; font-weight:800; color:var(--lpr-ink); line-height:1;">36px / 800</span>
-          <span style="font-size:10px; color:var(--lpr-muted);">Cover sheets, hero headings</span>
-        </div>
-        <div style="display:flex; align-items:baseline; gap:20px; border-bottom:1px solid var(--lpr-rule); padding-bottom:10px;">
           <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-muted); font-weight:600; width:80px; flex-shrink:0;">H1</span>
           <span style="font-family:Montserrat,sans-serif; font-size:24px; font-weight:700; color:var(--lpr-ink); line-height:1;">24px / 700</span>
           <span style="font-size:10px; color:var(--lpr-muted);">Notice titles, card headings</span>
@@ -622,108 +588,6 @@ body { background: #efeae0; min-height: 100vh; }
           <span style="font-family:Montserrat,sans-serif; font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--lpr-blue); line-height:1;">9–10px / 700 CAPS</span>
           <span style="font-size:10px; color:var(--lpr-muted);">Allcaps section labels, eyebrows</span>
         </div>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- ── Spacing ── -->
-  <div class="sg-section">
-    <div class="sg-label">Spacing Scale</div>
-
-    <div style="background:#fff; border-radius:12px; padding:28px 32px; box-shadow:0 2px 12px rgba(0,0,0,.05);">
-      <div class="spacing-grid">
-
-        <div class="spacing-row">
-          <div class="spacing-label">4px</div>
-          <div class="spacing-bar-wrap">
-            <div class="spacing-bar" style="width:4%;">
-              <span class="spacing-bar-text">4</span>
-            </div>
-          </div>
-          <div class="spacing-desc">Icon gaps, tight nudges</div>
-        </div>
-
-        <div class="spacing-row">
-          <div class="spacing-label">8px</div>
-          <div class="spacing-bar-wrap">
-            <div class="spacing-bar" style="width:8%;">
-              <span class="spacing-bar-text">8</span>
-            </div>
-          </div>
-          <div class="spacing-desc">Toolbar button gap</div>
-        </div>
-
-        <div class="spacing-row">
-          <div class="spacing-label">12px</div>
-          <div class="spacing-bar-wrap">
-            <div class="spacing-bar" style="width:12%;">
-              <span class="spacing-bar-text">12</span>
-            </div>
-          </div>
-          <div class="spacing-desc">Inline padding (buttons, pills)</div>
-        </div>
-
-        <div class="spacing-row">
-          <div class="spacing-label">16px</div>
-          <div class="spacing-bar-wrap">
-            <div class="spacing-bar" style="width:16%;">
-              <span class="spacing-bar-text">16</span>
-            </div>
-          </div>
-          <div class="spacing-desc">Card grid gaps</div>
-        </div>
-
-        <div class="spacing-row">
-          <div class="spacing-label">24px</div>
-          <div class="spacing-bar-wrap">
-            <div class="spacing-bar" style="width:24%;">
-              <span class="spacing-bar-text">24</span>
-            </div>
-          </div>
-          <div class="spacing-desc">Card body padding, sheet margin</div>
-        </div>
-
-        <div class="spacing-row">
-          <div class="spacing-label">32px</div>
-          <div class="spacing-bar-wrap">
-            <div class="spacing-bar" style="width:32%;">
-              <span class="spacing-bar-text">32</span>
-            </div>
-          </div>
-          <div class="spacing-desc">Page horizontal padding</div>
-        </div>
-
-        <div class="spacing-row">
-          <div class="spacing-label">48px</div>
-          <div class="spacing-bar-wrap">
-            <div class="spacing-bar" style="width:48%;">
-              <span class="spacing-bar-text">48</span>
-            </div>
-          </div>
-          <div class="spacing-desc">Hero section gaps, major sections</div>
-        </div>
-
-        <div class="spacing-row">
-          <div class="spacing-label">56px</div>
-          <div class="spacing-bar-wrap">
-            <div class="spacing-bar" style="width:56%;">
-              <span class="spacing-bar-text">56</span>
-            </div>
-          </div>
-          <div class="spacing-desc">Page top padding</div>
-        </div>
-
-        <div class="spacing-row">
-          <div class="spacing-label">80px</div>
-          <div class="spacing-bar-wrap">
-            <div class="spacing-bar" style="width:80%;">
-              <span class="spacing-bar-text">80</span>
-            </div>
-          </div>
-          <div class="spacing-desc">Page bottom padding</div>
-        </div>
-
       </div>
     </div>
   </div>
@@ -825,73 +689,127 @@ body { background: #efeae0; min-height: 100vh; }
 
   <!-- ── Site UI Reference — Developer ── -->
   <div class="dev-appendix">
-    <div class="dev-appendix-title">Site UI Reference — Developer Only</div>
-    <div class="dev-cols">
+    <details>
+      <summary>
+        <span class="dev-code">{ }</span>
+        Site UI Reference — Developer Only
+        <span class="dev-chevron">▸</span>
+      </summary>
 
-      <div class="dev-block">
-        <h5>Border Radius Tokens</h5>
-        <div class="dev-token">
-          <div class="tok-demo"><div class="r-demo r-3" style="width:32px;height:18px;"></div></div>
-          <div class="tok-name">3px</div>
-          <div class="tok-val">Code chips, callout accents</div>
+      <div class="dev-body">
+
+        <!-- Row 1: Site-only colors + Spacing -->
+        <div class="dev-cols">
+
+          <div class="dev-block">
+            <h5>Site-Only Colors</h5>
+            <div class="dev-token">
+              <div class="tok-demo"><div style="width:28px;height:20px;background:#1c2870;border-radius:4px;"></div></div>
+              <div class="tok-name">#1c2870</div>
+              <div class="tok-val">Deep Blue — button hover/pressed</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div style="width:28px;height:20px;background:#efeae0;border-radius:4px;border:1px solid rgba(0,0,0,0.1);"></div></div>
+              <div class="tok-name">#efeae0</div>
+              <div class="tok-val">Page Background — app canvas, not printed</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div style="width:28px;height:20px;background:#fbf9f5;border-radius:4px;border:1px solid rgba(0,0,0,0.08);"></div></div>
+              <div class="tok-name">#fbf9f5</div>
+              <div class="tok-val">Warm Paper — card thumbs, inputs, UI backgrounds</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div style="width:28px;height:20px;background:#283891;border-radius:4px;opacity:0.85;"></div></div>
+              <div class="tok-name">36px / 800</div>
+              <div class="tok-val">Display type — web hero headings only</div>
+            </div>
+          </div>
+
+          <div class="dev-block">
+            <h5>Spacing Scale</h5>
+            <div class="dev-token"><div class="tok-name">4px</div><div class="tok-val">Icon gaps, tight nudges</div></div>
+            <div class="dev-token"><div class="tok-name">8px</div><div class="tok-val">Toolbar button gap</div></div>
+            <div class="dev-token"><div class="tok-name">12px</div><div class="tok-val">Inline padding — buttons, pills</div></div>
+            <div class="dev-token"><div class="tok-name">16px</div><div class="tok-val">Card grid gaps</div></div>
+            <div class="dev-token"><div class="tok-name">24px</div><div class="tok-val">Card padding, section margins</div></div>
+            <div class="dev-token"><div class="tok-name">32px</div><div class="tok-val">Page horizontal padding</div></div>
+            <div class="dev-token"><div class="tok-name">48px</div><div class="tok-val">Hero gaps, major sections</div></div>
+            <div class="dev-token"><div class="tok-name">56px</div><div class="tok-val">Page top padding</div></div>
+            <div class="dev-token"><div class="tok-name">80px</div><div class="tok-val">Page bottom padding</div></div>
+          </div>
+
         </div>
-        <div class="dev-token">
-          <div class="tok-demo"><div class="r-demo r-4" style="width:32px;height:18px;"></div></div>
-          <div class="tok-name">4px</div>
-          <div class="tok-val">Form inputs, small tags</div>
+
+        <!-- Row 2: Border Radius + Shadow Tokens -->
+        <div class="dev-cols">
+
+          <div class="dev-block">
+            <h5>Border Radius Tokens</h5>
+            <div class="dev-token">
+              <div class="tok-demo"><div class="r-demo r-3" style="width:32px;height:18px;"></div></div>
+              <div class="tok-name">3px</div>
+              <div class="tok-val">Code chips, callout accents</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div class="r-demo r-4" style="width:32px;height:18px;"></div></div>
+              <div class="tok-name">4px</div>
+              <div class="tok-val">Form inputs, small tags</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div class="r-demo r-6" style="width:32px;height:18px;"></div></div>
+              <div class="tok-name">6px</div>
+              <div class="tok-val">Menu items</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div class="r-demo r-10" style="width:32px;height:18px;"></div></div>
+              <div class="tok-name">10px</div>
+              <div class="tok-val">Template cards, swatches</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div class="r-demo r-12" style="width:32px;height:18px;"></div></div>
+              <div class="tok-name">12px</div>
+              <div class="tok-val">Panels, hero section</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div class="r-demo r-999" style="width:40px;height:18px;"></div></div>
+              <div class="tok-name">999px</div>
+              <div class="tok-val">Pills — toolbar &amp; mode buttons</div>
+            </div>
+          </div>
+
+          <div class="dev-block">
+            <h5>Shadow Tokens</h5>
+            <div class="dev-token">
+              <div class="tok-demo"><div class="sh-demo sh-xs"></div></div>
+              <div class="tok-name">XS</div>
+              <div class="tok-val">0 2px 8px · .06 — swatches at rest</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div class="sh-demo sh-sm2"></div></div>
+              <div class="tok-name">SM</div>
+              <div class="tok-val">0 2px 12px · .05 — type cards, panels</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div class="sh-demo sh-md2"></div></div>
+              <div class="tok-name">MD</div>
+              <div class="tok-val">0 4px 24px · .06 — cards on hover</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div class="sh-demo sh-lg2"></div></div>
+              <div class="tok-name">LG</div>
+              <div class="tok-val">0 8px 32px · .10 — toolbar, sheets</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div class="sh-demo sh-xl2"></div></div>
+              <div class="tok-name">XL</div>
+              <div class="tok-val">0 12px 48px · .18 — modals, dropdowns</div>
+            </div>
+          </div>
+
         </div>
-        <div class="dev-token">
-          <div class="tok-demo"><div class="r-demo r-6" style="width:32px;height:18px;"></div></div>
-          <div class="tok-name">6px</div>
-          <div class="tok-val">Menu items</div>
-        </div>
-        <div class="dev-token">
-          <div class="tok-demo"><div class="r-demo r-10" style="width:32px;height:18px;"></div></div>
-          <div class="tok-name">10px</div>
-          <div class="tok-val">Template cards, swatches</div>
-        </div>
-        <div class="dev-token">
-          <div class="tok-demo"><div class="r-demo r-12" style="width:32px;height:18px;"></div></div>
-          <div class="tok-name">12px</div>
-          <div class="tok-val">Panels, hero section</div>
-        </div>
-        <div class="dev-token">
-          <div class="tok-demo"><div class="r-demo r-999" style="width:40px;height:18px;"></div></div>
-          <div class="tok-name">999px</div>
-          <div class="tok-val">Pills — toolbar &amp; mode buttons</div>
-        </div>
+
       </div>
-
-      <div class="dev-block">
-        <h5>Shadow Tokens</h5>
-        <div class="dev-token">
-          <div class="tok-demo"><div class="sh-demo sh-xs"></div></div>
-          <div class="tok-name">XS</div>
-          <div class="tok-val">0 2px 8px · .06 — swatches at rest</div>
-        </div>
-        <div class="dev-token">
-          <div class="tok-demo"><div class="sh-demo sh-sm2"></div></div>
-          <div class="tok-name">SM</div>
-          <div class="tok-val">0 2px 12px · .05 — type cards, panels</div>
-        </div>
-        <div class="dev-token">
-          <div class="tok-demo"><div class="sh-demo sh-md2"></div></div>
-          <div class="tok-name">MD</div>
-          <div class="tok-val">0 4px 24px · .06 — cards on hover</div>
-        </div>
-        <div class="dev-token">
-          <div class="tok-demo"><div class="sh-demo sh-lg2"></div></div>
-          <div class="tok-name">LG</div>
-          <div class="tok-val">0 8px 32px · .10 — toolbar, sheets</div>
-        </div>
-        <div class="dev-token">
-          <div class="tok-demo"><div class="sh-demo sh-xl2"></div></div>
-          <div class="tok-name">XL</div>
-          <div class="tok-val">0 12px 48px · .18 — modals, dropdowns</div>
-        </div>
-      </div>
-
-    </div>
+    </details>
   </div>
 
 
