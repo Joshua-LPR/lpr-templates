@@ -427,7 +427,7 @@ details[open] .dev-chevron { transform: rotate(90deg); }
         <div class="info">
           <div class="name">Ink</div>
           <div class="hex">#0e1430</div>
-          <div class="role">Headings &amp; UI chrome</div>
+          <div class="role">Headings &amp; signed names</div>
         </div>
       </div>
 
@@ -445,7 +445,7 @@ details[open] .dev-chevron { transform: rotate(90deg); }
         <div class="info">
           <div class="name">Muted</div>
           <div class="hex">#5a5f72</div>
-          <div class="role">Captions &amp; meta labels</div>
+          <div class="role">Dates · secondary lines</div>
         </div>
       </div>
 
@@ -525,7 +525,7 @@ details[open] .dev-chevron { transform: rotate(90deg); }
               <div class="wname">font-weight: 500</div>
             </div>
             <div class="sample" style="font-weight:500; font-size:22px;">Brand Template Library</div>
-            <div class="usage">UI labels<br>Table values</div>
+            <div class="usage">Envelope marks<br>Caption text</div>
           </div>
 
           <div class="type-row">
@@ -543,7 +543,7 @@ details[open] .dev-chevron { transform: rotate(90deg); }
               <div class="wname">font-weight: 700</div>
             </div>
             <div class="sample" style="font-weight:700; font-size:22px;">Brand Template Library</div>
-            <div class="usage">Card titles<br>Section heads</div>
+            <div class="usage">Notice heads<br>Document headings</div>
           </div>
 
           <div class="type-row">
@@ -552,7 +552,7 @@ details[open] .dev-chevron { transform: rotate(90deg); }
               <div class="wname">font-weight: 800</div>
             </div>
             <div class="sample" style="font-weight:800; font-size:22px;">Brand Template Library</div>
-            <div class="usage">Hero titles<br>Cover pages</div>
+            <div class="usage">Lease cover<br>Large display</div>
           </div>
 
         </div>
@@ -566,7 +566,7 @@ details[open] .dev-chevron { transform: rotate(90deg); }
         <div style="display:flex; align-items:baseline; gap:20px; border-bottom:1px solid var(--lpr-rule); padding-bottom:10px;">
           <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-muted); font-weight:600; width:80px; flex-shrink:0;">H1</span>
           <span style="font-family:Montserrat,sans-serif; font-size:24px; font-weight:700; color:var(--lpr-ink); line-height:1;">24px / 700</span>
-          <span style="font-size:10px; color:var(--lpr-muted);">Notice titles, card headings</span>
+          <span style="font-size:10px; color:var(--lpr-muted);">Notice titles · document heads</span>
         </div>
         <div style="display:flex; align-items:baseline; gap:20px; border-bottom:1px solid var(--lpr-rule); padding-bottom:10px;">
           <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-muted); font-weight:600; width:80px; flex-shrink:0;">H2</span>
@@ -581,7 +581,7 @@ details[open] .dev-chevron { transform: rotate(90deg); }
         <div style="display:flex; align-items:baseline; gap:20px; border-bottom:1px solid var(--lpr-rule); padding-bottom:10px;">
           <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-muted); font-weight:600; width:80px; flex-shrink:0;">Small</span>
           <span style="font-family:Montserrat,sans-serif; font-size:11px; font-weight:500; color:var(--lpr-ink); line-height:1;">11–12px / 500</span>
-          <span style="font-size:10px; color:var(--lpr-muted);">Meta fields, captions, UI labels</span>
+          <span style="font-size:10px; color:var(--lpr-muted);">Meta fields · captions</span>
         </div>
         <div style="display:flex; align-items:baseline; gap:20px;">
           <span style="font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--lpr-muted); font-weight:600; width:80px; flex-shrink:0;">Label</span>
@@ -803,6 +803,55 @@ details[open] .dev-chevron { transform: rotate(90deg); }
               <div class="tok-demo"><div class="sh-demo sh-xl2"></div></div>
               <div class="tok-name">XL</div>
               <div class="tok-val">0 12px 48px · .18 — modals, dropdowns</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Row 3: Shared colors in site UI + Typography in site UI -->
+        <div class="dev-cols">
+
+          <div class="dev-block">
+            <h5>Shared Colors — Site Uses</h5>
+            <div class="dev-token">
+              <div class="tok-demo"><div style="width:28px;height:20px;background:#0e1430;border-radius:4px;"></div></div>
+              <div class="tok-name">Ink</div>
+              <div class="tok-val">Site chrome — nav, card titles, all UI headings</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div style="width:28px;height:20px;background:#5a5f72;border-radius:4px;"></div></div>
+              <div class="tok-name">Muted</div>
+              <div class="tok-val">Site secondary text — subtitles, help text, meta labels</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div style="width:28px;height:20px;background:#1a1a1a;border-radius:4px;"></div></div>
+              <div class="tok-name">Body Text</div>
+              <div class="tok-val">Default body color via <code style="font-size:9px;">body{color}</code></div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-demo"><div style="width:28px;height:20px;background:rgba(40,56,145,0.18);border-radius:4px;border:1px solid rgba(0,0,0,0.08);"></div></div>
+              <div class="tok-name">Rule</div>
+              <div class="tok-val">All site card borders, input borders, dividers</div>
+            </div>
+          </div>
+
+          <div class="dev-block">
+            <h5>Typography — Site Uses</h5>
+            <div class="dev-token">
+              <div class="tok-name">300</div>
+              <div class="tok-val">Subheadings, fine print — not currently in print templates</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-name">500</div>
+              <div class="tok-val">Site UI labels — nav, metadata, form field text</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-name">700</div>
+              <div class="tok-val">Card titles, section headings throughout the site</div>
+            </div>
+            <div class="dev-token">
+              <div class="tok-name">800</div>
+              <div class="tok-val">Hero headings on index and style guide pages</div>
             </div>
           </div>
 
