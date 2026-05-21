@@ -40,6 +40,7 @@
     wrap.querySelectorAll(".tt-menu-item").forEach(b => {
       b.addEventListener("click", () => {
         expMenu.hidden = true;
+        if (editing) toggleEdit(); // exit edit mode before exporting
         doExport(b.dataset.export);
       });
     });
@@ -47,10 +48,42 @@
       if (!wrap.contains(e.target)) expMenu.hidden = true;
     });
 
-    // SAVE AS
+    // SAVE AS (always present)
     const saveBtn = mkBtn("Save As", saveAs);
     saveBtn.title = "Save this filled-in template to your library";
     toolbar.appendChild(saveBtn);
+
+    // SAVE EDITS — only when viewing an existing library entry via view.html
+    const libId = (location.pathname.split('/').pop() === 'view.html')
+      ? new URLSearchParams(location.search).get('id') || null
+      : null;
+    if (libId) {
+      const saveEditsBtn = mkBtn("Save Edits", () => doSaveEdits(libId));
+      saveEditsBtn.id = "tt-save-edits-btn";
+      saveEditsBtn.title = "Overwrite this library entry with your current edits";
+      toolbar.appendChild(saveEditsBtn);
+    }
+
+    // FORMAT BAR — visible only in edit mode
+    const fmtBar = document.createElement("div");
+    fmtBar.id = "tt-fmt-bar";
+    fmtBar.style.display = "none";
+    fmtBar.innerHTML = `
+      <span class="tt-fmt-sep"></span>
+      <button class="tt-btn tt-fmt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+      <button class="tt-btn tt-fmt-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+      <button class="tt-btn tt-fmt-btn" data-cmd="removeFormat" title="Plain — remove all formatting">Plain</button>
+    `;
+    toolbar.appendChild(fmtBar);
+    fmtBar.querySelectorAll(".tt-fmt-btn").forEach(btn => {
+      btn.addEventListener("mousedown", e => {
+        e.preventDefault(); // preserve the text selection
+        document.execCommand(btn.dataset.cmd, false, null);
+      });
+    });
+
+    // Close edit mode if user triggers browser print shortcut (Ctrl+P) while editing
+    window.addEventListener("beforeprint", () => { if (editing) toggleEdit(); });
 
     setupEditTracking();
     injectModalStyles();
@@ -77,6 +110,8 @@
     const btn = document.getElementById("tt-edit-btn");
     btn.textContent = editing ? "✓ Done editing" : "Edit";
     btn.classList.toggle("tt-active", editing);
+    const fmtBar = document.getElementById("tt-fmt-bar");
+    if (fmtBar) fmtBar.style.display = editing ? "contents" : "none";
     if (editing) setupSignatureDrag();
     else teardownSignatureDrag();
   }
@@ -281,6 +316,16 @@
       .tt-dialog button.muted:hover { background: #f4f1ec; color: #0e1430; }
       .tt-dialog button.danger { border-color: #c33; color: #c33; }
       .tt-dialog button.danger:hover { background: #c33; color: #fff; }
+
+      /* Format bar separator */
+      .tt-fmt-sep {
+        display: inline-block; width: 1px; background: rgba(40,56,145,0.18);
+        height: 18px; margin: 0 4px; align-self: center; flex-shrink: 0;
+      }
+      /* Format buttons — slightly narrower than regular tt-btn */
+      .tt-fmt-btn { min-width: 32px; padding-left: 8px; padding-right: 8px; }
+      .tt-fmt-btn b, .tt-fmt-btn i { pointer-events: none; font-style: normal; }
+      .tt-fmt-btn[data-cmd="italic"] i { font-style: italic; }
     `;
     document.head.appendChild(s);
   }
@@ -491,43 +536,56 @@
     setTimeout(() => URL.revokeObjectURL(url), 2000);
   }
 
-  /* --------- SAVE AS to library --------- */
-  function saveAs() {
-    const warnings = checkUnfilledFields();
-    if (warnings.length) {
-      showUnfilledWarning(warnings, () => doSaveAs());
-      return;
-    }
-    doSaveAs();
-  }
-
-  function doSaveAs() {
-    const defaultName = baseFilename() + " — Copy";
-    const name = prompt("Save this template as:", defaultName);
-    if (!name || !name.trim()) return;
-
-    // Clean DOM, absolute paths
+  /* --------- SHARED: build a clean HTML snapshot for saving --------- */
+  async function buildSaveHtml() {
     const clone = document.documentElement.cloneNode(true);
     clone.dataset.lprSnapshot = '1'; // tells employee.js not to overwrite baked-in values
+
+    // Strip all UI chrome — re-injected fresh on next open
+    clone.querySelectorAll([
+      ".tt-btn", ".tt-export-wrap", "#tt-fmt-bar",
+      "#lpr-fill-panel", "#lpr-insert-panel", // setup/insert panels must not be baked in
+      ".tt-backdrop",                          // open modals
+      ".tt-sig-handle",                        // signature drag handles
+      "[id^='automa']", "[class*='automa']"    // browser extension injections
+    ].join(", ")).forEach(el => el.remove());
+
+    // Strip dynamically-injected <style> blocks (re-injected by scripts on load)
+    clone.querySelectorAll(
+      "style[id^='lpr-'], style[id^='tt-'], style.automa-element-selector"
+    ).forEach(el => el.remove());
+
+    // Clean up edit-mode state
     clone.querySelectorAll("[contenteditable]").forEach(el => el.removeAttribute("contenteditable"));
     clone.querySelectorAll(".tt-editing").forEach(el => el.classList.remove("tt-editing"));
 
-    // Remove dynamically-injected toolbar buttons — template-tools.js re-adds them fresh on open,
-    // so saving them causes a duplicate set (stale + new) when the template is reopened.
-    clone.querySelectorAll(".tt-btn, .tt-export-wrap").forEach(el => el.remove());
-
-    const baseUrl = location.href.substring(0, location.href.lastIndexOf("/") + 1);
-
-    // Inject <base> tag so blob:// URLs resolve CSS/JS/image paths against the original location
-    const headEl = clone.querySelector("head");
-    if (headEl) {
-      const existingBase = headEl.querySelector("base");
-      if (existingBase) existingBase.remove();
-      const baseTag = document.createElement("base");
-      baseTag.href = baseUrl;
-      headEl.insertBefore(baseTag, headEl.firstChild);
+    // Inline local stylesheets so they survive the view.html document.write context
+    const baseUrl = location.href.replace(/[?#].*$/, "").replace(/\/[^/]*$/, "/");
+    for (const link of [...clone.querySelectorAll('link[rel~="stylesheet"]')]) {
+      const raw = link.getAttribute('href');
+      if (!raw || /^https?:/.test(raw)) continue;
+      try {
+        const abs = /^(?:file:|data:|blob:)/.test(raw) ? raw : baseUrl + raw;
+        const resp = await fetch(abs);
+        if (resp.ok) {
+          const style = document.createElement('style');
+          style.textContent = await resp.text();
+          link.parentNode.replaceChild(style, link);
+        }
+      } catch (e) {}
     }
 
+    // <base> tag so scripts/images resolve relative paths from the right directory
+    const headEl = clone.querySelector("head");
+    if (headEl) {
+      const existing = headEl.querySelector("base");
+      if (existing) existing.remove();
+      const base = document.createElement("base");
+      base.href = baseUrl;
+      headEl.insertBefore(base, headEl.firstChild);
+    }
+
+    // Absolutize remaining relative asset paths
     clone.querySelectorAll("[src], [href]").forEach(el => {
       ["src", "href"].forEach(attr => {
         const v = el.getAttribute(attr);
@@ -536,20 +594,43 @@
         el.setAttribute(attr, baseUrl + v);
       });
     });
-    const html = "<!DOCTYPE html>\n" + clone.outerHTML;
 
+    return "<!DOCTYPE html>\n" + clone.outerHTML;
+  }
+
+  /* --------- SAVE AS — create a new library entry --------- */
+  function saveAs() {
+    const warnings = checkUnfilledFields();
+    if (warnings.length) { showUnfilledWarning(warnings, () => doSaveAs()); return; }
+    doSaveAs();
+  }
+
+  async function doSaveAs() {
+    const defaultName = baseFilename() + " — Copy";
+    const name = prompt("Save this template as:", defaultName);
+    if (!name || !name.trim()) return;
+
+    const html = await buildSaveHtml();
     const id = "c_" + Date.now().toString(36);
     const saved = JSON.parse(localStorage.getItem("lpr_custom_templates") || "{}");
-    saved[id] = {
-      id,
-      name: name.trim(),
-      html,
-      base: location.pathname.split("/").pop(),
-      savedAt: new Date().toISOString()
-    };
+    saved[id] = { id, name: name.trim(), html, base: location.pathname.split("/").pop(), savedAt: new Date().toISOString() };
     localStorage.setItem("lpr_custom_templates", JSON.stringify(saved));
     if (confirm('Saved "' + name + '" to your template library.\n\nGo back to the index now?')) {
       location.href = "index.html";
     }
+  }
+
+  /* --------- SAVE EDITS — overwrite an existing library entry --------- */
+  async function doSaveEdits(id) {
+    const saved = JSON.parse(localStorage.getItem("lpr_custom_templates") || "{}");
+    if (!saved[id]) { alert("This library entry no longer exists."); return; }
+    if (!confirm('Overwrite "' + saved[id].name + '" with your current edits?\n\nThis cannot be undone. Use Save As instead to keep the original.')) return;
+    const html = await buildSaveHtml();
+    saved[id].html = html;
+    saved[id].savedAt = new Date().toISOString();
+    localStorage.setItem("lpr_custom_templates", JSON.stringify(saved));
+    hasUnsavedEdits = false;
+    const btn = document.getElementById("tt-save-edits-btn");
+    if (btn) { btn.textContent = "✓ Saved"; setTimeout(() => { btn.textContent = "Save Edits"; }, 2000); }
   }
 })();

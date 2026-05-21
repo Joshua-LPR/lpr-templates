@@ -176,12 +176,13 @@ The archive page (`archive.html`) has its own search bar that filters the archiv
 
 | Button | Action |
 |--------|--------|
-| **Edit** | Toggles `contenteditable` on the entire page so any text can be retyped. Spell check activates automatically. |
-| **Export → Print** | Browser-native print dialog (paper or system PDF) |
-| **Export → PDF** | Saves a real PDF in the page's exact dimensions (html2pdf.js) |
-| **Export → Image** | Saves a 2× resolution PNG (html-to-image). Multi-sheet templates export as multiple files. |
-| **Export → HTML** | Saves a self-contained HTML copy with absolute asset paths |
-| **Save As** | Saves filled-in template to current user's Library; all field content and signer info preserved |
+| **Edit** | Toggles `contenteditable` on the entire page so any text can be retyped. Spell check activates. While editing, a **B / I / Plain** format bar appears in the toolbar for bold, italic, and clear-formatting on selected text. |
+| **Export → Print** | Browser-native print dialog (paper or system PDF). Automatically exits Edit mode first if active. |
+| **Export → PDF** | Saves a real PDF in the page's exact dimensions (html2pdf.js). Exits Edit mode first. |
+| **Export → Image** | Saves a 2× resolution PNG (html-to-image). Multi-sheet templates export as multiple files. Exits Edit mode first. |
+| **Export → HTML** | Saves a self-contained HTML copy with absolute asset paths. Exits Edit mode first. |
+| **Save As** | Saves filled-in template to current user's Library; all field content and signer info preserved. Creates a new library entry. |
+| **Save Edits** | *(Library templates only)* Overwrites the current library entry with your changes. Shows a confirmation before overwriting. |
 | **Setup** | Opens the Setup panel (Sender / Tenants / Vendors tabs) |
 
 **Unfilled-field warning:** clicking Export or Save As when some field types are still empty shows a modal listing which namespaces will be blank. User can go back or continue anyway.
@@ -242,10 +243,14 @@ Signature position/size adjustments auto-save to localStorage and do **not** cou
 
 The Library section at the bottom of the index holds copies you've saved with **Save As**. Each library item:
 - Stores the full HTML snapshot in localStorage (all field content baked in)
-- Opens via a temporary blob URL (not from a real file)
-- Can be opened, edited again, exported, or deleted (× button)
+- Opens via `view.html?id=<id>` — a real `file://` page that `document.write`s the saved HTML into the same browsing context, preserving the `file://` origin so scripts load correctly and localStorage is accessible
+- Displays a fully functional toolbar (Edit, Export, Save As, **Save Edits**) identical to any other template
+- **Save Edits** button appears only on library templates and overwrites the existing entry in-place (with a confirmation prompt). **Save As** creates a new copy.
+- Can be deleted from the index (× button on the card)
 - Captures the signer name, owner selection, recipient address, and all body fields at save time
 - The `data-lpr-snapshot` flag prevents `employee.js` from overwriting baked-in employee values when the saved copy is reopened
+- Saved HTML has local stylesheets inlined and UI chrome (Setup panel, toolbar buttons, modals) stripped before storage — scripts re-inject them fresh on open
+- Duplicate names are allowed; entries are keyed by timestamp id (`c_<base36>`), not by name
 
 ### Backup & Restore
 
@@ -307,6 +312,7 @@ lpr-templates/
 ├── index.html                          # Main directory page
 ├── users.html                          # User picker (sign-in)
 ├── archive.html                        # Archived templates view
+├── view.html                           # Library template loader — reads id from ?id=, document.writes saved HTML
 │
 ├── brand.css                           # Shared styles + bundled Montserrat @font-face
 ├── user.js                             # Multi-user namespacing (loads first)

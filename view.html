@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LPR — Library</title>
+<!-- user.js must run first so localStorage is namespaced correctly before we read -->
+<script src="user.js"></script>
+</head>
+<body>
+<script>
+(function () {
+  var id = new URLSearchParams(location.search).get('id');
+  if (!id) { document.body.textContent = 'No template specified.'; return; }
+
+  var t;
+  try {
+    var all = JSON.parse(localStorage.getItem('lpr_custom_templates') || '{}');
+    t = all[id];
+  } catch (e) {}
+
+  if (!t || !t.html) {
+    document.body.textContent = 'Template not found — it may have been deleted from your library.';
+    return;
+  }
+
+  // document.open() replaces the current document while keeping the same
+  // browsing context (window), so the file:// origin is preserved.
+  // Scripts in the written HTML therefore load over file:// and localStorage works.
+  document.open();
+  document.write(t.html);
+  document.close();
+})();
+</script>
+</body>
+</html>

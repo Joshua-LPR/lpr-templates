@@ -1433,9 +1433,7 @@
       card.addEventListener("click", e => {
         if (e.target.closest(".card-actions")) return;
         e.preventDefault();
-        const t2 = getCustom()[id]; if (!t2) return;
-        const blob = new Blob([t2.html], { type: "text/html" });
-        window.location.href = URL.createObjectURL(blob);
+        location.href = "view.html?id=" + encodeURIComponent(id);
       });
       wrap.appendChild(card);
     }
