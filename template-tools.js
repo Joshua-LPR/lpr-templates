@@ -529,8 +529,9 @@
       }
       .tt-color-chip:hover { transform: scale(1.2); }
       .tt-color-chip-clear {
-        border-radius: 50%; font-size: 11px; line-height: 20px;
+        border-radius: 50%; font-size: 11px; line-height: 1;
         color: #888; box-shadow: 0 0 0 1px rgba(0,0,0,0.12);
+        display: inline-flex; align-items: center; justify-content: center;
       }
     `;
     document.head.appendChild(s);
