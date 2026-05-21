@@ -2102,5 +2102,25 @@
 })();
 </script>
 
+<script>
+/* Scroll position restore — save on any outbound link click, restore on load */
+(function () {
+  var KEY = 'lpr_index_scroll';
+  var saved = sessionStorage.getItem(KEY);
+  if (saved !== null) {
+    sessionStorage.removeItem(KEY);
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        window.scrollTo(0, parseInt(saved, 10));
+      });
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a[href]');
+    if (a) sessionStorage.setItem(KEY, window.scrollY);
+  });
+})();
+</script>
+
 </body>
 </html>
