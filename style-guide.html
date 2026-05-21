@@ -247,6 +247,44 @@ body { background: #efeae0; min-height: 100vh; }
 .rule-thick { height: 2px; background: var(--lpr-blue); }
 .rule-gold  { height: 2px; background: #d6a35a; }
 
+/* callout block demo */
+.callout-demo {
+  border-left: 3px solid var(--lpr-blue); background: rgba(40,56,145,0.05);
+  padding: 8px 12px; font-size: 11px; color: var(--lpr-ink); line-height: 1.5;
+  border-radius: 0 4px 4px 0; width: 100%; box-sizing: border-box;
+}
+.callout-demo.gold { border-left-color: #d6a35a; background: rgba(214,163,90,0.08); }
+
+/* print dimensions */
+.dim-grid { display: flex; flex-direction: column; }
+.dim-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--lpr-rule); font-size: 11px; }
+.dim-row:last-child { border-bottom: none; padding-bottom: 0; }
+.dim-name { font-weight: 600; color: var(--lpr-ink); }
+.dim-size { font-family: 'Courier New', monospace; font-size: 10.5px; color: var(--lpr-muted); }
+
+/* developer appendix */
+.dev-appendix { background: #f4f4f6; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 24px 28px; margin-top: 48px; }
+.dev-appendix-title {
+  font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+  font-weight: 700; color: var(--lpr-muted); margin: 0 0 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.dev-appendix-title::before { content: '{ }'; font-family: 'Courier New', monospace; font-size: 11px; color: var(--lpr-blue); letter-spacing: 0; }
+.dev-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 640px) { .dev-cols { grid-template-columns: 1fr; } }
+.dev-block h5 { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--lpr-blue); font-weight: 700; margin: 0 0 10px; }
+.dev-token { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 10.5px; }
+.dev-token:last-child { border-bottom: none; }
+.dev-token .tok-demo { flex-shrink: 0; width: 48px; display: flex; align-items: center; justify-content: center; }
+.dev-token .tok-val { font-family: 'Courier New', monospace; color: var(--lpr-muted); font-size: 10px; }
+.dev-token .tok-name { color: var(--lpr-ink); font-weight: 600; min-width: 40px; font-size: 10.5px; }
+.r-3   { border-radius: 3px; }
+.sh-xs  { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.sh-sm2 { box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+.sh-md2 { box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+.sh-lg2 { box-shadow: 0 8px 32px rgba(0,0,0,0.10); }
+.sh-xl2 { box-shadow: 0 12px 48px rgba(0,0,0,0.18); }
+
 /* ── logo usage ── */
 .logo-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 @media (max-width: 700px) { .logo-grid { grid-template-columns: 1fr 1fr; } }
@@ -691,63 +729,11 @@ body { background: #efeae0; min-height: 100vh; }
   </div>
 
 
-  <!-- ── Design Elements ── -->
+  <!-- ── Document Elements ── -->
   <div class="sg-section">
-    <div class="sg-label">Design Elements</div>
+    <div class="sg-label">Document Elements</div>
 
     <div class="elements-grid">
-
-      <!-- Border radius -->
-      <div class="el-card">
-        <h4>Border Radius</h4>
-
-        <div class="el-item">
-          <div class="el-demo"><div class="r-demo r-4"></div></div>
-          <div class="el-meta"><strong>4px</strong>Tight — form inputs, small chips</div>
-        </div>
-        <div class="el-item">
-          <div class="el-demo"><div class="r-demo r-6"></div></div>
-          <div class="el-meta"><strong>6px</strong>Menu items, tags</div>
-        </div>
-        <div class="el-item">
-          <div class="el-demo"><div class="r-demo r-8"></div></div>
-          <div class="el-meta"><strong>8px</strong>Panels, dropdowns</div>
-        </div>
-        <div class="el-item">
-          <div class="el-demo"><div class="r-demo r-10"></div></div>
-          <div class="el-meta"><strong>10px</strong>Template cards</div>
-        </div>
-        <div class="el-item">
-          <div class="el-demo"><div class="r-demo r-12"></div></div>
-          <div class="el-meta"><strong>12px</strong>Hero &amp; section panels</div>
-        </div>
-        <div class="el-item">
-          <div class="el-demo"><div class="r-demo r-999" style="width:48px; height:22px;"></div></div>
-          <div class="el-meta"><strong>999px (pill)</strong>Toolbar buttons, badges</div>
-        </div>
-      </div>
-
-      <!-- Shadows -->
-      <div class="el-card">
-        <h4>Elevation / Shadow</h4>
-
-        <div class="el-item">
-          <div class="el-demo"><div class="sh-demo sh-sm"></div></div>
-          <div class="el-meta"><strong>Small</strong>0 2px 8px · rgba(0,0,0,.06) — cards at rest</div>
-        </div>
-        <div class="el-item">
-          <div class="el-demo"><div class="sh-demo sh-md"></div></div>
-          <div class="el-meta"><strong>Medium</strong>0 4px 16px · rgba(0,0,0,.10) — toolbar</div>
-        </div>
-        <div class="el-item">
-          <div class="el-demo"><div class="sh-demo sh-lg"></div></div>
-          <div class="el-meta"><strong>Large</strong>0 8px 32px · rgba(0,0,0,.13) — cards on hover</div>
-        </div>
-        <div class="el-item">
-          <div class="el-demo"><div class="sh-demo sh-xl"></div></div>
-          <div class="el-meta"><strong>XL</strong>0 12px 48px · rgba(0,0,0,.18) — modals &amp; dropdowns</div>
-        </div>
-      </div>
 
       <!-- Rules / dividers -->
       <div class="el-card">
@@ -779,6 +765,47 @@ body { background: #efeae0; min-height: 100vh; }
         </div>
       </div>
 
+      <!-- Highlight / Callout Block -->
+      <div class="el-card">
+        <h4>Highlight &amp; Callout</h4>
+
+        <div class="el-item" style="flex-direction:column; align-items:flex-start; gap:8px;">
+          <div class="callout-demo">Important notice text appears here with clear visual emphasis.</div>
+          <div class="el-meta"><strong>Blue callout</strong>Left border 3px #283891 · tinted bg — key information in notices</div>
+        </div>
+        <div class="el-item" style="flex-direction:column; align-items:flex-start; gap:8px; border-bottom:none; padding-bottom:0;">
+          <div class="callout-demo gold">Lease term, rent amounts, and important dates.</div>
+          <div class="el-meta"><strong>Gold callout</strong>Left border 3px #d6a35a · tinted bg — financial figures and key terms</div>
+        </div>
+      </div>
+
+      <!-- Print Dimensions -->
+      <div class="el-card">
+        <h4>Print Dimensions</h4>
+        <div class="dim-grid">
+          <div class="dim-row">
+            <div class="dim-name">Letter</div>
+            <div class="dim-size">8.5″ × 11″</div>
+          </div>
+          <div class="dim-row">
+            <div class="dim-name">Envelope (#10)</div>
+            <div class="dim-size">9.5″ × 4.125″</div>
+          </div>
+          <div class="dim-row">
+            <div class="dim-name">Business Card</div>
+            <div class="dim-size">3.5″ × 2″</div>
+          </div>
+          <div class="dim-row">
+            <div class="dim-name">Certificate of Mailing</div>
+            <div class="dim-size">5″ × 3″</div>
+          </div>
+          <div class="dim-row">
+            <div class="dim-name">Address Label (P-touch)</div>
+            <div class="dim-size">62 mm × varies</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Brand address -->
       <div class="el-card">
         <h4>Brand Address</h4>
@@ -790,6 +817,77 @@ body { background: #efeae0; min-height: 100vh; }
             <span style="color:var(--lpr-blue);">443.402.5641</span><br>
             <span style="color:var(--lpr-blue);">office@lasalleparkrealty.com</span>
           </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Site UI Reference — Developer ── -->
+  <div class="dev-appendix">
+    <div class="dev-appendix-title">Site UI Reference — Developer Only</div>
+    <div class="dev-cols">
+
+      <div class="dev-block">
+        <h5>Border Radius Tokens</h5>
+        <div class="dev-token">
+          <div class="tok-demo"><div class="r-demo r-3" style="width:32px;height:18px;"></div></div>
+          <div class="tok-name">3px</div>
+          <div class="tok-val">Code chips, callout accents</div>
+        </div>
+        <div class="dev-token">
+          <div class="tok-demo"><div class="r-demo r-4" style="width:32px;height:18px;"></div></div>
+          <div class="tok-name">4px</div>
+          <div class="tok-val">Form inputs, small tags</div>
+        </div>
+        <div class="dev-token">
+          <div class="tok-demo"><div class="r-demo r-6" style="width:32px;height:18px;"></div></div>
+          <div class="tok-name">6px</div>
+          <div class="tok-val">Menu items</div>
+        </div>
+        <div class="dev-token">
+          <div class="tok-demo"><div class="r-demo r-10" style="width:32px;height:18px;"></div></div>
+          <div class="tok-name">10px</div>
+          <div class="tok-val">Template cards, swatches</div>
+        </div>
+        <div class="dev-token">
+          <div class="tok-demo"><div class="r-demo r-12" style="width:32px;height:18px;"></div></div>
+          <div class="tok-name">12px</div>
+          <div class="tok-val">Panels, hero section</div>
+        </div>
+        <div class="dev-token">
+          <div class="tok-demo"><div class="r-demo r-999" style="width:40px;height:18px;"></div></div>
+          <div class="tok-name">999px</div>
+          <div class="tok-val">Pills — toolbar &amp; mode buttons</div>
+        </div>
+      </div>
+
+      <div class="dev-block">
+        <h5>Shadow Tokens</h5>
+        <div class="dev-token">
+          <div class="tok-demo"><div class="sh-demo sh-xs"></div></div>
+          <div class="tok-name">XS</div>
+          <div class="tok-val">0 2px 8px · .06 — swatches at rest</div>
+        </div>
+        <div class="dev-token">
+          <div class="tok-demo"><div class="sh-demo sh-sm2"></div></div>
+          <div class="tok-name">SM</div>
+          <div class="tok-val">0 2px 12px · .05 — type cards, panels</div>
+        </div>
+        <div class="dev-token">
+          <div class="tok-demo"><div class="sh-demo sh-md2"></div></div>
+          <div class="tok-name">MD</div>
+          <div class="tok-val">0 4px 24px · .06 — cards on hover</div>
+        </div>
+        <div class="dev-token">
+          <div class="tok-demo"><div class="sh-demo sh-lg2"></div></div>
+          <div class="tok-name">LG</div>
+          <div class="tok-val">0 8px 32px · .10 — toolbar, sheets</div>
+        </div>
+        <div class="dev-token">
+          <div class="tok-demo"><div class="sh-demo sh-xl2"></div></div>
+          <div class="tok-name">XL</div>
+          <div class="tok-val">0 12px 48px · .18 — modals, dropdowns</div>
         </div>
       </div>
 
