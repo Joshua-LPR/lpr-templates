@@ -548,6 +548,34 @@ border: 1px solid rgba(40, 56, 145, 0.18);
 
 CSS injected via `<style>` blocks from JavaScript **can and should** use CSS vars — the `brand.css` `:root` definitions are present in the document at the time these styles are applied. Use vars everywhere except SVG `stroke`/`fill` attributes embedded in icon SVG strings.
 
+### Document template spacing — letter/notice family
+
+All US Letter templates share these values. Do not deviate per-template.
+
+**Sheet**
+- `padding: 0.75in 0.85in` — page margins (applies to `.sheet.letter` and `.sheet.notice`)
+
+**Header** (`.lh-header` / `.n-header`)
+- `padding-bottom: 18px` — space below logo/address before the 2px brand rule
+- Logo height: `0.95in`
+- Meta text: `font-size: 8.5pt; line-height: 1.55`
+
+**Badge / title block** (`.doc-badge` + `.doc-title`)
+- `.doc-badge` — `margin-top: 0.45in; font-size: 9pt; letter-spacing: 4px; font-weight: 600`
+- `.doc-title` — `font-size: 26pt; font-weight: 700; letter-spacing: -0.4px; line-height: 1.05; margin-top: 8px`
+
+**Body** (`.lh-body` / `.n-body`)
+- `padding-top: 0.35in` — gap between title and body content
+- `font-size: 11pt; line-height: 1.65`
+- `.date` — `font-size: 10pt; margin-bottom: 22px`
+- `.recipient` / `.to` — `margin-bottom: 22px; line-height: 1.45`
+- `p` — `margin: 0 0 12px`
+
+**Signoff**
+- `margin-top: auto; padding-top: 0.4in` — auto pushes to bottom; 0.4in keeps breathing room
+
+**Letterheads** (no badge/title) use `padding-top: 0.5in` on the body and `margin-top: 36px` on `.signoff` (fixed gap, not auto-push, because letter length is user-controlled).
+
 ### Body background
 
 Every template `<style>` block must set:
