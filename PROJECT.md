@@ -32,6 +32,7 @@ A library of print-ready business documents and digital assets, all built on a s
 - Montserrat font bundled locally (works offline)
 - Sortable.js loaded from CDN for drag-and-drop ordering
 - html2pdf.js + html-to-image loaded from CDN on demand (only when exporting)
+- Flatpickr loaded from CDN on demand (only when a Fields tab with date/time inputs opens)
 
 **Audience**
 - Internal use by LPR Management staff
@@ -52,12 +53,13 @@ A library of print-ready business documents and digital assets, all built on a s
 ### Working with a template
 
 1. Open the template
-2. Click **Setup** in the top toolbar → opens the Setup panel (Sender / Tenants / Vendors tabs)
+2. Click **Setup** in the top toolbar → opens the Setup panel (Sender / Tenants / Vendors / Fields tabs)
 3. Pick a recipient from the Tenants or Vendors tab → click **Apply as Recipient**
 4. Optionally pick a sender LLC in the Sender tab → click **Apply to Template**
-5. Click **Edit** to make any free-text changes to the body
-6. Click **Export ▾** → Print, PDF, Image, or HTML
-7. Or click **Save As** → saves a filled-in copy to your personal Library
+5. Fill in date, time, amount, and text fields using the **Fields** tab
+6. Click **Edit** to make any free-text changes to the body
+7. Click **Export ▾** → Print, PDF, Image, or HTML
+8. Or click **Save As** → saves a filled-in copy to your personal Library
 
 ### Switching users
 
@@ -176,7 +178,7 @@ The archive page (`archive.html`) has its own search bar that filters the archiv
 
 | Button | Action |
 |--------|--------|
-| **Edit** | Toggles `contenteditable` on the entire page so any text can be retyped. Spell check activates. While editing, a **B / I / Plain** format bar appears in the toolbar for bold, italic, and clear-formatting on selected text. |
+| **Edit** | Toggles `contenteditable` on the entire page so any text can be retyped. Spell check activates. While editing, a format bar appears in the toolbar with: **B / I / Plain** (bold, italic, clear formatting), a **font size picker**, and a **text color picker** (LPR palette + custom hex). The Insert Field sidebar also opens automatically in the Setup panel. |
 | **Export → Print** | Browser-native print dialog (paper or system PDF). Automatically exits Edit mode first if active. |
 | **Export → PDF** | Saves a real PDF in the page's exact dimensions (html2pdf.js). Exits Edit mode first. |
 | **Export → Image** | Saves a 2× resolution PNG (html-to-image). Multi-sheet templates export as multiple files. Exits Edit mode first. |
@@ -187,9 +189,9 @@ The archive page (`archive.html`) has its own search bar that filters the archiv
 
 **Unfilled-field warning:** clicking Export or Save As when some field types are still empty shows a modal listing which namespaces will be blank. User can go back or continue anyway.
 
-### Setup panel — Sender, Tenants, Vendors
+### Setup panel — Sender, Tenants, Vendors, Fields
 
-The **Setup** button (renamed from "Fill Fields") opens a tabbed panel that appears in every template. Tab order: Sender → Tenants → Vendors.
+The **Setup** button opens a tabbed panel that appears in every template. Tab order: Sender → Tenants → Vendors → Fields (Fields tab only appears on templates that have fill fields).
 
 #### Sender tab (`owners.js`)
 
@@ -296,9 +298,45 @@ Empty field spans show a faint italic label in normal view (e.g. *Recipient Name
 
 The address_line2 row hides when empty (`:has([data-contact-field]:empty)` CSS) and reappears in Edit mode. Affects Envelopes, Address Labels P-touch, Letterheads, and Notice templates.
 
+#### Fields tab (`fill-fields.js`)
+
+The **Fields** tab is registered by `fill-fields.js` via `window.LPR_FILL_TABS.push()`. It appears after Vendors but only on templates that contain at least one `data-fill-field` span.
+
+- Lists every fill field found on the page by its label
+- Field types: **date** (calendar picker), **time** (12-hour clock picker), **amount** ($-formatted number), **text** (plain text)
+- Calendar and clock pickers use **Flatpickr** (loaded from CDN on first open, cached for the session). The calendar is styled to match LPR brand — blue (#283891) header bar, gold (#d6a35a) today indicator, Montserrat font
+- Values are saved to localStorage keyed by page name + field key (`lpr_fill_<pageName>_<key>`), so they persist across page reloads
+- The field display on the template updates live as values are typed or selected
+
+### Fill Fields System
+
+Templates mark fillable spans with `data-fill-field` attributes:
+
+```html
+<span data-fill-field="date" data-fill-label="Notice Date"></span>
+<span data-fill-field="time" data-fill-label="From Time"></span>
+<span data-fill-field="amount" data-fill-label="New Monthly Rent"></span>
+<span data-fill-field="text" data-fill-label="Reason for Entry"></span>
+```
+
+| Attribute | Purpose |
+|-----------|---------|
+| `data-fill-field` | Field type: `date`, `time`, `amount`, or `text` |
+| `data-fill-label` | Human-readable label shown in the Fields tab and used as the placeholder |
+| `data-fill-key` | Optional override for the localStorage storage key (defaults to a slug of the label) |
+
+Multiple spans with the same `data-fill-label` share a single input — useful for repeating the same date in multiple locations on a document (e.g. "Notice Date" in both the header and the body).
+
+**Display format:** Date fields show as "May 21, 2026"; time fields show as "10:00 AM"; amount fields show as "$1,234.00"; text fields render as-is.
+
+**Flatpickr integration:** `fill-fields.js` lazy-loads Flatpickr CSS + JS from `https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/` only when the Fields tab is first opened on a template with date or time inputs. The promise is cached in `window._lpr_fp_promise` so subsequent opens are instant. Native `<input type="date/time">` elements are replaced by Flatpickr instances so the pickers are consistent across all browsers.
+
+**Global hook:** `fill-fields.js` exposes `window.LPR_FILL_APPLY = applyAll` so the Insert sidebar can re-apply all stored values after inserting a new fill-field span.
+
 ### Insert Field sidebar (Edit mode)
 
-While in Edit mode, the Setup panel shows an **Insert Field** sidebar with three groups:
+While in Edit mode, the Setup panel shows an **Insert Field** sidebar with four groups:
+- **FILL FIELDS** — inserts a typed fill-field span (`data-fill-field`) at the cursor position: Date, Time, Amount, Text (2-column grid at the top of the panel)
 - **RECIPIENT** — inserts `data-contact-field` spans
 - **TENANT — body reference** — inserts `data-tenant-field` spans
 - **VENDOR — body reference** — inserts `data-vendor-field` spans (only shown when `vendors.js` is loaded)
@@ -315,11 +353,13 @@ lpr-templates/
 ├── view.html                           # Library template loader — reads id from ?id=, document.writes saved HTML
 │
 ├── brand.css                           # Shared styles + bundled Montserrat @font-face
+├── style-guide.html                    # LPR brand style guide (linked from index) — colors, typography, logo usage
 ├── user.js                             # Multi-user namespacing (loads first)
 ├── employee.js                         # Employee-field replacement + signature injection
 ├── tenants.js                          # Tenant address book, Setup panel, Insert Field sidebar
 ├── owners.js                           # Sender/owner tab in Setup panel
 ├── vendors.js                          # Vendor address book, Vendors tab in Setup panel
+├── fill-fields.js                      # Fill Fields tab (date/time/amount/text inputs + Flatpickr integration)
 ├── template-tools.js                   # Edit/Export/Save As + unsaved-changes guard + signature drag
 │
 ├── Business Card.html
@@ -368,6 +408,7 @@ lpr-templates/
   <script src="tenants.js"></script>       <!-- tenant address book + Setup panel tabs -->
   <script src="owners.js"></script>        <!-- sender/owner tab (registers via unshift → appears first) -->
   <script src="vendors.js"></script>       <!-- vendor address book + Vendors tab -->
+  <script src="fill-fields.js"></script>   <!-- fill fields tab (date/time/amount/text + Flatpickr) -->
   <script src="template-tools.js"></script><!-- toolbar (Edit/Export/Save As/Setup button) -->
 </body>
 ```
@@ -445,6 +486,7 @@ git push
 | Tenant / vendor / contact field content | ❌ Lost on page reload | ✅ Baked into HTML snapshot |
 | Owner selection + signer toggles | ❌ Resets each page load | ✅ CSS classes baked in |
 | Employee name / title / phone / email | ❌ Re-applied from URL params on load | ✅ Preserved via `data-lpr-snapshot` flag |
+| Fill fields (date / time / amount / text) | ✅ Persists per template (localStorage) | ✅ Baked in at save time |
 | Signature image | ✅ Persists (localStorage) | ✅ Baked in at save time |
 | Signature position / size | ✅ Persists per template (localStorage) | ✅ Baked in at save time |
 
