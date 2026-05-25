@@ -814,8 +814,8 @@
         text-transform: uppercase; text-align: center;
         transition: color .15s, border-color .15s;
       }
-      .lpr-tp-tab-btn:hover { color: #283891; }
-      .lpr-tp-tab-btn.active { color: #283891; border-bottom-color: #283891; }
+      .lpr-tp-tab-btn:hover { color: var(--lpr-blue); }
+      .lpr-tp-tab-btn.active { color: var(--lpr-blue); border-bottom-color: var(--lpr-blue); }
       .lpr-tab-body {
         display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden;
       }
@@ -840,7 +840,7 @@
       /* ---- Insert sidebar header ---- */
       .lpr-ins-hd {
         display: flex; align-items: center; justify-content: space-between;
-        padding: 70px 12px 13px 16px; background: #283891;
+        padding: 70px 12px 13px 16px; background: var(--lpr-blue);
         color: #fff; font-weight: 700; font-size: 13px;
         letter-spacing: .4px; flex-shrink: 0;
       }
@@ -848,7 +848,7 @@
       /* ---- Fill panel header ---- */
       .lpr-tp-hd {
         display: flex; align-items: center; justify-content: space-between;
-        padding: 70px 12px 13px 16px; background: #283891;
+        padding: 70px 12px 13px 16px; background: var(--lpr-blue);
         color: #fff; font-weight: 700; font-size: 13px;
         letter-spacing: .4px; flex-shrink: 0;
       }
@@ -861,17 +861,17 @@
 
       /* ---- Insert body ---- */
       .lpr-ins-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-      .lpr-ins-tip { font-size: 11.5px; color: #283891; background: #eef0fb; border-radius: 6px; padding: 9px 11px; line-height: 1.6; margin: 0; }
+      .lpr-ins-tip { font-size: 11.5px; color: var(--lpr-blue); background: #eef0fb; border-radius: 6px; padding: 9px 11px; line-height: 1.6; margin: 0; }
       .lpr-ins-grid { display: flex; flex-direction: column; gap: 4px; }
       .lpr-ins-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
       .lpr-ins-btn {
         width: 100%; text-align: left; padding: 8px 12px;
         background: #f4f5fb; border: 1px solid #dde0f5; border-radius: 6px;
         font-family: inherit; font-size: 12px; font-weight: 500;
-        color: #283891; cursor: pointer; transition: background .12s;
+        color: var(--lpr-blue); cursor: pointer; transition: background .12s;
         user-select: none;
       }
-      .lpr-ins-btn:hover { background: #283891; color: #fff; border-color: #283891; }
+      .lpr-ins-btn:hover { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
       .lpr-ins-btn.inserted { background: #2a7a2a; color: #fff; border-color: #2a7a2a; }
       .lpr-ins-hint { font-size: 11px; color: #c04; min-height: 16px; opacity: 0; transition: opacity .3s; }
       .lpr-ins-clear { width: 100%; margin-top: 4px; padding: 8px; background: none; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 12px; color: #888; cursor: pointer; transition: all .15s; }
@@ -883,11 +883,11 @@
         padding: 9px 14px; border-bottom: 1px solid #eee; flex-shrink: 0;
       }
       .lpr-tp-import-btn {
-        background: #283891; color: #fff; font-family: inherit; font-size: 11px;
+        background: var(--lpr-blue); color: #fff; font-family: inherit; font-size: 11px;
         font-weight: 600; padding: 6px 13px; border-radius: 999px;
         cursor: pointer; white-space: nowrap; transition: background .15s; user-select: none;
       }
-      .lpr-tp-import-btn:hover { background: #1c2870; }
+      .lpr-tp-import-btn:hover { background: var(--lpr-blue-deep); }
       .lpr-tp-count { font-size: 11px; color: #999; }
       .lpr-tp-msg { padding: 4px 14px 2px; font-size: 11px; color: #2a7a2a; flex-shrink: 0; }
 
@@ -897,14 +897,14 @@
         border: 1px solid #ddd; border-radius: 6px;
         font-family: inherit; font-size: 12px; outline: none;
       }
-      .lpr-tp-q:focus { border-color: #283891; }
+      .lpr-tp-q:focus { border-color: var(--lpr-blue); }
 
       .lpr-tp-list { flex: 0 0 auto; max-height: 200px; overflow-y: auto; border-bottom: 1px solid #eee; }
       .lpr-tp-empty, .lpr-tp-no-sel { padding: 16px; text-align: center; color: #bbb; font-size: 12px; }
       .lpr-tp-item { padding: 8px 14px; cursor: pointer; border-bottom: 1px solid #f2f2f2; transition: background .1s; }
       .lpr-tp-item:hover { background: #f7f8ff; }
-      .lpr-tp-item.sel { background: #eef0fb; border-left: 3px solid #283891; padding-left: 11px; }
-      .lpr-tp-name { font-weight: 600; font-size: 12.5px; color: #0e1430; }
+      .lpr-tp-item.sel { background: #eef0fb; border-left: 3px solid var(--lpr-blue); padding-left: 11px; }
+      .lpr-tp-name { font-weight: 600; font-size: 12.5px; color: var(--lpr-ink); }
       .lpr-tp-addr { font-size: 11px; color: #999; margin-top: 2px; }
 
       .lpr-tp-ed { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
@@ -913,13 +913,13 @@
       .lpr-tp-fields { flex: 1; overflow-y: auto; padding: 8px 14px; }
       .lpr-tp-field { margin-bottom: 9px; }
       .lpr-tp-lbl { display: block; font-size: 10px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: #aaa; margin-bottom: 3px; }
-      .lpr-tp-inp { width: 100%; box-sizing: border-box; padding: 6px 9px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; font-size: 12.5px; color: #0e1430; outline: none; }
-      .lpr-tp-inp:focus { border-color: #283891; }
+      .lpr-tp-inp { width: 100%; box-sizing: border-box; padding: 6px 9px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; font-size: 12.5px; color: var(--lpr-ink); outline: none; }
+      .lpr-tp-inp:focus { border-color: var(--lpr-blue); }
       .lpr-tp-field.ov .lpr-tp-inp { border-color: #f5c518; background: #fffef5; }
       .lpr-tp-src-hint { font-size: 10px; color: #b07800; margin-top: 2px; padding-left: 2px; }
       .lpr-tp-foot { padding: 11px 14px; border-top: 1px solid #eee; flex-shrink: 0; }
-      .lpr-tp-apply { width: 100%; padding: 10px; background: #283891; color: #fff; border: none; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .2s; }
-      .lpr-tp-apply:hover { background: #1c2870; }
+      .lpr-tp-apply { width: 100%; padding: 10px; background: var(--lpr-blue); color: #fff; border: none; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .2s; }
+      .lpr-tp-apply:hover { background: var(--lpr-blue-deep); }
       .lpr-tp-apply.ok { background: #2a7a2a; }
 
       /* ---- Recent section ---- */
@@ -930,7 +930,7 @@
       .lpr-tp-sec-hd {
         padding: 5px 14px 3px;
         font-size: 9.5px; font-weight: 700; letter-spacing: 1px;
-        text-transform: uppercase; color: #283891;
+        text-transform: uppercase; color: var(--lpr-blue);
       }
       .lpr-tp-recent .lpr-tp-item { background: #f7f8ff; position: relative; padding-right: 30px; }
       .lpr-tp-recent .lpr-tp-item:hover { background: #eef0fb; }
@@ -944,11 +944,11 @@
 
       /* ---- Add / delete buttons ---- */
       .lpr-tp-add-btn {
-        background: none; border: 1.5px solid #283891; border-radius: 999px;
-        color: #283891; font-family: inherit; font-size: 11px; font-weight: 600;
+        background: none; border: 1.5px solid var(--lpr-blue); border-radius: 999px;
+        color: var(--lpr-blue); font-family: inherit; font-size: 11px; font-weight: 600;
         padding: 4px 10px; cursor: pointer; white-space: nowrap; transition: all .15s;
       }
-      .lpr-tp-add-btn:hover { background: #283891; color: #fff; }
+      .lpr-tp-add-btn:hover { background: var(--lpr-blue); color: #fff; }
       .lpr-tp-del-btn {
         margin-left: auto; padding: 3px 9px; background: none;
         border: 1px solid #e0b0b0; border-radius: 5px;
@@ -960,7 +960,7 @@
       /* ---- Insert sidebar group labels ---- */
       .lpr-ins-group-label {
         font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px;
-        text-transform: uppercase; color: #283891;
+        text-transform: uppercase; color: var(--lpr-blue);
         padding: 10px 0 4px; margin-top: 4px;
         border-top: 1px solid #eee;
       }
@@ -969,12 +969,12 @@
       /* ---- Body-only apply button (tenant panel) ---- */
       .lpr-tp-apply-body {
         width: 100%; padding: 7px; margin-top: 6px;
-        background: none; color: #283891;
-        border: 1.5px solid #283891; border-radius: 999px;
+        background: none; color: var(--lpr-blue);
+        border: 1.5px solid var(--lpr-blue); border-radius: 999px;
         font-family: inherit; font-size: 12px; font-weight: 600;
         cursor: pointer; transition: all .2s;
       }
-      .lpr-tp-apply-body:hover { background: #283891; color: #fff; }
+      .lpr-tp-apply-body:hover { background: var(--lpr-blue); color: #fff; }
       .lpr-tp-apply-body.ok { background: #2a7a2a; color: #fff; border-color: #2a7a2a; }
 
       /* ---- Contact-field placeholders ---- */

@@ -182,7 +182,7 @@ The archive page (`archive.html`) has its own search bar that filters the archiv
 | **Export → Print** | Browser-native print dialog (paper or system PDF). Automatically exits Edit mode first if active. |
 | **Export → PDF** | Saves a real PDF in the page's exact dimensions (html2pdf.js). Exits Edit mode first. |
 | **Export → Image** | Saves a 2× resolution PNG (html-to-image). Multi-sheet templates export as multiple files. Exits Edit mode first. |
-| **Export → HTML** | Saves a self-contained HTML copy with absolute asset paths. Exits Edit mode first. |
+| **Export → HTML** | Saves a fully self-contained HTML snapshot. Local stylesheets (`brand.css`, etc.) are fetched and inlined into `<style>` blocks so CSS custom properties resolve correctly without access to the source directory. Asset paths (images, fonts) are made absolute. Exits Edit mode first. |
 | **Save As** | Saves filled-in template to current user's Library; all field content and signer info preserved. Creates a new library entry. |
 | **Save Edits** | *(Library templates only)* Overwrites the current library entry with your changes. Shows a confirmation before overwriting. |
 | **Setup** | Opens the Setup panel (Sender / Tenants / Vendors tabs) |
@@ -507,6 +507,96 @@ If multi-device sync ever becomes important:
 - **Custom domain** — point `templates.lasalleparkrealty.com` at the GitHub Pages site for cleaner branding.
 
 For now the system is intentionally simple — no logins, no databases, no surprises. Everything is recoverable from a backup file and `localStorage`.
+
+---
+
+## Conventions for New Templates
+
+### CSS — always use brand tokens, never hardcode hex
+
+All color references in template `<style>` blocks must use the CSS custom properties from `brand.css`:
+
+```css
+/* ✅ correct */
+color: var(--lpr-blue);
+background: var(--lpr-page);
+
+/* ❌ wrong */
+color: #283891;
+background: #efeae0;
+```
+
+`exportHtml()` inlines `brand.css` at export time, so custom properties resolve correctly in any standalone exported file without needing access to the source directory.
+
+**Alpha variants** cannot be expressed as a CSS var — write them as `rgba()` literals:
+
+```css
+/* rgba variants stay as literals */
+border: 1px solid rgba(40, 56, 145, 0.18);
+```
+
+### Exceptions — where hex must stay hardcoded
+
+| Location | Rule |
+|----------|------|
+| SVG attribute values (`stroke=`, `fill=`) | CSS vars are not valid in SVG presentation attributes — keep as `#283891` |
+| `Email Signature.html` `<table>` inline styles | Email clients (Gmail, Outlook) don't resolve CSS custom properties — all `style=` on the `<sig>` table must use literal hex |
+| JS-generated HTML strings that produce `style=` attributes for email output | Same rule as above |
+| `data-color` HTML attribute values used by `applyTextColor()` | Must be literal hex strings (they're JS values, not CSS) |
+
+### JS-injected CSS (tenants.js, vendors.js, fill-fields.js, template-tools.js)
+
+CSS injected via `<style>` blocks from JavaScript **can and should** use CSS vars — the `brand.css` `:root` definitions are present in the document at the time these styles are applied. Use vars everywhere except SVG `stroke`/`fill` attributes embedded in icon SVG strings.
+
+### Body background
+
+Every template `<style>` block must set:
+
+```css
+body { background: var(--lpr-page); padding: 60px 20px 40px; }
+```
+
+The `exportHtml()` and `buildSaveHtml()` functions both override `body.style.background` to `#fff` before saving, so the ivory page chrome never bleeds into exported/saved files.
+
+### Phone number format
+
+Use dots, not dashes or parentheses:
+
+```
+✅  443.402.5641
+❌  443-402-5641
+❌  (443) 402-5641
+```
+
+This applies to all templates, thumbnails, and print-shop spec blocks.
+
+### Header block (letterheads, notices, letters)
+
+Every letter/notice template must include the full LPR contact line — name, phone, **and email** — in the header or signoff block. The standard signoff:
+
+```
+LPR Management, LLC · 1517 Reisterstown Road, 2nd Floor · Pikesville, MD 21208
+443.402.5641 · office@lasalleparkrealty.com
+```
+
+Employee-specific contact fills via `data-employee-field="phone"` and `data-employee-field="email"` spans. When the **Use office contact** toggle is active, those spans are replaced with the office line.
+
+### Mode bar CSS
+
+Multi-variant templates (Certificate of Mailing, Security Deposit) use a `.mode-bar` / `.mode-btn` pattern for the style-switcher buttons. The button styles are defined **in `brand.css`**, not duplicated in each template's `<style>` block. Do not re-define `.mode-btn`, `.mode-btn.active`, or `.mode-btn:hover` in a template — they inherit from `brand.css`.
+
+### Consolidated variant files
+
+When a template has closely related variants (e.g. Withheld / Partial Refund / Full Refund), combine them into a single `.html` file with a mode bar rather than three separate files. The `archive.html` TEMPLATES map and `index.html` card list both reference the single combined file.
+
+### Export behavior
+
+| Export type | Stylesheet handling |
+|-------------|-------------------|
+| **Print** | Browser uses live DOM — CSS vars resolve via `brand.css` in the `<link>` |
+| **PDF / PNG** | html2pdf / html2canvas capture the rendered page — vars already resolved by the browser |
+| **HTML** | `exportHtml()` fetches and inlines all local `<link rel="stylesheet">` files before downloading, so vars resolve in any browser without needing `brand.css` |
+| **Save As / Library** | `buildSaveHtml()` does the same inlining — library items are fully self-contained |
 
 ---
 

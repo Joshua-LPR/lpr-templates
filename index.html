@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="brand.css">
 <script src="user.js"></script>
 <style>
-  body { background: #efeae0; min-height: 100vh; }
+  body { background: var(--lpr-page); min-height: 100vh; }
   .container { max-width: 1180px; margin: 0 auto; padding: 56px 32px 80px; }
   .hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: center; background: #fff; border-radius: 12px; padding: 48px 56px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); margin-bottom: 48px; }
   .hero .logo img { width: 100%; max-width: 380px; display: block; }
@@ -61,7 +61,7 @@
 
   .mini-watermark { width: 60%; aspect-ratio: 8.5/11; background: #fff; border: 1px solid var(--lpr-rule); border-radius: 2px; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   .mini-watermark .top { position: absolute; left:0; right:0; top:0; height: 12%; background: var(--lpr-blue); }
-  .mini-watermark .bot { position: absolute; left:0; right:0; bottom:0; height: 4%; background: linear-gradient(to right, var(--lpr-blue) 0%, var(--lpr-blue) 30%, #d6a35a 30%, #d6a35a 36%, transparent 36%); }
+  .mini-watermark .bot { position: absolute; left:0; right:0; bottom:0; height: 4%; background: linear-gradient(to right, var(--lpr-blue) 0%, var(--lpr-blue) 30%, var(--lpr-gold) 30%, var(--lpr-gold) 36%, transparent 36%); }
   .mini-watermark .wm { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 55%; opacity: 0.1; }
 
   .mini-env { width: 92%; aspect-ratio: 9.5/4.125; background: #fff; border: 1px solid var(--lpr-rule); border-radius: 3px; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; }
@@ -335,7 +335,7 @@
   .emp-picker .preset .x { margin-left: 6px; opacity: 0.55; font-weight: 700; }
   .emp-picker .preset .x:hover { opacity: 1; color: #c33; }
   .emp-picker .save-btn { padding: 6px 14px; border: 1px solid var(--lpr-blue); border-radius: 999px; background: var(--lpr-blue); color: #fff; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 0.5px; }
-  .emp-picker .save-btn:hover { background: #1c2870; border-color: #1c2870; }
+  .emp-picker .save-btn:hover { background: var(--lpr-blue-deep); border-color: var(--lpr-blue-deep); }
   .emp-picker .save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .emp-picker .clear { font-size: 11px; color: var(--lpr-muted); text-decoration: underline; cursor: pointer; background: none; border: none; font-family: inherit; padding: 6px 4px; margin-left: auto; }
   .emp-active { display: inline-block; background: rgba(40,56,145,0.08); color: var(--lpr-blue); padding: 4px 10px; border-radius: 4px; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; font-weight: 600; margin-left: 10px; vertical-align: middle; }
@@ -406,7 +406,7 @@
     cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 11.5px;
     font-weight: 600; letter-spacing: 0.5px; white-space: nowrap;
   }
-  .sig-add-btn:hover { background: #1c2870; border-color: #1c2870; }
+  .sig-add-btn:hover { background: var(--lpr-blue-deep); border-color: var(--lpr-blue-deep); }
   .sig-manager .tip {
     margin-top: 12px; font-size: 11.5px; color: var(--lpr-muted);
     line-height: 1.55;
@@ -827,7 +827,7 @@
             <div style="display:flex; gap:3px; align-items:center;"><div style="width:6px; height:6px; border:1px solid var(--lpr-blue); border-radius:1px;"></div><div style="flex:1; height:1.5px; background:var(--lpr-rule);"></div></div>
           </div>
           <div style="background:var(--lpr-blue); height:13%; padding:4px; display:flex; align-items:center; justify-content:center;">
-            <div style="font-size:7px; font-weight:700; color:#fff;">443-402-5641</div>
+            <div style="font-size:7px; font-weight:700; color:#fff;">443.402.5641</div>
           </div>
         </div>
       </div>
@@ -848,7 +848,7 @@
           <div style="padding:10px; display:flex; flex-direction:column; justify-content:center; gap:4px;">
             <div style="font-size:6px; letter-spacing:1.5px; text-transform:uppercase; color:var(--lpr-blue); font-weight:600; border-bottom:1.5px solid var(--lpr-blue); padding-bottom:3px;">Available Now</div>
             <div style="font-size:22px; font-weight:800; color:var(--lpr-ink); letter-spacing:-1px; line-height:0.95;">FOR RENT</div>
-            <div style="font-size:11px; font-weight:700; color:var(--lpr-blue); margin-top:2px;">443-402-5641</div>
+            <div style="font-size:11px; font-weight:700; color:var(--lpr-blue); margin-top:2px;">443.402.5641</div>
           </div>
         </div>
       </div>

@@ -248,12 +248,12 @@
       .lpr-own-item {
         padding: 10px 16px; cursor: pointer;
         border-bottom: 1px solid #f2f2f2;
-        font-size: 12.5px; color: #0e1430;
+        font-size: 12.5px; color: var(--lpr-ink);
         transition: background .1s; line-height: 1.35;
       }
       .lpr-own-item:hover { background: #f7f8ff; }
       .lpr-own-item.sel {
-        background: #eef0fb; border-left: 3px solid #283891;
+        background: #eef0fb; border-left: 3px solid var(--lpr-blue);
         padding-left: 13px; font-weight: 600;
       }
 
@@ -262,10 +262,10 @@
       }
       .lpr-own-toggle-label {
         display: flex; align-items: center; gap: 9px;
-        font-size: 12.5px; color: #0e1430; cursor: pointer; user-select: none;
+        font-size: 12.5px; color: var(--lpr-ink); cursor: pointer; user-select: none;
       }
       .lpr-own-toggle-label input[type="checkbox"] {
-        width: 15px; height: 15px; accent-color: #283891; cursor: pointer; flex-shrink: 0;
+        width: 15px; height: 15px; accent-color: var(--lpr-blue); cursor: pointer; flex-shrink: 0;
       }
 
       /* ---- No-signer mode ---- */

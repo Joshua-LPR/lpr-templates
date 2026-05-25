@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="brand.css">
 <script src="user.js"></script>
 <style>
-  body { background: #efeae0; padding: 60px 20px 40px; min-height: 100vh; }
+  body { background: var(--lpr-page); padding: 60px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 720px; margin: 0 auto; }
   h1 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #5a5f72; font-weight: 500; margin: 0 0 8px; }
   h2 { font-family: Montserrat, sans-serif; font-weight: 700; font-size: 24px; color: var(--lpr-ink); margin: 0 0 20px; }
@@ -67,7 +67,7 @@
       <td style="padding-left: 18px; vertical-align: middle; border: 0;">
         <div class="personal-only">
           <div style="font-size: 15px; font-weight: 700; color: #0e1430; letter-spacing: -0.2px;" data-employee-field="name">David Mitnick</div>
-          <div style="font-size: 11px; font-weight: 500; color: #283891; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px;" data-employee-field="title" data-employee-hide-empty>Senior Property Manager</div>
+          <div style="font-size: 11px; font-weight: 500; color: #283891; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px;" data-employee-field="title" data-employee-hide-if-empty="title">Senior Property Manager</div>
         </div>
         <div class="company-only" style="display:none;">
           <div style="font-size: 15px; font-weight: 700; color: #0e1430; letter-spacing: -0.2px;">LPR Management, LLC</div>

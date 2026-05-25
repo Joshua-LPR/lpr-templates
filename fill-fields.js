@@ -220,7 +220,7 @@
     s.textContent = [
       '.flatpickr-calendar{font-family:\'Montserrat\',sans-serif!important;border-radius:10px!important;',
       '  box-shadow:0 8px 32px rgba(0,0,0,.22)!important;border:1px solid rgba(40,56,145,.15)!important;}',
-      '.flatpickr-months{background:#283891;border-radius:9px 9px 0 0;}',
+      '.flatpickr-months{background:var(--lpr-blue);border-radius:9px 9px 0 0;}',
       '.flatpickr-month,.flatpickr-prev-month,.flatpickr-next-month{color:#fff!important;fill:#fff!important;}',
       '.flatpickr-prev-month:hover svg,.flatpickr-next-month:hover svg{fill:#fff!important;}',
       '.flatpickr-prev-month:hover,.flatpickr-next-month:hover{background:rgba(255,255,255,.15)!important;}',
@@ -229,10 +229,10 @@
       '.flatpickr-weekday{color:rgba(40,56,145,.65)!important;font-weight:700;}',
       '.flatpickr-day{border-radius:6px!important;font-size:12px;}',
       '.flatpickr-day:hover:not(.selected){background:#eef0fb!important;border-color:#eef0fb!important;}',
-      '.flatpickr-day.selected,.flatpickr-day.selected:hover{background:#283891!important;border-color:#283891!important;color:#fff!important;}',
-      '.flatpickr-day.today{border-color:#d6a35a!important;font-weight:700;}',
+      '.flatpickr-day.selected,.flatpickr-day.selected:hover{background:var(--lpr-blue)!important;border-color:var(--lpr-blue)!important;color:#fff!important;}',
+      '.flatpickr-day.today{border-color:var(--lpr-gold)!important;font-weight:700;}',
       '.flatpickr-day.today:not(.selected){color:#b07800!important;}',
-      '.flatpickr-day.today.selected{background:#283891!important;border-color:#283891!important;color:#fff!important;}',
+      '.flatpickr-day.today.selected{background:var(--lpr-blue)!important;border-color:var(--lpr-blue)!important;color:#fff!important;}',
       '.flatpickr-day.prevMonthDay,.flatpickr-day.nextMonthDay{color:#ccc!important;}',
       /* alt input (date display) — inherits lpr-ff-inp styling; just add pointer cursor */
       'input.flatpickr-input.lpr-ff-inp,.lpr-ff-inp.lpr-ff-has-icon.flatpickr-input{cursor:pointer;}',
@@ -242,14 +242,14 @@
       '.flatpickr-time .numInputWrapper{flex:1;}',
       '.flatpickr-time input.flatpickr-hour,.flatpickr-time input.flatpickr-minute{',
       '  font-family:\'Montserrat\',sans-serif!important;font-size:20px!important;font-weight:700!important;',
-      '  color:#283891!important;background:transparent!important;border:none!important;text-align:center;}',
+      '  color:var(--lpr-blue)!important;background:transparent!important;border:none!important;text-align:center;}',
       '.flatpickr-time .flatpickr-am-pm{font-family:\'Montserrat\',sans-serif!important;font-weight:700;',
-      '  color:#283891!important;background:#eef0fb;border-radius:6px;padding:2px 6px;font-size:13px!important;}',
-      '.flatpickr-time .flatpickr-am-pm:hover{background:#283891!important;color:#fff!important;}',
+      '  color:var(--lpr-blue)!important;background:#eef0fb;border-radius:6px;padding:2px 6px;font-size:13px!important;}',
+      '.flatpickr-time .flatpickr-am-pm:hover{background:var(--lpr-blue)!important;color:#fff!important;}',
       '.flatpickr-time .numInputWrapper span{border-color:rgba(40,56,145,.2);}',
-      '.flatpickr-time .numInputWrapper span.arrowUp:after{border-bottom-color:#283891;}',
-      '.flatpickr-time .numInputWrapper span.arrowDown:after{border-top-color:#283891;}',
-      '.flatpickr-time-separator{color:#283891!important;font-weight:700;font-size:18px;}',
+      '.flatpickr-time .numInputWrapper span.arrowUp:after{border-bottom-color:var(--lpr-blue);}',
+      '.flatpickr-time .numInputWrapper span.arrowDown:after{border-top-color:var(--lpr-blue);}',
+      '.flatpickr-time-separator{color:var(--lpr-blue)!important;font-weight:700;font-size:18px;}',
       /* flatpickr wrapper should be block so icon-wrap height tracks the input */
       '.lpr-ff-icon-wrap .flatpickr-wrapper{display:block;width:100%;}',
     ].join('');
@@ -312,24 +312,24 @@
 
       /* ---- all input types ---- */
       '.lpr-ff-inp{width:100%;box-sizing:border-box;padding:7px 9px;border:1px solid #ddd;border-radius:5px;',
-      '  font-family:\'Montserrat\',sans-serif;font-size:12.5px;color:#0e1430;outline:none;background:#fff;}',
-      '.lpr-ff-inp:focus{border-color:#283891;}',
+      '  font-family:\'Montserrat\',sans-serif;font-size:12.5px;color:var(--lpr-ink);outline:none;background:#fff;}',
+      '.lpr-ff-inp:focus{border-color:var(--lpr-blue);}',
       '.lpr-ff-inp[type="date"],.lpr-ff-inp[type="time"]{cursor:pointer;}',
 
       /* ---- dollar-amount compound field ---- */
       '.lpr-ff-money{display:flex;align-items:stretch;border:1px solid #ddd;border-radius:5px;overflow:hidden;background:#fff;}',
-      '.lpr-ff-money:focus-within{border-color:#283891;}',
-      '.lpr-ff-dollar{padding:0 8px;font-size:13px;font-weight:600;color:#5a5f72;',
+      '.lpr-ff-money:focus-within{border-color:var(--lpr-blue);}',
+      '.lpr-ff-dollar{padding:0 8px;font-size:13px;font-weight:600;color:var(--lpr-muted);',
       '  background:#f7f8ff;border-right:1px solid #ddd;flex-shrink:0;display:flex;align-items:center;}',
       '.lpr-ff-amt-inp{border:none!important;border-radius:0;flex:1;min-width:0;}',
       '.lpr-ff-amt-inp:focus{outline:none;}',
 
       /* ---- footer buttons ---- */
       '.lpr-ff-foot{padding:11px 14px;border-top:1px solid #eee;flex-shrink:0;display:flex;flex-direction:column;gap:6px;}',
-      '.lpr-ff-apply{width:100%;padding:10px;background:#283891;color:#fff;border:none;border-radius:999px;',
+      '.lpr-ff-apply{width:100%;padding:10px;background:var(--lpr-blue);color:#fff;border:none;border-radius:999px;',
       '  font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s;}',
-      '.lpr-ff-apply:hover{background:#1c2870;}',
-      '.lpr-ff-clear{width:100%;padding:7px;background:none;color:#283891;border:1.5px solid #283891;border-radius:999px;',
+      '.lpr-ff-apply:hover{background:var(--lpr-blue-deep);}',
+      '.lpr-ff-clear{width:100%;padding:7px;background:none;color:var(--lpr-blue);border:1.5px solid var(--lpr-blue);border-radius:999px;',
       '  font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}',
       '.lpr-ff-clear:hover{background:#ffeaea;border-color:#c33;color:#c33;}',
 

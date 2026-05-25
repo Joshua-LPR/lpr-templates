@@ -6,15 +6,14 @@
 <link rel="stylesheet" href="brand.css">
 <script src="user.js"></script>
 <style>
-  body { background: #efeae0; padding: 60px 20px 40px; }
+  body { background: var(--lpr-page); padding: 60px 20px 40px; }
   @page { size: 8.5in 11in; margin: 0; }
   .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
-  .label { font-size: 10px; letter-spacing: 3px; color: #5a5f72; text-transform: uppercase; }
   .sheet.letter { width: 8.5in; height: 11in; padding: 0.75in 0.85in; display: flex; flex-direction: column; }
 
   .lh-header { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 18px; border-bottom: 2px solid var(--lpr-blue); }
   .lh-header img { height: 0.95in; width: auto; }
-  .lh-header .meta { text-align: right; font-size: 8.5pt; line-height: 1.55; color: var(--lpr-ink); }
+  .lh-header .meta { text-align: right; font-size: 8.5pt; line-height: 1.55; color: var(--lpr-ink); font-weight: 400; }
 
   .doc-badge { margin-top: 0.45in; font-size: 9pt; letter-spacing: 4px; text-transform: uppercase; color: var(--lpr-blue); font-weight: 600; }
   .doc-title { font-size: 26pt; font-weight: 700; letter-spacing: -0.4px; line-height: 1.05; margin-top: 8px; color: var(--lpr-ink); }
@@ -29,8 +28,6 @@
 
   .signoff { margin-top: auto; padding-top: 0.4in; }
   .signature { height: 0.5in; }
-  .signed-name { font-weight: 600; color: var(--lpr-ink); }
-  .signed-role { font-size: 9pt; color: var(--lpr-muted); }
 
   @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label { display: none; } }
 </style>
@@ -47,7 +44,10 @@
 
     <div class="lh-header">
       <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
-      <div class="meta">1517 Reisterstown Road, 2nd Floor<br/>Pikesville, MD 21208<br/>443.402.5641</div>
+      <div class="meta">1517 Reisterstown Road, 2nd Floor<br/>
+      Pikesville, MD 21208<br/>
+      <span data-employee-field="phone">443.402.5641</span><br/>
+      <span data-employee-field="email">david@lasalleparkrealty.com</span></div>
     </div>
 
     <div class="doc-badge"><span data-fill-field="text" data-fill-label="Document Category"></span></div>

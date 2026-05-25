@@ -507,12 +507,12 @@
       /* ---- Body-only apply button ---- */
       .lpr-tp-apply-body {
         width: 100%; padding: 7px; margin-top: 6px;
-        background: none; color: #283891;
-        border: 1.5px solid #283891; border-radius: 999px;
+        background: none; color: var(--lpr-blue);
+        border: 1.5px solid var(--lpr-blue); border-radius: 999px;
         font-family: inherit; font-size: 12px; font-weight: 600;
         cursor: pointer; transition: all .2s;
       }
-      .lpr-tp-apply-body:hover { background: #283891; color: #fff; }
+      .lpr-tp-apply-body:hover { background: var(--lpr-blue); color: #fff; }
       .lpr-tp-apply-body.ok { background: #2a7a2a; color: #fff; border-color: #2a7a2a; }
     `;
     document.head.appendChild(s);

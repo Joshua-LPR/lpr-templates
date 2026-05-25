@@ -42,10 +42,6 @@
       el.textContent = val;
       if (el.tagName === "A" && field === "email") el.setAttribute("href", "mailto:" + emp.email);
       if (el.tagName === "A" && field === "phone") el.setAttribute("href", "tel:" + emp.phoneDigits);
-      // If this element should hide when empty, do so.
-      if (val === "" && el.hasAttribute("data-employee-hide-empty")) {
-        el.style.display = "none";
-      }
     });
     // Hide whole containers when a referenced field is empty.
     document.querySelectorAll("[data-employee-hide-if-empty]").forEach(el => {

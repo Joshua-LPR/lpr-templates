@@ -314,7 +314,7 @@
       handle.style.cssText = [
         "position: absolute",
         "width: 14px", "height: 14px",
-        "background: #283891", "border: 2px solid #fff",
+        "background: var(--lpr-blue)", "border: 2px solid #fff",
         "border-radius: 50%", "cursor: nwse-resize",
         "z-index: 50",
         "box-shadow: 0 2px 6px rgba(0,0,0,0.25)",
@@ -461,19 +461,19 @@
         max-width: 440px; width: 100%;
         box-shadow: 0 12px 40px rgba(0,0,0,0.25);
       }
-      .tt-dialog h2 { margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #0e1430; }
-      .tt-dialog p { margin: 0 0 18px; font-size: 13px; line-height: 1.6; color: #5a5f72; }
+      .tt-dialog h2 { margin: 0 0 8px; font-size: 18px; font-weight: 700; color: var(--lpr-ink); }
+      .tt-dialog p { margin: 0 0 18px; font-size: 13px; line-height: 1.6; color: var(--lpr-muted); }
       .tt-dialog .actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
       .tt-dialog button {
         font-family: inherit; font-size: 12.5px; font-weight: 600; letter-spacing: 0.3px;
         padding: 10px 18px; border-radius: 999px; cursor: pointer;
-        border: 1px solid #283891; background: #fff; color: #283891;
+        border: 1px solid var(--lpr-blue); background: #fff; color: var(--lpr-blue);
       }
-      .tt-dialog button:hover { background: #283891; color: #fff; }
-      .tt-dialog button.primary { background: #283891; color: #fff; }
-      .tt-dialog button.primary:hover { background: #1c2870; }
-      .tt-dialog button.muted { border-color: rgba(40,56,145,0.18); color: #5a5f72; }
-      .tt-dialog button.muted:hover { background: #f4f1ec; color: #0e1430; }
+      .tt-dialog button:hover { background: var(--lpr-blue); color: #fff; }
+      .tt-dialog button.primary { background: var(--lpr-blue); color: #fff; }
+      .tt-dialog button.primary:hover { background: var(--lpr-blue-deep); }
+      .tt-dialog button.muted { border-color: rgba(40,56,145,0.18); color: var(--lpr-muted); }
+      .tt-dialog button.muted:hover { background: #f4f1ec; color: var(--lpr-ink); }
       .tt-dialog button.danger { border-color: #c33; color: #c33; }
       .tt-dialog button.danger:hover { background: #c33; color: #fff; }
 
@@ -491,22 +491,22 @@
         height: 28px; padding: 0 8px;
         border: 1px solid rgba(40,56,145,0.25); border-radius: 6px;
         background: #fff; font-family: Montserrat, sans-serif;
-        font-size: 12px; font-weight: 500; color: #0e1430;
+        font-size: 12px; font-weight: 500; color: var(--lpr-ink);
         cursor: pointer; outline: none; vertical-align: middle;
         appearance: none; -webkit-appearance: none;
       }
-      .tt-size-select:hover { border-color: #283891; background: #f6f7fd; }
-      .tt-size-select:focus { border-color: #283891; }
+      .tt-size-select:hover { border-color: var(--lpr-blue); background: #f6f7fd; }
+      .tt-size-select:focus { border-color: var(--lpr-blue); }
       /* Color picker */
       .tt-color-wrap {
         position: relative; display: inline-flex; align-items: center; gap: 5px;
         height: 28px; padding: 0 10px;
         border: 1px solid rgba(40,56,145,0.25); border-radius: 6px;
         background: #fff; cursor: pointer; vertical-align: middle;
-        font-size: 12px; font-weight: 500; color: #0e1430;
+        font-size: 12px; font-weight: 500; color: var(--lpr-ink);
         user-select: none;
       }
-      .tt-color-wrap:hover { border-color: #283891; background: #f6f7fd; }
+      .tt-color-wrap:hover { border-color: var(--lpr-blue); background: #f6f7fd; }
       .tt-color-preview {
         display: none; width: 10px; height: 10px; border-radius: 50%;
         border: 1px solid rgba(0,0,0,0.15); flex-shrink: 0;
@@ -585,7 +585,7 @@
       <div class="tt-dialog">
         <h2>⚠ Some fields are unfilled</h2>
         <p>The following will appear blank:<br/>
-          <ul style="margin:8px 0 0 16px;padding:0;font-size:13px;color:#5a5f72;line-height:1.8">
+          <ul style="margin:8px 0 0 16px;padding:0;font-size:13px;color:var(--lpr-muted);line-height:1.8">
             ${warnings.map(w => `<li>${w}</li>`).join('')}
           </ul>
         </p>
@@ -615,7 +615,7 @@
     const name = baseFilename();
     try {
       if (kind === "print") return window.print();
-      if (kind === "html") return exportHtml(name);
+      if (kind === "html") return await exportHtml(name);
       if (kind === "png")  return await exportPng(name);
       if (kind === "pdf")  return await exportPdf(name);
     } catch (e) {
@@ -630,7 +630,7 @@
     return t.replace(/[^a-z0-9\- ]/gi, "").trim() || "document";
   }
 
-  function exportHtml(name) {
+  async function exportHtml(name) {
     const clone = document.documentElement.cloneNode(true);
     clone.dataset.lprSnapshot = '1';
 
@@ -652,8 +652,24 @@
     const bodyEl = clone.querySelector("body");
     if (bodyEl) { bodyEl.style.background = "#fff"; bodyEl.style.padding = "0"; }
 
-    // Make relative asset paths absolute
     const baseUrl = location.href.substring(0, location.href.lastIndexOf("/") + 1);
+
+    // Inline local stylesheets so exported file is fully self-contained
+    // (CSS custom properties resolve correctly without needing brand.css)
+    for (const link of [...clone.querySelectorAll('link[rel~="stylesheet"]')]) {
+      const raw = link.getAttribute('href');
+      if (!raw || /^https?:/.test(raw)) continue;
+      try {
+        const resp = await fetch(baseUrl + raw);
+        if (resp.ok) {
+          const style = document.createElement('style');
+          style.textContent = await resp.text();
+          link.parentNode.replaceChild(style, link);
+        }
+      } catch (e) {}
+    }
+
+    // Make relative asset paths absolute
     clone.querySelectorAll("[src], [href]").forEach(el => {
       ["src", "href"].forEach(attr => {
         const v = el.getAttribute(attr);

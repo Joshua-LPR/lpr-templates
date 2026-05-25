@@ -23,26 +23,16 @@
   padding:14px 20px; margin-bottom:14px;
   display:flex; flex-wrap:wrap; gap:8px; align-items:center;
 }
-.mode-bar strong { font-size:12px; color:#283891; margin-right:4px; white-space:nowrap; }
-.mode-btn {
-  padding:6px 14px; border:1.5px solid #c8cce0; border-radius:999px;
-  background:#f6f6f8; font-family:Montserrat,sans-serif;
-  font-size:12px; cursor:pointer; color:#555; white-space:nowrap;
-  transition:all .15s;
-}
-.mode-btn.active { background:#283891; color:#fff; border-color:#283891; }
-.mode-btn:hover:not(.active) { background:#eef0f8; border-color:#aab; }
-
 /* ── calibration card ── */
 .cal-card {
   background:#fff; border:1px solid #dde; border-radius:8px;
   padding:16px 20px; margin-bottom:14px;
 }
-.cal-card h3 { margin:0 0 4px; font-size:13px; font-weight:700; color:#283891; }
+.cal-card h3 { margin:0 0 4px; font-size:13px; font-weight:700; color:var(--lpr-blue); }
 .cal-card > p { margin:0 0 12px; font-size:12px; color:#666; }
 .cal-row { display:flex; flex-wrap:wrap; gap:14px; align-items:center; }
 .cal-ctrl { display:flex; align-items:center; gap:6px; font-size:12px; color:#444; }
-.cal-ctrl input[type=range] { width:110px; accent-color:#283891; }
+.cal-ctrl input[type=range] { width:110px; accent-color:var(--lpr-blue); }
 .cal-ctrl .v { min-width:34px; font-size:11px; color:#888; font-family:monospace; }
 .cal-btn {
   padding:5px 14px; border:1px solid #bbb; border-radius:4px;
@@ -97,7 +87,7 @@
   background:#fff; border:1px solid #dde; border-radius:8px;
   padding:16px 20px; font-size:13px; color:#444;
 }
-.instructions h3 { margin:0 0 10px; font-size:14px; color:#283891; }
+.instructions h3 { margin:0 0 10px; font-size:14px; color:var(--lpr-blue); }
 .instructions ol { margin:0; padding-left:20px; }
 .instructions li { margin-bottom:6px; line-height:1.5; }
 .instructions p  { margin:10px 0 0; font-size:11px; color:#888; }

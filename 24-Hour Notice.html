@@ -7,16 +7,15 @@
 <link rel="stylesheet" href="brand.css">
 <script src="user.js"></script>
 <style>
-  body { background: #efeae0; padding: 60px 20px 40px; }
+  body { background: var(--lpr-page); padding: 60px 20px 40px; }
   @page { size: 8.5in 11in; margin: 0; }
   .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
-  .label { font-size: 10px; letter-spacing: 3px; color: #5a5f72; text-transform: uppercase; }
 
   .sheet.notice { width: 8.5in; height: 11in; padding: 0.75in 0.85in; display: flex; flex-direction: column; }
 
   .n-header { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 18px; border-bottom: 2px solid var(--lpr-blue); }
   .n-header img { height: 0.95in; width: auto; }
-  .n-header .meta { text-align: right; font-size: 8.5pt; line-height: 1.55; color: var(--lpr-ink); }
+  .n-header .meta { text-align: right; font-size: 8.5pt; line-height: 1.55; color: var(--lpr-ink); font-weight: 400; }
 
   .doc-badge {
     margin-top: 0.35in;
@@ -58,8 +57,6 @@
   .signoff { margin-top: auto; padding-top: 0.25in; }
   .signoff p { margin: 0 0 6px; }
   .signoff .signature { height: 0.4in; }
-  .signoff .signed-name { font-weight: 600; color: var(--lpr-ink); }
-  .signoff .signed-role { font-size: 9pt; color: var(--lpr-muted); }
 
   @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label { display: none; } }
 </style>
@@ -79,7 +76,8 @@
       <div class="meta">
         1517 Reisterstown Road, 2nd Floor<br/>
         Pikesville, MD 21208<br/>
-        443.402.5641
+        <span data-employee-field="phone">443.402.5641</span><br/>
+        <span data-employee-field="email">david@lasalleparkrealty.com</span>
       </div>
     </div>
 
@@ -112,7 +110,7 @@
         <div class="val"><span data-fill-field="text" data-fill-label="Persons Entering"></span></div>
       </div>
 
-      <p>If you have any questions, please contact us at <strong>443-402-5641</strong> or <strong>office@lasalleparkrealty.com</strong>.</p>
+      <p>If you have any questions, please contact us at <strong>443.402.5641</strong> or <strong>office@lasalleparkrealty.com</strong>.</p>
 
       <div class="signoff">
         <p>Thank you,</p>

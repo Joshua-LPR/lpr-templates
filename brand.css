@@ -21,6 +21,8 @@
   --lpr-rule: rgba(40, 56, 145, 0.18);
   --lpr-text: #1a1a1a;
   --lpr-muted: #5a5f72;
+  --lpr-gold: #d6a35a;
+  --lpr-page: #efeae0;
 }
 
 * { box-sizing: border-box; }
@@ -47,6 +49,7 @@ body { margin: 0; font-family: 'Montserrat', sans-serif; color: var(--lpr-text);
   .sheet { margin: 0; box-shadow: none; page-break-after: always; }
   .sheet, .sheet * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
   .no-print { display: none !important; }
+  .label, .label-h { display: none !important; }
 }
 
 /* Toolbar shown on screen only */
@@ -92,11 +95,21 @@ body { margin: 0; font-family: 'Montserrat', sans-serif; color: var(--lpr-text);
 }
 .sheet.tt-editing :focus { outline: 2px solid var(--lpr-blue); background: rgba(40,56,145,0.06); }
 
-.label-tiny {
-  font-size: 9px; letter-spacing: 3px; font-weight: 500;
+.label, .label-h {
+  font-size: 10px; letter-spacing: 3px;
   text-transform: uppercase; color: var(--lpr-muted);
 }
 
 /* ---- Signoff block — shared across all letter/notice templates ---- */
-.sheet .signed-name { font-weight: 600; color: var(--lpr-ink); }
-.sheet .signed-role { font-size: 9pt; color: var(--lpr-muted); }
+.sheet .signed-name, .signed-name { font-weight: 600; color: var(--lpr-ink); }
+.sheet .signed-role, .signed-role { font-size: 9pt; color: var(--lpr-muted); }
+
+/* ---- Mode toggle buttons — shared across templates with on-screen variant pickers ---- */
+.mode-btn {
+  padding: 6px 14px; border: 1.5px solid #c8cce0; border-radius: 999px;
+  background: #f6f6f8; font-family: 'Montserrat', sans-serif;
+  font-size: 12px; cursor: pointer; color: #555; white-space: nowrap; transition: all .15s;
+}
+.mode-btn.active { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
+.mode-btn:hover:not(.active) { background: #eef0f8; border-color: #aab; }
+.mode-bar strong { font-size: 12px; color: var(--lpr-blue); margin-right: 4px; white-space: nowrap; }
