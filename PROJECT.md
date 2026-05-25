@@ -138,7 +138,7 @@ The **Customize for an employee** panel on the index lets you fill in any name/t
 
 URL params bypass the form: `Business Card.html?name=Jane&title=Manager&phone=...&email=...`
 
-Empty title is supported — `data-employee-hide-empty` collapses elements with no value.
+Empty title is supported — `data-employee-hide-if-empty="title"` collapses the element when that field has no value.
 
 **Snapshot preservation:** when a template is saved via Save As or exported as HTML, a `data-lpr-snapshot` attribute is stamped on the HTML clone. `employee.js` skips re-applying defaults when it detects this flag, so the signer name, title, phone, and email are preserved exactly as they were when saved.
 
