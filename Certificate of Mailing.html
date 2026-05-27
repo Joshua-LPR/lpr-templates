@@ -212,12 +212,10 @@ body { background: var(--lpr-page); }
   background-size:83% 83% !important; background-position:center center !important; background-repeat:no-repeat !important;
   background-color:white !important;
   cursor:pointer;
-  transition:outline 0.08s;
 }
-/* gold outline when this slot is selected */
-.multi-wysiwyg-page .multi-thumb-wrap.selected-thumb .sheet {
-  outline:5px solid var(--lpr-gold);
-  outline-offset:-2px;
+/* gold outline when this slot is selected — on the wrap so it aligns with cut lines */
+.multi-wysiwyg-page .multi-thumb-wrap.selected-thumb {
+  box-shadow:inset 0 0 0 4px var(--lpr-gold);
 }
 /* suppress placeholder text in wysiwyg & print sheets */
 #multi-wysiwyg-page [data-tenant-field]:empty::before,
