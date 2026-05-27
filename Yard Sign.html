@@ -210,7 +210,7 @@
     if (_qrLoading) return;
     _qrLoading = true;
     var s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+    s.src = 'https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js';
     s.onload = function () { _qrReady = true; _qrQueue.forEach(function(fn){ fn(); }); _qrQueue = []; };
     s.onerror = function () { console.error('QR library failed to load'); };
     document.head.appendChild(s);
@@ -222,12 +222,14 @@
     if (!url) { qrGroup.style.display = 'none'; qrImg.src = ''; return; }
     qrGroup.style.display = '';
     withQR(function () {
-      QRCode.toDataURL(url, {
-        width: 350, margin: 1,
-        color: { dark: '#283891', light: '#ffffff' }
-      }, function (err, dataUrl) {
-        if (!err) qrImg.src = dataUrl;
+      var qr = new QRious({
+        value: url,
+        size: 350,
+        foreground: '#283891',
+        background: '#ffffff',
+        level: 'M'
       });
+      qrImg.src = qr.toDataURL();
     });
   }
 
