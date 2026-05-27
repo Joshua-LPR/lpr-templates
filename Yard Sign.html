@@ -87,8 +87,7 @@
     text-transform: uppercase; color: var(--lpr-muted);
     margin-bottom: 0.15in; text-align: center;
   }
-  #sign-qr-div { width: 3.5in; height: 3.5in; }
-  #sign-qr-div canvas, #sign-qr-div img { width: 100% !important; height: 100% !important; display: block; }
+  #sign-qr-img { width: 3.5in; height: 3.5in; display: block; }
 
   /* ── settings card ── */
   .sign-settings {
@@ -113,7 +112,7 @@
     body { background: #fff; padding: 0; }
     .stage { gap: 0; }
     .label, .specs { display: none; }
-    #sign-qr-div canvas, #sign-qr-div img { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    #sign-qr-img { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
 </head>
@@ -145,7 +144,7 @@
           </div>
           <div id="sign-qr-group" style="display:none">
             <div class="qr-label">Scan to learn more</div>
-            <div id="sign-qr-div"></div>
+            <img id="sign-qr-img" alt="QR code">
           </div>
         </div>
       </div>
@@ -191,7 +190,7 @@
   var inpQr     = document.getElementById('inp-qr');
   var signPhone = document.getElementById('sign-phone');
   var qrGroup   = document.getElementById('sign-qr-group');
-  var qrDiv     = document.getElementById('sign-qr-div');
+  var qrImg     = document.getElementById('sign-qr-img');
 
   /* restore saved values */
   var savedPhone = localStorage.getItem(PHONE_KEY);
@@ -204,14 +203,14 @@
     localStorage.setItem(PHONE_KEY, inpPhone.value);
   }
 
-  var _qrReady = false, _qrLoading = false, _qrQueue = [], _qrInst = null;
+  var _qrReady = false, _qrLoading = false, _qrQueue = [];
   function withQR(cb) {
     if (_qrReady) { cb(); return; }
     _qrQueue.push(cb);
     if (_qrLoading) return;
     _qrLoading = true;
     var s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+    s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
     s.onload = function () { _qrReady = true; _qrQueue.forEach(function(fn){ fn(); }); _qrQueue = []; };
     s.onerror = function () { console.error('QR library failed to load'); };
     document.head.appendChild(s);
@@ -220,21 +219,15 @@
   function updateQr() {
     var url = inpQr.value.trim();
     localStorage.setItem(QR_KEY, inpQr.value);
-    if (!url) { qrGroup.style.display = 'none'; return; }
+    if (!url) { qrGroup.style.display = 'none'; qrImg.src = ''; return; }
     qrGroup.style.display = '';
     withQR(function () {
-      if (_qrInst) {
-        _qrInst.makeCode(url);
-      } else {
-        _qrInst = new QRCode(qrDiv, {
-          text: url,
-          width: 350,
-          height: 350,
-          colorDark: '#283891',
-          colorLight: '#ffffff',
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      }
+      QRCode.toDataURL(url, {
+        width: 350, margin: 1,
+        color: { dark: '#283891', light: '#ffffff' }
+      }, function (err, dataUrl) {
+        if (!err) qrImg.src = dataUrl;
+      });
     });
   }
 
