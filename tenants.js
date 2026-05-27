@@ -1008,6 +1008,7 @@
       }
       @media print {
         [data-tenant-field]:empty::before { display: none; }
+        #lpr-insert-panel, #lpr-fill-panel { display: none !important; }
       }
 
       /* ---- Edit-mode field highlights in the sheet ---- */

@@ -683,17 +683,43 @@
     triggerDownload(new Blob([html], { type: "text/html;charset=utf-8" }), name + ".html");
   }
 
+  // Pre-convert <img> elements to data URLs so html2canvas never fetches them.
+  // On file:// pages, loading images without crossOrigin is same-origin and safe;
+  // adding crossOrigin="anonymous" (what useCORS does) breaks CORS and taints the canvas.
+  async function inlineImgSrcs(el) {
+    const imgs = [...el.querySelectorAll('img')];
+    const origSrcs = new Map();
+    await Promise.all(imgs.map(img => new Promise(resolve => {
+      const src = img.getAttribute('src') || '';
+      if (!src || src.startsWith('data:')) { resolve(); return; }
+      origSrcs.set(img, src);
+      const tmp = new Image();
+      tmp.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = tmp.naturalWidth || 1; c.height = tmp.naturalHeight || 1;
+        c.getContext('2d').drawImage(tmp, 0, 0);
+        try { img.src = c.toDataURL(); } catch(e) {}
+        resolve();
+      };
+      tmp.onerror = resolve;
+      tmp.src = src;
+    })));
+    return () => origSrcs.forEach((src, img) => img.setAttribute('src', src));
+  }
+
   async function exportPng(name) {
     await ensureLib("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js", "html2canvas");
     const sheets = [...document.querySelectorAll(".sheet")].filter(s => s.offsetHeight > 0);
     if (sheets.length === 0) return;
     for (let i = 0; i < sheets.length; i++) {
+      const restore = await inlineImgSrcs(sheets[i]);
       const canvas = await window.html2canvas(sheets[i], {
         scale: 2,
         useCORS: true,
         backgroundColor: "#ffffff",
         logging: false
       });
+      restore();
       const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
       const suffix = sheets.length > 1 ? "-" + (i + 1) : "";
       triggerDownload(blob, name + suffix + ".png");
@@ -724,6 +750,7 @@
       container.appendChild(clone);
     });
     document.body.appendChild(container);
+    const restorePdf = await inlineImgSrcs(container);
     try {
       await window.html2pdf().set({
         margin: 0,
@@ -733,6 +760,7 @@
         jsPDF: { unit: "in", format: [widthIn, heightIn], orientation: widthIn > heightIn ? "landscape" : "portrait" }
       }).from(container).save();
     } finally {
+      restorePdf();
       container.remove();
     }
   }
