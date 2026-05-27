@@ -98,7 +98,7 @@ Montserrat is bundled locally in `assets/fonts/` so templates render identically
 | **Envelope Premium** | 9.5″ × 4.125″ | Pre-print spec variant with refined layout. Includes print-shop spec block. |
 | **Mailing Labels** | Avery 5160 | 30 labels per sheet (return-address). |
 | **Address Labels — P-touch** | DK-1201 (29×90mm) | Tenant or vendor mailing labels for Brother QL-810W. Generates a `.lbt` file per recipient — opens directly in P-touch Editor, ready to print. |
-| **Certificate of Mailing** | 5″ × 3″ (PS Form 3817) | Feed-and-fill overlay for USPS PS Form 3817. Calibration sliders compensate for printer margin offset. |
+| **Certificate of Mailing** | 5″ × 3″ (PS Form 3817) | Feed-and-fill overlay for USPS PS Form 3817. Four print modes: **Overlay** (print text onto a real blank form), **Card** (print full form on card stock), **Letter** (form + cut guides on letter paper), **Multi** (up to 5 forms per letter sheet — 3 upright left column, 2 rotated right column). Calibration sliders per mode compensate for printer margin offset. Form background image is sized to 83% (measured from actual USPS scan) so printed white margins match the real form. Multi mode supports per-slot inline editing — select a slot and edit name/address directly in the sidebar without leaving the panel. Mode is restored from `localStorage` on page load; defaults to Card mode on first visit. |
 | **Lease Cover Page** | US Letter | Branded title sheet with property/landlord/tenant blanks. |
 
 ### Property Management
@@ -212,6 +212,7 @@ The **Setup** button opens a tabbed panel that appears in every template. Tab or
 - **Body fields only** — fills only `data-tenant-field` spans; leaves `data-contact-field` untouched for a vendor recipient.
 - **+ Add** — manually create a tenant entry directly in the browser without importing a CSV. Same fields as the editor. Saved to localStorage with a generated ID (`m_<timestamp>`). Manual entries show a **Delete** button in their editor header for removal.
 - **Recently used** — the last 5 applied tenants appear in a shaded section above the scrollable list. Hidden during search. Each entry has an ✕ to remove it individually. Persists across sessions.
+- **Search** matches all address fields (name, address_line1, address_line2, city, state, zip) — typing a street name or city finds matching tenants.
 - Storage keys: `lpr_tenants` (address book), `lpr_recent_tenants` (recent list). Both per user.
 
 #### Vendors tab (`vendors.js`)
@@ -223,6 +224,7 @@ The **Setup** button opens a tabbed panel that appears in every template. Tab or
 - **Body fields only** — fills only `data-vendor-field` spans.
 - **+ Add** — manually create a vendor entry directly in the browser without importing a CSV. Same fields as the editor. Saved to localStorage with a generated ID (`m_<timestamp>`). Manual entries show a **Delete** button in their editor header for removal.
 - **Recently used** — the last 5 applied vendors appear in a shaded section above the scrollable list. Hidden during search. Each entry has an ✕ to remove it individually. Persists across sessions.
+- **Search** matches all address fields (name, address_line1, address_line2, city, state, zip) — same as tenant search.
 - Storage keys: `lpr_vendors` (address book), `lpr_recent_vendors` (recent list). Both per user.
 
 ### Field namespace system

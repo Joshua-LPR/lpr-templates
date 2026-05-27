@@ -523,7 +523,8 @@
     const filtered    = named
       .filter(t => !q || [
         t.effective.first_name, t.effective.last_name,
-        t.effective.address_line1, t.effective.city
+        t.effective.address_line1, t.effective.address_line2,
+        t.effective.city, t.effective.state, t.effective.zip
       ].join(' ').toLowerCase().includes(q))
       .sort((a, b) => (a.effective.last_name || '').localeCompare(b.effective.last_name || ''));
 

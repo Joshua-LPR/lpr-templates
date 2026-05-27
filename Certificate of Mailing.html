@@ -14,6 +14,9 @@
 /* ── calibration vars ── */
 :root { --cof-dx:0pt; --cof-dy:0pt; --cof-fs:8pt; }
 
+/* ── page background ── */
+body { background: var(--lpr-page); }
+
 /* ── page chrome ── */
 .cof-page { max-width:900px; margin:0 auto; padding:24px; font-family:Montserrat,sans-serif; }
 
@@ -48,7 +51,7 @@
 .sheet {
   width:5in; height:3in; position:relative;
   background-image: url('assets/ps3817-form.png');
-  background-size:100% 100%; background-repeat:no-repeat;
+  background-size:83% 83%; background-position:center center; background-repeat:no-repeat;
   background-color:white;
   box-shadow:0 2px 14px rgba(0,0,0,.22);
   box-sizing:border-box; flex-shrink:0; overflow:visible;
@@ -58,15 +61,15 @@
 .overlay-from,
 .overlay-to {
   position:absolute;
-  left:calc(0.297in + var(--cof-dx));
+  left:calc(0.67in + var(--cof-dx));
   font-family:Montserrat,Arial,sans-serif;
   font-size:var(--cof-fs);
-  line-height:18pt;
+  line-height:15pt;
   color:#111;
-  max-width:3.15in;
+  max-width:2.6in;
 }
-.overlay-from { top:calc(0.686in + var(--cof-dy)); }
-.overlay-to   { top:calc(1.797in + var(--cof-dy)); }
+.overlay-from { top:calc(0.82in + var(--cof-dy)); }
+.overlay-to   { top:calc(1.75in + var(--cof-dy)); }
 
 /* ── cut lines — positioned inside .sheet so they're relative to the form ── */
 .cut-line-h, .cut-line-v { display:none; pointer-events:none; position:absolute; }
@@ -99,27 +102,29 @@
   html,body { margin:0; padding:0; background:none; }
 
   /* hide page chrome, show only the form */
-  body > *:not(.cof-page)         { display:none !important; }
-  .cof-page > *:not(.cof-preview) { display:none !important; }
+  body > *:not(.cof-page)                               { display:none !important; }
+  body:not(.mode-multi) .cof-page > *:not(.cof-preview) { display:none !important; }
   .cof-preview { margin:0 !important; padding:0 !important; justify-content:flex-start !important; }
 
-  .sheet {
+  /* single-sheet modes: fix the one sheet to top-left of page */
+  .cof-preview .sheet {
     position:fixed !important; top:0 !important; left:0 !important;
     width:5in !important; height:3in !important;
     box-shadow:none !important; overflow:visible !important;
   }
 
   /* Overlay: no background image — transparent so blank form shows through */
-  .mode-overlay .sheet {
+  .mode-overlay .cof-preview .sheet {
     background:transparent !important;
     background-image:none !important;
   }
 
   /* Full form: print the real form image */
-  .mode-card .sheet,
-  .mode-letter .sheet {
+  .mode-card .cof-preview .sheet,
+  .mode-letter .cof-preview .sheet {
     background-image:url('assets/ps3817-form.png') !important;
-    background-size:100% 100% !important;
+    background-size:83% 83% !important;
+    background-position:center center !important;
     background-repeat:no-repeat !important;
     background-color:white !important;
     -webkit-print-color-adjust:exact;
@@ -140,6 +145,36 @@
 
   /* overlay text always prints black */
   .overlay-from, .overlay-to { color:black !important; }
+
+  /* ── MULTI MODE ── */
+  .mode-multi .cof-page > *:not(#multi-print-container) { display:none !important; }
+  .mode-multi #multi-print-container { display:block !important; margin:0 !important; padding:0 !important; }
+  .mode-multi .multi-print-page {
+    position:fixed !important; top:0 !important; left:0 !important;
+    width:8.5in !important; height:11in !important;
+  }
+  /* all 5 sheets in multi mode print the full form image */
+  .mode-multi .multi-print-page .sheet {
+    background-image:url('assets/ps3817-form.png') !important;
+    background-size:83% 83% !important;
+    background-position:center center !important;
+    background-repeat:no-repeat !important;
+    background-color:white !important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+    box-shadow:none !important;
+    overflow:visible !important;
+  }
+  /* upright sheets: fill their absolute wrapper */
+  .mode-multi .multi-print-page .multi-upright-wrap .sheet {
+    position:relative !important;
+    top:auto !important; left:auto !important;
+    transform:none !important;
+  }
+  /* cut lines: show in multi mode */
+  .mode-multi .multi-cut { display:block !important; }
+  /* empty slots: hide the form entirely — only filled slots print */
+  .mode-multi .multi-print-page .multi-thumb-wrap[data-empty] .sheet { visibility:hidden !important; }
 }
 
 /* hide address line 2 row when span is empty */
@@ -149,6 +184,138 @@
 
 /* suppress tenant-field placeholder border lines — the form image has its own lines */
 .sheet [data-tenant-field]:empty::before { border-bottom:none !important; }
+
+/* ── multi-mode layout ── */
+.multi-ui { display:flex; gap:18px; align-items:flex-start; margin-top:10px; }
+
+/* ── WYSIWYG preview (left pane) ── */
+.multi-wysiwyg-wrap {
+  flex-shrink:0;
+  /* 8.5in × 11in scaled to 44% */
+  width:calc(8.5in * 0.44); height:calc(11in * 0.44);
+  overflow:hidden;
+  border:1px solid #ccd; border-radius:4px;
+  background:#e8e8ec; box-shadow:inset 0 1px 3px rgba(0,0,0,.1);
+}
+.multi-wysiwyg-page {
+  width:8.5in; height:11in; position:relative;
+  background:white;
+  transform:scale(0.44); transform-origin:top left;
+  /* zero out calibration — text must align with the printed form image, not a physical slip */
+  --cof-dx:0pt; --cof-dy:0pt; --cof-fs:8pt;
+}
+/* dim empty slots in the wysiwyg preview */
+#multi-wysiwyg-page .multi-thumb-wrap[data-empty] .sheet { opacity:0.15; }
+/* thumbnail sheets show the real form image */
+.multi-wysiwyg-page .sheet {
+  background-image:url('assets/ps3817-form.png') !important;
+  background-size:83% 83% !important; background-position:center center !important; background-repeat:no-repeat !important;
+  background-color:white !important;
+  cursor:pointer;
+  transition:outline 0.08s;
+}
+/* gold outline when this slot is selected */
+.multi-wysiwyg-page .multi-thumb-wrap.selected-thumb .sheet {
+  outline:5px solid var(--lpr-gold);
+  outline-offset:-2px;
+}
+/* suppress placeholder text in wysiwyg & print sheets */
+#multi-wysiwyg-page [data-tenant-field]:empty::before,
+#multi-print-container [data-tenant-field]:empty::before { display:none !important; }
+
+/* ── slot list (right pane, top) ── */
+.multi-sidebar { flex:1; display:flex; flex-direction:column; gap:10px; min-width:0; }
+.multi-sidebar-section-label {
+  font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  color:var(--lpr-muted); margin-bottom:4px;
+}
+.multi-slot-list { display:flex; flex-direction:column; gap:3px; }
+.multi-slot-item {
+  display:flex; align-items:center; gap:8px;
+  padding:7px 10px; border-radius:6px; cursor:pointer;
+  border:1.5px solid transparent; transition:background 0.1s;
+}
+.multi-slot-item:hover { background:#f4f4f8; }
+.multi-slot-item.active { background:#eef0fb; border-color:var(--lpr-blue); }
+.multi-slot-num {
+  width:20px; height:20px; border-radius:50%; background:var(--lpr-blue);
+  color:#fff; font-size:10px; font-weight:700; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.multi-slot-item.active .multi-slot-num { background:var(--lpr-gold); color:#fff; }
+.multi-slot-rot-icon { font-size:11px; color:#aaa; flex-shrink:0; }
+.multi-slot-label { flex:1; font-size:11px; color:#333; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.multi-slot-label.empty { color:#bbb; font-style:italic; }
+.multi-slot-clear {
+  flex-shrink:0; padding:2px 7px !important; font-size:12px !important;
+  color:#c44 !important; border-color:#dbb !important; line-height:1.4;
+}
+.multi-slot-clear:hover { background:#ffeaea !important; border-color:#c44 !important; }
+
+/* ── tenant picker (right pane, bottom) ── */
+.multi-picker-head { font-size:11px; font-weight:600; color:var(--lpr-blue); margin-bottom:5px; }
+.multi-search {
+  width:100%; box-sizing:border-box; padding:7px 10px;
+  border:1px solid #dde; border-radius:6px;
+  font-family:Montserrat,sans-serif; font-size:12px; color:var(--lpr-ink);
+  outline:none; margin-bottom:5px;
+}
+.multi-search:focus { border-color:var(--lpr-blue); }
+.multi-tenant-list {
+  list-style:none; margin:0; padding:0;
+  max-height:170px; overflow-y:auto;
+  border:1px solid #dde; border-radius:6px;
+}
+.multi-tenant-item {
+  padding:6px 10px; font-size:11px; cursor:pointer;
+  font-family:Montserrat,sans-serif; border-bottom:1px solid #f0f0f0;
+  display:flex; flex-direction:column; gap:1px;
+}
+.multi-tenant-item:last-child { border-bottom:none; }
+.multi-tenant-item:hover { background:#eef0fb; }
+.multi-tenant-item.in-slot { background:#fff8ec; }
+.mti-name { font-weight:600; color:var(--lpr-ink); }
+.mti-addr { font-size:10px; color:var(--lpr-muted); }
+.multi-tenant-item.in-slot .mti-name { color:var(--lpr-gold); }
+.multi-no-tenants { padding:12px 10px; font-size:11px; color:#aaa; font-style:italic; }
+
+/* ── per-slot edit panel ── */
+.multi-edit-fields { display:flex; flex-direction:column; gap:4px; }
+.mef-row { display:flex; gap:4px; }
+.multi-field-input {
+  box-sizing:border-box; padding:5px 8px;
+  border:1px solid #dde; border-radius:5px;
+  font-family:Montserrat,sans-serif; font-size:11px; color:var(--lpr-ink);
+  outline:none; width:100%;
+}
+.multi-field-input:focus { border-color:var(--lpr-blue); }
+.mef-full { width:100%; }
+.mef-st  { width:36px; flex-shrink:0; }
+.mef-zip { width:62px; flex-shrink:0; }
+
+/* ── multi print container (hidden on screen) ── */
+/* zero calibration offsets — full-form print aligns to image, not a physical slip */
+#multi-print-container { display:none; --cof-dx:0pt; --cof-dy:0pt; --cof-fs:8pt; }
+
+/* ── multi page layout (print) ── */
+.multi-print-page { position:relative; width:8.5in; height:11in; background:white; }
+
+/* ── multi cut lines ── */
+.multi-cut { position:absolute; pointer-events:none; display:none; }
+.multi-cut-h { border-top:1px dashed #999; }
+.multi-cut-v { border-left:1px dashed #999; }
+/* show cut lines in wysiwyg preview too */
+.multi-wysiwyg-page .multi-cut { display:block; }
+
+/* ── rotated form wrapper: 3in wide × 5in tall ── */
+.multi-rot-wrap { position:absolute; width:3in; height:5in; overflow:visible; }
+/* sheet inside: center-aligned, then rotated 90° */
+.multi-rot-wrap .sheet {
+  position:absolute !important;
+  top:1in !important; left:-1in !important;
+  transform:rotate(90deg) !important;
+  transform-origin:center center !important;
+}
 </style>
 </head>
 <body class="mode-overlay">
@@ -165,6 +332,7 @@
     <button class="mode-btn active" data-mode="overlay">Overlay — feed blank USPS form</button>
     <button class="mode-btn" data-mode="card">Full form — 3×5 card</button>
     <button class="mode-btn" data-mode="letter">Full form — Letter paper (cut corner)</button>
+    <button class="mode-btn" data-mode="multi">Multi — Letter paper (up to 5)</button>
   </div>
 
   <!-- calibration (overlay mode only) -->
@@ -188,6 +356,70 @@
         <span class="v" id="val-fs">8pt</span>
       </div>
       <button class="cal-btn" id="btn-reset">Reset</button>
+    </div>
+  </div>
+
+  <!-- multi-mode panel -->
+  <div id="multi-panel" style="display:none">
+    <div class="cal-card">
+      <h3>Multi-print — up to 5 certificates per sheet</h3>
+      <div class="cal-row" style="margin:4px 0 12px;gap:10px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:11px;color:#888;font-weight:600;letter-spacing:.5px;">TEXT ALIGNMENT</span>
+        <div class="cal-ctrl">
+          <label for="multi-cal-y" style="font-size:11px;">Up / Down</label>
+          <input type="range" id="multi-cal-y" min="-18" max="18" value="0" step="1">
+          <span class="v" id="multi-val-y">0pt</span>
+        </div>
+        <div class="cal-ctrl">
+          <label for="multi-cal-fs" style="font-size:11px;">Font size</label>
+          <input type="range" id="multi-cal-fs" min="5.5" max="10" value="8" step="0.5">
+          <span class="v" id="multi-val-fs">8pt</span>
+        </div>
+        <button class="cal-btn" id="multi-btn-reset">Reset</button>
+      </div>
+      <div class="multi-ui">
+
+        <!-- Left: WYSIWYG scaled preview of the letter page -->
+        <div class="multi-wysiwyg-wrap">
+          <div id="multi-wysiwyg-page" class="multi-wysiwyg-page"></div>
+        </div>
+
+        <!-- Right: slot list + inline tenant picker -->
+        <div class="multi-sidebar">
+          <div>
+            <div class="multi-sidebar-section-label">Slots</div>
+            <div class="multi-slot-list" id="multi-slot-list"></div>
+          </div>
+          <!-- edit panel: shown when selected slot already has a tenant -->
+          <div id="multi-edit-panel" style="display:none">
+            <div class="multi-picker-head" style="margin-bottom:6px;">
+              Slot <span id="multi-edit-slot-num">1</span>
+            </div>
+            <div class="multi-edit-fields">
+              <div class="mef-row">
+                <input type="text" id="mef-first" class="multi-field-input" placeholder="First name" data-mef="first_name">
+                <input type="text" id="mef-last"  class="multi-field-input" placeholder="Last name"  data-mef="last_name">
+              </div>
+              <input type="text" id="mef-addr1" class="multi-field-input mef-full" placeholder="Address" data-mef="address_line1">
+              <input type="text" id="mef-addr2" class="multi-field-input mef-full" placeholder="Unit / Apt (optional)" data-mef="address_line2">
+              <div class="mef-row">
+                <input type="text" id="mef-city"  class="multi-field-input" style="flex:1" placeholder="City"  data-mef="city">
+                <input type="text" id="mef-state" class="multi-field-input mef-st" placeholder="ST"     data-mef="state">
+                <input type="text" id="mef-zip"   class="multi-field-input mef-zip" placeholder="Zip"   data-mef="zip">
+              </div>
+            </div>
+            <button class="cal-btn multi-change-btn" id="multi-change-btn" style="margin-top:6px;width:100%;font-size:11px;">Change tenant…</button>
+          </div>
+
+          <!-- pick panel: shown when slot is empty, or after "Change tenant" -->
+          <div id="multi-pick-panel">
+            <div class="multi-picker-head" id="multi-picker-head">Assign to slot 1</div>
+            <input type="text" id="multi-search" class="multi-search" placeholder="Search tenants…" autocomplete="off">
+            <ul class="multi-tenant-list" id="multi-tenant-list"></ul>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 
@@ -253,6 +485,21 @@
     <p>Prints the complete official form from scratch — no blank USPS slip needed.</p>
   </div>
 
+  <div class="instructions" id="instr-multi" style="display:none">
+    <h3>Multi — up to 5 certificates per letter sheet</h3>
+    <ol>
+      <li>Use the slots above to pick a tenant for each position. Slots 1–3 print upright in the left column; slots 4–5 print rotated sideways in the right column.</li>
+      <li>Load a standard <strong>8.5″ × 11″</strong> sheet into your printer.</li>
+      <li>Click <strong>Print</strong> in the toolbar. Select <strong>Letter</strong> paper size, no scaling, narrow margins (avoids edge clipping).</li>
+      <li>Cut along the dashed lines — each cut-out is a complete 5″ × 3″ PS Form 3817.</li>
+      <li>Hand each to the postal worker — they stamp and return as proof of mailing.</li>
+    </ol>
+    <p>Only filled slots print — empty slots are suppressed. No blank USPS slip needed — the full form image is included.</p>
+  </div>
+
+  <!-- print container for multi mode — hidden on screen -->
+  <div id="multi-print-container" aria-hidden="true"></div>
+
 </div><!-- .cof-page -->
 
 <script>
@@ -306,20 +553,28 @@
   var PAGE_SIZES = {
     overlay: '@media print { @page { size:5in 3in; margin:0; } }',
     card:    '@media print { @page { size:5in 3in; margin:0; } }',
-    letter:  '@media print { @page { size:8.5in 11in; margin:0.2in 0 0 0.2in; } }'
+    letter:  '@media print { @page { size:8.5in 11in; margin:0.2in 0 0 0.2in; } }',
+    multi:   '@media print { @page { size:8.5in 11in; margin:0.2in; } }'
   };
 
   function setMode(mode) {
     body.className = 'mode-' + mode;
     pageStyle.textContent = PAGE_SIZES[mode];
+    var isMulti = (mode === 'multi');
     calPanel.style.display = (mode === 'overlay') ? '' : 'none';
     document.getElementById('instr-overlay').style.display = (mode === 'overlay') ? '' : 'none';
     document.getElementById('instr-card').style.display    = (mode === 'card')    ? '' : 'none';
     document.getElementById('instr-letter').style.display  = (mode === 'letter')  ? '' : 'none';
+    document.getElementById('instr-multi').style.display   = isMulti             ? '' : 'none';
+    var multiPanel  = document.getElementById('multi-panel');
+    var cofPreview  = document.querySelector('.cof-preview');
+    if (multiPanel)  multiPanel.style.display  = isMulti ? '' : 'none';
+    if (cofPreview)  cofPreview.style.display   = isMulti ? 'none' : '';
     document.querySelectorAll('.mode-btn').forEach(function (btn) {
       btn.classList.toggle('active', btn.dataset.mode === mode);
     });
     localStorage.setItem('lpr_cof_mode', mode);
+    if (isMulti && window.LPR_COF_MULTI) window.LPR_COF_MULTI.init();
   }
 
   document.querySelectorAll('.mode-btn').forEach(function (btn) {
@@ -327,7 +582,8 @@
   });
 
   var saved = localStorage.getItem('lpr_cof_mode');
-  if (saved && ['overlay','card','letter'].indexOf(saved) !== -1) setMode(saved);
+  if (saved && ['overlay','card','letter','multi'].indexOf(saved) !== -1) setMode(saved);
+  else setMode('card');
 })();
 </script>
 
@@ -335,5 +591,359 @@
 <script src="vendors.js"></script>
 <script src="fill-fields.js"></script>
 <script src="template-tools.js"></script>
+
+<script>
+/* ── Multi-print mode ── */
+(function () {
+  'use strict';
+
+  var TENANT_KEY   = 'lpr_tenants';
+  var SLOTS_KEY    = 'lpr_cof_multi_slots';
+  var NUM_SLOTS    = 5;
+  var multiSlots   = [null, null, null, null, null];
+  var selectedSlot = 0;
+  var allTenants   = [];
+  var built        = false;
+
+  /* slot geometry */
+  var SLOTS = [
+    { type:'upright', top:'0',     left:'0',      w:'5in', h:'3in' },
+    { type:'upright', top:'3in',   left:'0',      w:'5in', h:'3in' },
+    { type:'upright', top:'6in',   left:'0',      w:'5in', h:'3in' },
+    { type:'rotated', top:'0',     left:'5in', w:'3in', h:'5in' },
+    { type:'rotated', top:'5.5in', left:'5in', w:'3in', h:'5in' },
+  ];
+
+
+  /* ── inner HTML for one form ── */
+  function sheetInner(id) {
+    return '<div class="sheet" id="' + id + '">' +
+      '<div class="overlay-from">' +
+        '<div>LPR Management, LLC</div>' +
+        '<div>1517 Reisterstown Road, 2nd Floor</div>' +
+        '<div>Pikesville, MD 21208</div>' +
+      '</div>' +
+      '<div class="overlay-to">' +
+        '<div><span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span></div>' +
+        '<div><span data-tenant-field="address_line1"></span></div>' +
+        '<div class="cof-line2"><span data-tenant-field="address_line2"></span></div>' +
+        '<div><span data-tenant-field="city"></span>, <span data-tenant-field="state"></span> <span data-tenant-field="zip"></span></div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  /* ── cut lines ── */
+  function addCuts(page) {
+    function cut(type, top, left, size) {
+      var el = document.createElement('div');
+      el.className = 'multi-cut multi-cut-' + type;
+      el.style.top = top; el.style.left = left;
+      if (type === 'h') el.style.width = size; else el.style.height = size;
+      page.appendChild(el);
+    }
+    cut('h', '3in',    '0',   '5in');
+    cut('h', '6in',    '0',   '5in');
+    cut('h', '9in',    '0',   '5in');
+    cut('v', '0',      '5in', '11in');
+    cut('h', '5.25in', '5in', '3.5in');
+  }
+
+  /* ── build both the wysiwyg preview and the print container (once) ── */
+  function build() {
+    if (built) return;
+    built = true;
+
+    function makeWrap(slotDef, sheetId) {
+      var wrap = document.createElement('div');
+      wrap.className = (slotDef.type === 'rotated' ? 'multi-rot-wrap' : 'multi-upright-wrap') + ' multi-thumb-wrap';
+      wrap.style.cssText = 'position:absolute;top:' + slotDef.top + ';left:' + slotDef.left + ';width:' + slotDef.w + ';height:' + slotDef.h + ';';
+      wrap.innerHTML = sheetInner(sheetId);
+      return wrap;
+    }
+
+    /* wysiwyg */
+    var wPage = document.getElementById('multi-wysiwyg-page');
+    if (wPage) {
+      for (var i = 0; i < NUM_SLOTS; i++) {
+        var ww = makeWrap(SLOTS[i], 'mw-sheet-' + i);
+        ww.dataset.slot = i;
+        ww.addEventListener('click', (function(idx){ return function(){ selectSlot(idx); }; })(i));
+        wPage.appendChild(ww);
+      }
+      addCuts(wPage);
+    }
+
+    /* print container */
+    var pCont = document.getElementById('multi-print-container');
+    if (pCont) {
+      var pPage = document.createElement('div');
+      pPage.className = 'multi-print-page';
+      for (var j = 0; j < NUM_SLOTS; j++) {
+        var pw = makeWrap(SLOTS[j], 'mp-sheet-' + j);
+        pw.style.cursor = 'default';
+        pPage.appendChild(pw);
+      }
+      addCuts(pPage);
+      pCont.appendChild(pPage);
+    }
+  }
+
+  /* ── storage ── */
+  function loadSlots() {
+    try {
+      var s = JSON.parse(localStorage.getItem(SLOTS_KEY) || 'null');
+      if (Array.isArray(s) && s.length === NUM_SLOTS) multiSlots = s;
+    } catch(e) {}
+  }
+  function saveSlots() { localStorage.setItem(SLOTS_KEY, JSON.stringify(multiSlots)); }
+
+  /* ── read tenants from tenants.js storage ── */
+  function refreshTenants() {
+    try {
+      var data = JSON.parse(localStorage.getItem(TENANT_KEY) || '{}');
+      var list = [];
+      Object.keys(data).forEach(function(id) {
+        var t = data[id];
+        var eff = t.effective || t.source || {};
+        var name = [eff.last_name, eff.first_name].filter(Boolean).join(', ') || '(unnamed)';
+        var addrSearch = [eff.address_line1, eff.address_line2, eff.city, eff.state, eff.zip].filter(Boolean).join(' ');
+        list.push({ name: name, addr: eff.address_line1 || '', addrSearch: addrSearch, data: eff });
+      });
+      list.sort(function(a,b){ return a.name.localeCompare(b.name); });
+      allTenants = list;
+    } catch(e) { allTenants = []; }
+  }
+
+  /* ── fill one sheet element ── */
+  function fillSheet(sheetEl, data) {
+    ['first_name','last_name','address_line1','address_line2','city','state','zip'].forEach(function(f) {
+      var sp = sheetEl.querySelector('[data-tenant-field="' + f + '"]');
+      if (sp) sp.textContent = data ? (data[f] || '') : '';
+    });
+  }
+
+  /* ── sync wysiwyg + print sheet for one slot ── */
+  function syncSlot(idx) {
+    var d = multiSlots[idx];
+    var w = document.getElementById('mw-sheet-' + idx);
+    var p = document.getElementById('mp-sheet-' + idx);
+    if (w) {
+      fillSheet(w, d);
+      /* dim empty slots in wysiwyg; hide in print */
+      var wWrap = w.parentNode;
+      if (wWrap) { if (d) delete wWrap.dataset.empty; else wWrap.dataset.empty = ''; }
+    }
+    if (p) {
+      fillSheet(p, d);
+      var pWrap = p.parentNode;
+      if (pWrap) { if (d) delete pWrap.dataset.empty; else pWrap.dataset.empty = ''; }
+    }
+  }
+
+  /* ── select active slot ── */
+  function selectSlot(idx) {
+    selectedSlot = idx;
+    var ep = document.getElementById('multi-edit-panel');
+    if (ep) ep._showPicker = false;
+    renderAll();
+  }
+
+  /* ── render slot list ── */
+  function renderSlotList() {
+    var list = document.getElementById('multi-slot-list');
+    if (!list) return;
+    list.innerHTML = '';
+    for (var i = 0; i < NUM_SLOTS; i++) {
+      (function(idx) {
+        var t = multiSlots[idx];
+        var active = idx === selectedSlot;
+        var item = document.createElement('div');
+        item.className = 'multi-slot-item' + (active ? ' active' : '');
+        var label = t
+          ? esc(((t.first_name||'') + ' ' + (t.last_name||'')).trim()) +
+            (t.address_line1 ? ' — ' + esc(t.address_line1) : '')
+          : '';
+        item.innerHTML =
+          '<span class="multi-slot-num">' + (idx+1) + '</span>' +
+          (idx >= 3 ? '<span class="multi-slot-rot-icon" title="Prints rotated 90°">↻</span>' : '') +
+          '<span class="multi-slot-label' + (t ? '' : ' empty') + '">' + (label || '— empty —') + '</span>' +
+          (t ? '<button class="cal-btn multi-slot-clear" title="Clear">×</button>' : '');
+        var clrBtn = item.querySelector('.multi-slot-clear');
+        if (clrBtn) clrBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          multiSlots[idx] = null; saveSlots(); syncSlot(idx); renderAll();
+        });
+        item.addEventListener('click', function(e) {
+          if (!e.target.classList.contains('multi-slot-clear')) selectSlot(idx);
+        });
+        list.appendChild(item);
+      })(i);
+    }
+    var head = document.getElementById('multi-picker-head');
+    if (head) head.textContent = 'Assign to slot ' + (selectedSlot + 1);
+  }
+
+  /* ── gold outline on selected slot in wysiwyg ── */
+  function renderThumbHighlights() {
+    document.querySelectorAll('#multi-wysiwyg-page .multi-thumb-wrap').forEach(function(w) {
+      w.classList.toggle('selected-thumb', +w.dataset.slot === selectedSlot);
+    });
+  }
+
+  /* ── searchable tenant list ── */
+  function renderTenantList() {
+    var ul = document.getElementById('multi-tenant-list');
+    var searchEl = document.getElementById('multi-search');
+    if (!ul) return;
+    var q = searchEl ? searchEl.value.toLowerCase().trim() : '';
+    ul.innerHTML = '';
+    if (allTenants.length === 0) {
+      ul.innerHTML = '<li class="multi-no-tenants">No tenants loaded — use Fill Fields in the toolbar to import a CSV first.</li>';
+      return;
+    }
+    var filtered = allTenants.filter(function(t) {
+      return !q || (t.name + ' ' + t.addrSearch).toLowerCase().indexOf(q) >= 0;
+    });
+    if (!filtered.length) { ul.innerHTML = '<li class="multi-no-tenants">No matches.</li>'; return; }
+    var curData = multiSlots[selectedSlot];
+    filtered.forEach(function(t) {
+      var inSlot = curData && JSON.stringify(curData) === JSON.stringify(t.data);
+      var li = document.createElement('li');
+      li.className = 'multi-tenant-item' + (inSlot ? ' in-slot' : '');
+      li.innerHTML = '<span class="mti-name">' + esc(t.name) + '</span>' +
+        (t.addr ? '<span class="mti-addr">' + esc(t.addr) + '</span>' : '');
+      li.addEventListener('click', function() {
+        multiSlots[selectedSlot] = t.data; saveSlots(); syncSlot(selectedSlot);
+        /* return to edit panel after a Change-tenant selection */
+        var ep = document.getElementById('multi-edit-panel');
+        if (ep) ep._showPicker = false;
+        /* auto-advance to next empty slot */
+        var next = -1;
+        for (var n = selectedSlot + 1; n < NUM_SLOTS; n++) { if (!multiSlots[n]) { next = n; break; } }
+        if (next >= 0) selectSlot(next); else renderAll();
+      });
+      ul.appendChild(li);
+    });
+  }
+
+  /* ── per-slot edit panel ── */
+  var MEF_FIELDS = ['first_name','last_name','address_line1','address_line2','city','state','zip'];
+
+  function renderEditPanel() {
+    var editPanel = document.getElementById('multi-edit-panel');
+    var pickPanel = document.getElementById('multi-pick-panel');
+    if (!editPanel) return;
+    var d = multiSlots[selectedSlot];
+    if (d && !editPanel._showPicker) {
+      editPanel.style.display = '';
+      pickPanel.style.display = 'none';
+      document.getElementById('multi-edit-slot-num').textContent = selectedSlot + 1;
+      MEF_FIELDS.forEach(function(k) {
+        var el = document.querySelector('#multi-edit-panel [data-mef="' + k + '"]');
+        if (el) el.value = d[k] || '';
+      });
+    } else {
+      editPanel.style.display = 'none';
+      pickPanel.style.display = '';
+      var head = document.getElementById('multi-picker-head');
+      if (head) head.textContent = 'Assign to slot ' + (selectedSlot + 1);
+    }
+  }
+
+  function wireEditPanel() {
+    var editPanel = document.getElementById('multi-edit-panel');
+    if (!editPanel || editPanel._ewired) return;
+    editPanel._ewired = true;
+    editPanel._showPicker = false;
+
+    MEF_FIELDS.forEach(function(k) {
+      var el = document.querySelector('#multi-edit-panel [data-mef="' + k + '"]');
+      if (!el) return;
+      el.addEventListener('input', function() {
+        if (!multiSlots[selectedSlot]) return;
+        multiSlots[selectedSlot] = Object.assign({}, multiSlots[selectedSlot]);
+        multiSlots[selectedSlot][k] = el.value;
+        saveSlots();
+        syncSlot(selectedSlot);
+        renderSlotList();
+      });
+    });
+
+    document.getElementById('multi-change-btn').addEventListener('click', function() {
+      editPanel._showPicker = true;
+      renderEditPanel();
+      var se = document.getElementById('multi-search');
+      if (se) { se.value = ''; se.focus(); }
+      renderTenantList();
+    });
+  }
+
+  function renderAll() { renderSlotList(); renderThumbHighlights(); renderEditPanel(); renderTenantList(); }
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── multi-mode text alignment calibration ── */
+  function applyMultiCal() {
+    var mcalY  = document.getElementById('multi-cal-y');
+    var mcalFs = document.getElementById('multi-cal-fs');
+    if (!mcalY) return;
+    var y  = +mcalY.value;
+    var fs = +mcalFs.value;
+    document.getElementById('multi-val-y').textContent  = (y > 0 ? '+' : '') + y + 'pt';
+    document.getElementById('multi-val-fs').textContent = fs + 'pt';
+    localStorage.setItem('lpr_cof_multi_dy', y);
+    localStorage.setItem('lpr_cof_multi_fs', fs);
+    var dy    = y + 'pt';
+    var fsVal = fs + 'pt';
+    /* inline styles win over any cascade — guaranteed zero-base offset */
+    var pc = document.getElementById('multi-print-container');
+    if (pc) { pc.style.setProperty('--cof-dy', dy); pc.style.setProperty('--cof-dx', '0pt'); pc.style.setProperty('--cof-fs', fsVal); }
+    var wp = document.getElementById('multi-wysiwyg-page');
+    if (wp) { wp.style.setProperty('--cof-dy', dy); wp.style.setProperty('--cof-dx', '0pt'); wp.style.setProperty('--cof-fs', fsVal); }
+  }
+
+  function initMultiCal() {
+    var mcalY  = document.getElementById('multi-cal-y');
+    var mcalFs = document.getElementById('multi-cal-fs');
+    if (!mcalY || mcalY._mwired) return;
+    mcalY._mwired = true;
+    var sy  = localStorage.getItem('lpr_cof_multi_dy');
+    var sfs = localStorage.getItem('lpr_cof_multi_fs');
+    if (sy  !== null) mcalY.value  = sy;
+    if (sfs !== null) mcalFs.value = sfs;
+    mcalY.addEventListener('input',  applyMultiCal);
+    mcalFs.addEventListener('input', applyMultiCal);
+    document.getElementById('multi-btn-reset').addEventListener('click', function () {
+      mcalY.value = 0; mcalFs.value = 8; applyMultiCal();
+    });
+  }
+
+  /* ── public init ── */
+  function init() {
+    loadSlots();
+    build();
+    initMultiCal();
+    applyMultiCal();
+    refreshTenants();
+    for (var i = 0; i < NUM_SLOTS; i++) syncSlot(i);
+    wireEditPanel();
+    renderAll();
+    var searchEl = document.getElementById('multi-search');
+    if (searchEl && !searchEl._wired) {
+      searchEl._wired = true;
+      searchEl.addEventListener('input', renderTenantList);
+    }
+  }
+
+  window.LPR_COF_MULTI = { init: init };
+
+  // If the page was reloaded with multi mode already saved, init runs before
+  // LPR_COF_MULTI was defined. Re-run it now that it exists.
+  if (document.body.classList.contains('mode-multi')) init();
+})();
+</script>
 </body>
 </html>

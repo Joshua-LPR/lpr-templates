@@ -224,7 +224,11 @@
     const q           = searchQ.toLowerCase();
     const recentItems = q ? [] : loadRecents().map(id => data[id]).filter(Boolean);
     const filtered    = all
-      .filter(v => !q || (v.effective.name || '').toLowerCase().includes(q))
+      .filter(v => !q || [
+        v.effective.name,
+        v.effective.address_line1, v.effective.address_line2,
+        v.effective.city, v.effective.state, v.effective.zip
+      ].join(' ').toLowerCase().includes(q))
       .sort((a, b) => (a.effective.name || '').localeCompare(b.effective.name || ''));
 
     const sel = selectedId ? data[selectedId] : null;
