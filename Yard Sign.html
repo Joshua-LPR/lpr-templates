@@ -80,7 +80,40 @@
   .specs strong { color: var(--lpr-ink); letter-spacing: 1.5px; text-transform: uppercase; font-size: 11px; }
   .specs code { font-family: 'SF Mono', Menlo, Consolas, monospace; background: rgba(40,56,145,0.08); padding: 1px 6px; border-radius: 3px; }
 
-  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label, .specs { display: none; } }
+  /* ── contact row (phone + optional QR) ── */
+  .contact-row { display: flex; align-items: flex-end; gap: 0.8in; }
+  .qr-label {
+    font-size: 0.2in; font-weight: 500; letter-spacing: 0.05in;
+    text-transform: uppercase; color: var(--lpr-muted);
+    margin-bottom: 0.15in; text-align: center;
+  }
+  #sign-qr-canvas { width: 3.5in; height: 3.5in; display: block; }
+
+  /* ── settings card ── */
+  .sign-settings {
+    max-width: 720px; width: 100%; box-sizing: border-box;
+    padding: 16px 20px; background: #fff;
+    border: 1px solid #dde; border-radius: 8px;
+  }
+  .sign-settings h4 { margin: 0 0 12px; font-size: 13px; font-weight: 700; color: var(--lpr-blue); }
+  .sset-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .sset-row:last-child { margin-bottom: 0; }
+  .sset-label { font-size: 12px; font-weight: 600; color: var(--lpr-ink); min-width: 140px; }
+  .sset-hint  { font-size: 11px; font-weight: 400; color: #999; }
+  .sset-input {
+    flex: 1; padding: 7px 10px;
+    border: 1px solid #dde; border-radius: 6px;
+    font-family: Montserrat, sans-serif; font-size: 13px; color: var(--lpr-ink);
+    outline: none;
+  }
+  .sset-input:focus { border-color: var(--lpr-blue); }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .stage { gap: 0; }
+    .label, .specs { display: none; }
+    #sign-qr-canvas { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
 </style>
 </head>
 <body>
@@ -104,11 +137,29 @@
       <div class="sign-right">
         <div class="super">Available Now</div>
         <div class="for-rent">FOR RENT</div>
-        <div>
-          <div class="phone-label">Call to inquire</div>
-          <div class="phone">443.402.5641</div>
+        <div class="contact-row">
+          <div>
+            <div class="phone-label">Call to inquire</div>
+            <div class="phone" id="sign-phone">443.402.5641</div>
+          </div>
+          <div id="sign-qr-group" style="display:none">
+            <div class="qr-label">Scan to learn more</div>
+            <canvas id="sign-qr-canvas"></canvas>
+          </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="sign-settings no-print">
+    <h4>Sign settings</h4>
+    <div class="sset-row">
+      <label class="sset-label" for="inp-phone">Phone number</label>
+      <input type="text" id="inp-phone" class="sset-input" placeholder="443.402.5641">
+    </div>
+    <div class="sset-row">
+      <label class="sset-label" for="inp-qr">QR code link <span class="sset-hint">— leave blank to hide</span></label>
+      <input type="text" id="inp-qr" class="sset-input" placeholder="https://...">
     </div>
   </div>
 
@@ -129,5 +180,65 @@
 </div>
 <script src="fill-fields.js"></script>
 <script src="template-tools.js"></script>
+<script>
+(function () {
+  'use strict';
+  var PHONE_KEY = 'lpr_yardsign_phone';
+  var QR_KEY    = 'lpr_yardsign_qr';
+
+  var inpPhone  = document.getElementById('inp-phone');
+  var inpQr     = document.getElementById('inp-qr');
+  var signPhone = document.getElementById('sign-phone');
+  var qrGroup   = document.getElementById('sign-qr-group');
+  var qrCanvas  = document.getElementById('sign-qr-canvas');
+
+  /* restore saved values */
+  var savedPhone = localStorage.getItem(PHONE_KEY);
+  var savedQr    = localStorage.getItem(QR_KEY);
+  if (savedPhone !== null) inpPhone.value = savedPhone;
+  if (savedQr    !== null) inpQr.value    = savedQr;
+
+  function updatePhone() {
+    signPhone.textContent = inpPhone.value.trim() || '443.402.5641';
+    localStorage.setItem(PHONE_KEY, inpPhone.value);
+  }
+
+  var _qrReady = false, _qrLoading = false, _qrQueue = [];
+  function withQR(cb) {
+    if (_qrReady) { cb(); return; }
+    _qrQueue.push(cb);
+    if (_qrLoading) return;
+    _qrLoading = true;
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+    s.onload = function () {
+      _qrReady = true;
+      _qrQueue.forEach(function (fn) { fn(); });
+      _qrQueue = [];
+    };
+    document.head.appendChild(s);
+  }
+
+  function updateQr() {
+    var url = inpQr.value.trim();
+    localStorage.setItem(QR_KEY, inpQr.value);
+    if (!url) { qrGroup.style.display = 'none'; return; }
+    qrGroup.style.display = '';
+    withQR(function () {
+      QRCode.toCanvas(qrCanvas, url, {
+        width: 350,
+        margin: 1,
+        color: { dark: '#283891', light: '#ffffff' }
+      });
+    });
+  }
+
+  inpPhone.addEventListener('input', updatePhone);
+  inpQr.addEventListener('input', updateQr);
+
+  updatePhone();
+  updateQr();
+})();
+</script>
 </body>
 </html>
