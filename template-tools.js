@@ -709,7 +709,8 @@
       if (!src || src.startsWith('data:')) { resolve(); return; }
       origSrcs.set(img, src);
       const tmp = new Image();
-      tmp.crossOrigin = 'anonymous';
+      // crossOrigin only on https — file:// has no CORS server so it causes onerror
+      if (location.protocol !== 'file:') tmp.crossOrigin = 'anonymous';
       tmp.onload = () => {
         const c = document.createElement('canvas');
         c.width = tmp.naturalWidth || 1; c.height = tmp.naturalHeight || 1;
@@ -729,9 +730,12 @@
     if (sheets.length === 0) return;
     for (let i = 0; i < sheets.length; i++) {
       const restore = await inlineImgSrcs(sheets[i]);
+      const isFile = location.protocol === 'file:';
       const canvas = await window.html2canvas(sheets[i], {
         scale: 2,
-        useCORS: true,
+        useCORS: !isFile,
+        allowTaint: isFile,
+        foreignObjectRendering: isFile,
         backgroundColor: "#ffffff",
         logging: false
       });
@@ -759,9 +763,12 @@
     });
     for (let i = 0; i < sheets.length; i++) {
       const restore = await inlineImgSrcs(sheets[i]);
+      const isFile = location.protocol === 'file:';
       const canvas = await window.html2canvas(sheets[i], {
         scale: 2,
-        useCORS: true,
+        useCORS: !isFile,
+        allowTaint: isFile,
+        foreignObjectRendering: isFile,
         backgroundColor: "#ffffff",
         logging: false
       });
