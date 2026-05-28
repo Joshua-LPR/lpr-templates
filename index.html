@@ -1381,14 +1381,19 @@
     wrap.className = "grid";
     wrap.dataset.section = "library";
     ids.sort((a, b) => (custom[b].savedAt || "").localeCompare(custom[a].savedAt || ""));
+
+    // Build a map of template filename → thumb innerHTML from existing cards
+    const thumbMap = {};
+    document.querySelectorAll('.card[href]').forEach(c => {
+      const href = (c.getAttribute('href') || '').split('?')[0];
+      const thumb = c.querySelector('.thumb');
+      if (href && thumb) thumbMap[href] = thumb.innerHTML;
+    });
+
     for (const id of ids) {
       const t = custom[id];
-      const card = document.createElement("a");
-      card.className = "card custom";
-      card.href = "#";
-      card.dataset.customId = id;
-      card.innerHTML = `
-        <div class="thumb">
+      const parentThumb = t.base && thumbMap[t.base];
+      const thumbInner = parentThumb || `
           <div class="mini-letter">
             <div class="head">
               <img src="assets/logo-cropped.png" alt=""/>
@@ -1396,8 +1401,13 @@
             </div>
             <div style="font-size:9px; font-weight:700; line-height:1.1; color:var(--lpr-ink); margin-top:6px;">${escapeHtml(t.name)}</div>
             <div class="lines"><div></div><div></div><div></div><div></div></div>
-          </div>
-        </div>
+          </div>`;
+      const card = document.createElement("a");
+      card.className = "card custom";
+      card.href = "#";
+      card.dataset.customId = id;
+      card.innerHTML = `
+        <div class="thumb">${thumbInner}</div>
         <div class="body">
           <div class="role">Saved · from ${escapeHtml((t.base || "").replace(".html",""))}</div>
           <h3>${escapeHtml(t.name)}</h3>

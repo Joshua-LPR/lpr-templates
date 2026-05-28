@@ -573,8 +573,12 @@ All US Letter templates share these values. Do not deviate per-template.
 - `.recipient` / `.to` — `margin-bottom: 22px; line-height: 1.45`
 - `p` — `margin: 0 0 12px`
 
-**Signoff**
-- `margin-top: auto; padding-top: 0.4in` — auto pushes to bottom; 0.4in keeps breathing room
+**Signoff (notice family)**
+- `.signoff-wrap` — `margin-top: 0.45in` (fixed gap from body content — do NOT use `margin-top: auto`)
+- `.signoff` — `padding-top: 0.12in`
+- `.signature` — `height: auto; min-height: 0` — never use a fixed height (e.g. `height: 0.5in`). A fixed height reserves blank space when no signature is injected.
+
+> **Why not `margin-top: auto`?** Auto pushes the signoff to the very bottom of the flex container. When the signer is hidden (company-only mode) the signoff block shrinks but stays pinned to the bottom, creating a large white gap. A fixed margin keeps the signoff at a consistent position regardless of signer visibility.
 
 **Letterheads** (no badge/title) use `padding-top: 0.5in` on the body and `margin-top: 36px` on `.signoff` (fixed gap, not auto-push, because letter length is user-controlled).
 
@@ -618,6 +622,133 @@ Multi-variant templates (Certificate of Mailing, Security Deposit) use a `.mode-
 ### Consolidated variant files
 
 When a template has closely related variants (e.g. Withheld / Partial Refund / Full Refund), combine them into a single `.html` file with a mode bar rather than three separate files. The `archive.html` TEMPLATES map and `index.html` card list both reference the single combined file.
+
+### `data-employee-hide-if-empty` with LLC name
+
+When `title` is empty, `employee.js` must hide only the title span and separator — not the entire signoff-role line — because the LLC name (`data-owner-field`) lives in the same container. The pattern:
+
+```html
+<div class="signed-role" data-employee-hide-if-empty="title">
+  <span data-employee-field="title">Senior Property Manager</span>
+  <span class="owner-sep"> · </span>
+  <span data-owner-field="name">LPR Management, LLC</span>
+</div>
+```
+
+`employee.js` checks for `[data-owner-field]` inside the container. If found, it hides only `[data-employee-field="title"]` and `.owner-sep` — the LLC name stays visible. If there is no owner field in the container, the whole container is hidden. Never omit the `data-owner-field` span from a signoff-role line.
+
+### Export safety — `no-print` and `data-no-export`
+
+**Every UI element that is not part of the printed document must carry the `no-print` class** so it is stripped by `exportHtml()`. This includes:
+
+| Element type | Examples |
+|---|---|
+| Toolbar / back button | `.toolbar` (already has `no-print`) |
+| Mode toggle bars | `.mode-bar` |
+| Calibration / settings panels | `.cal-card`, `#cal-panel` |
+| Instruction / help blocks | `.instructions`, `#instr-overlay`, etc. |
+| Print containers (hidden on screen) | `#multi-print-container` |
+| Multi-mode panels | `#multi-panel` |
+| Optional row restore bar | `.opt-restore-bar` |
+| Spacer cells in grid 3rd column | Empty `<div class="no-print">` |
+
+`exportHtml()` also strips `.label` elements (the "LETTERHEAD — US LETTER" captions), so do not put document content in an element with class `label`.
+
+**Download-only templates** that have their own format (e.g. `.lbt`) and should not show the Export dropdown at all: add `data-no-export` to `<body>`. `template-tools.js` skips injecting the Export dropdown when this attribute is present.
+
+```html
+<!-- Address Labels P-touch: only offers .lbt download, no Export menu -->
+<body data-no-export>
+```
+
+### Optional / removable rows in info grids
+
+For grid rows that are contextually optional (e.g. Reason, Persons Entering in 24-Hour Notice):
+
+**Grid structure:** use a 3-column grid — `grid-template-columns: 1.3in 1fr auto` — where the `auto` column holds X dismiss buttons for optional rows and empty `<div class="no-print">` spacers for required rows.
+
+**Alignment:** add `align-items: end` to the grid so that val text sits adjacent to its `border-bottom` dashed underline even when the key label wraps to two lines.
+
+**HTML pattern:**
+```html
+<div class="info-grid">
+  <!-- required row — spacer in 3rd column -->
+  <div class="key">Entry Date</div>
+  <div class="val"><span data-fill-field="date" ...></span></div>
+  <div class="no-print" aria-hidden="true"></div>
+
+  <!-- optional row — dismiss button in 3rd column -->
+  <div class="key opt-row-cell" data-opt-row="reason">Reason</div>
+  <div class="val opt-row-cell" data-opt-row="reason"><span ...></span></div>
+  <button class="opt-dismiss no-print" data-opt-row="reason" title="Remove this row">×</button>
+</div>
+<div class="opt-restore-bar no-print" id="opt-restore"></div>
+```
+
+**Key CSS rules:**
+```css
+.opt-row-cell.opt-removed { display: none !important; }
+.opt-dismiss.opt-removed  { display: none !important; }
+```
+
+When all three cells in a row are `display:none`, the CSS grid row collapses to zero height automatically (the `auto` third column has no content → zero width in print, where `.no-print` elements are hidden).
+
+**JS pattern:** toggle class `opt-removed` on all `[data-opt-row="<id>"]` elements; rebuild the restore bar listing hidden rows as pill buttons.
+
+### Multi-mode WYSIWYG — selection ring and empty-slot dimming
+
+These two patterns are subtle but important to get right.
+
+#### Selection ring
+
+Use **`box-shadow: inset`** on the `.sheet` element itself — not `::after` on the wrap, not an outer shadow:
+
+```css
+.multi-wysiwyg-page .multi-thumb-wrap.selected-thumb .sheet {
+  box-shadow: inset 0 0 0 4px var(--lpr-gold) !important;
+}
+```
+
+Why:
+- **Outer shadow** clips at the `overflow:hidden` WYSIWYG container — slots at `top:0` lose the top edge.
+- **`::after` pseudo-element** is painted above the element's own inset box-shadow in CSS stacking order — an overlay `::after` would cover the ring.
+- **Inset shadow on `.sheet`** paints above the background but below children; it rotates with the sheet for rotated slots; it is never clipped because it stays inside the element.
+
+Add `z-index: 10` to the wrap so the selected slot paints above its neighbors:
+```css
+.multi-wysiwyg-page .multi-thumb-wrap.selected-thumb { z-index: 10; }
+```
+
+#### Empty-slot dimming
+
+Use **CSS background-image layering** — do NOT apply `opacity` to the `.sheet` element:
+
+```css
+#multi-wysiwyg-page .multi-thumb-wrap[data-empty] .sheet {
+  background-image: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)),
+                    url('assets/ps3817-form.png') !important;
+}
+/* also dim any pre-filled child text (overlay-from etc.) */
+#multi-wysiwyg-page .multi-thumb-wrap[data-empty] .sheet .overlay-from,
+#multi-wysiwyg-page .multi-thumb-wrap[data-empty] .sheet .overlay-to {
+  opacity: 0.15;
+}
+```
+
+Why not `opacity: 0.15` on `.sheet`: the inset box-shadow is a property of the element and is multiplied by the element's own opacity — the gold ring would appear at 15% strength (invisible). Background-image layering dims the visual without touching element opacity, so the inset ring stays full-strength gold even on empty selected slots.
+
+Why not `::after` white overlay: same stacking-order problem as the selection ring — `::after` paints above the inset shadow, covering the ring.
+
+#### Cut lines
+
+Cut lines in multi-mode WYSIWYG should be **print-only**. Do not add a screen rule that shows `.multi-cut` elements in the preview. They do not align with the gold selection rings (different coordinate systems) and create visual noise. The `@media print` rule handles them:
+```css
+.mode-multi .multi-cut { display:block !important; }
+```
+
+### Library thumbnails for saved templates
+
+`buildLibraryCards()` in `index.html` must look up the parent template's thumb HTML and use it for the saved copy's card thumbnail. It does this by scanning all `.card[href]` elements to build a `thumbMap` (filename → `.thumb` innerHTML), then looking up `t.base` (the parent template href) in that map. Do not hardcode a generic `mini-letter` fallback as the only thumbnail — saved templates should inherit their parent's visual identity.
 
 ### Export behavior
 

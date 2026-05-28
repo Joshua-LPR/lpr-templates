@@ -43,10 +43,18 @@
       if (el.tagName === "A" && field === "email") el.setAttribute("href", "mailto:" + emp.email);
       if (el.tagName === "A" && field === "phone") el.setAttribute("href", "tel:" + emp.phoneDigits);
     });
-    // Hide whole containers when a referenced field is empty.
+    // Hide containers when a referenced field is empty.
+    // If the container also holds owner content, hide only the empty field + separator
+    // so the LLC name still shows (rather than blanking the whole signoff role line).
     document.querySelectorAll("[data-employee-hide-if-empty]").forEach(el => {
       const field = el.getAttribute("data-employee-hide-if-empty");
-      if (emp[field] === "") el.style.display = "none";
+      if (emp[field] !== "") return;
+      if (el.querySelector("[data-owner-field]")) {
+        el.querySelectorAll('[data-employee-field="' + field + '"], .owner-sep')
+          .forEach(s => s.style.display = "none");
+      } else {
+        el.style.display = "none";
+      }
     });
 
     // Drop the active user's signature image into any .signature placeholder.

@@ -18,7 +18,7 @@
   .n-header .meta { text-align: right; font-size: 8.5pt; line-height: 1.55; color: var(--lpr-ink); font-weight: 400; }
 
   .doc-badge {
-    margin-top: 0.45in;
+    margin-top: 0.25in;
     font-size: 9pt; letter-spacing: 4px; text-transform: uppercase;
     color: var(--lpr-blue); font-weight: 600;
   }
@@ -27,16 +27,16 @@
     line-height: 1.05; margin-top: 8px; color: var(--lpr-ink);
   }
 
-  .n-body { flex: 1; padding-top: 0.35in; font-size: 11pt; line-height: 1.65; color: var(--lpr-text); display: flex; flex-direction: column; }
-  .n-body .date { color: var(--lpr-muted); font-size: 10pt; margin-bottom: 22px; }
-  .n-body .to { margin-bottom: 22px; line-height: 1.45; }
-  .n-body p { margin: 0 0 10px; }
+  .n-body { flex: 1; padding-top: 0.18in; font-size: 11pt; line-height: 1.65; color: var(--lpr-text); display: flex; flex-direction: column; }
+  .n-body .date { color: var(--lpr-muted); font-size: 10pt; margin-bottom: 10px; }
+  .n-body .to { margin-bottom: 10px; line-height: 1.45; }
+  .n-body p { margin: 0 0 6px; }
 
   .info-grid {
-    margin: 0.18in 0; padding: 0.18in 0.24in;
+    margin: 0.1in 0; padding: 0.1in 0.24in;
     background: rgba(40,56,145,0.05);
     border-left: 3px solid var(--lpr-blue); border-radius: 4px;
-    display: grid; grid-template-columns: 1.3in 1fr; gap: 6px 18px;
+    display: grid; grid-template-columns: 1.3in 1fr auto; gap: 4px 18px; align-items: end;
   }
   .info-grid .key {
     font-size: 8.5pt; letter-spacing: 2px; text-transform: uppercase;
@@ -48,15 +48,39 @@
   }
   .info-grid .val .placeholder { color: var(--lpr-muted); font-style: italic; }
 
+  /* optional row dismiss / restore */
+  .opt-row-cell.opt-removed { display: none !important; }
+  .opt-dismiss {
+    align-self: center; background: none; border: none; cursor: pointer;
+    color: var(--lpr-muted); font-size: 15px; line-height: 1;
+    width: 22px; height: 22px; border-radius: 50%; margin-left: 2px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0.4; transition: opacity 0.15s, color 0.15s, background 0.15s;
+    padding: 0;
+  }
+  .opt-dismiss:hover { opacity: 1; color: #c00; background: rgba(200,0,0,0.08); }
+  .opt-dismiss.opt-removed { display: none !important; }
+  .opt-restore-bar {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; min-height: 0;
+  }
+  .opt-restore-btn {
+    font-family: inherit; font-size: 8.5pt; color: var(--lpr-muted);
+    background: none; border: 1px dashed var(--lpr-rule); border-radius: 4px;
+    padding: 2px 9px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .opt-restore-btn:hover { color: var(--lpr-blue); border-color: var(--lpr-blue); }
+
   .legal {
     font-size: 8.5pt; line-height: 1.5; color: var(--lpr-muted);
-    margin: 0.3in 0 0;
-    padding: 10px 14px; border-top: 1px solid var(--lpr-rule);
+    margin: 0.1in 0 0;
+    padding: 6px 14px; border-top: 1px solid var(--lpr-rule);
   }
 
-  .signoff { margin-top: auto; padding-top: 0.4in; }
+  .signoff-wrap { margin-top: 0.4in; }
+  .signoff { padding-top: 0.12in; }
   .signoff p { margin: 0 0 6px; }
-  .signoff .signature { height: 0.4in; }
+  .signoff .signature { height: auto; min-height: 0; }
 
   @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label { display: none; } }
 </style>
@@ -99,33 +123,40 @@
       <div class="info-grid">
         <div class="key">Entry Date</div>
         <div class="val"><span data-fill-field="date" data-fill-label="Entry Date"></span></div>
+        <div class="no-print" aria-hidden="true"></div>
 
         <div class="key">Time Window</div>
         <div class="val"><span data-fill-field="time" data-fill-label="From Time"></span> to <span data-fill-field="time" data-fill-label="To Time"></span></div>
+        <div class="no-print" aria-hidden="true"></div>
 
-        <div class="key">Reason</div>
-        <div class="val"><span data-fill-field="text" data-fill-label="Reason for Entry"></span></div>
+        <div class="key opt-row-cell" data-opt-row="reason">Reason</div>
+        <div class="val opt-row-cell" data-opt-row="reason"><span data-fill-field="text" data-fill-label="Reason for Entry"></span></div>
+        <button class="opt-dismiss no-print" data-opt-row="reason" title="Remove this row">×</button>
 
-        <div class="key">Persons Entering</div>
-        <div class="val"><span data-fill-field="text" data-fill-label="Persons Entering"></span></div>
+        <div class="key opt-row-cell" data-opt-row="persons">Persons Entering</div>
+        <div class="val opt-row-cell" data-opt-row="persons"><span data-fill-field="text" data-fill-label="Persons Entering"></span></div>
+        <button class="opt-dismiss no-print" data-opt-row="persons" title="Remove this row">×</button>
       </div>
+      <div class="opt-restore-bar no-print" id="opt-restore"></div>
 
       <p>If you have any questions, please contact us at <strong>443.402.5641</strong> or <strong>office@lasalleparkrealty.com</strong>.</p>
 
-      <div class="signoff">
-        <p>Thank you,</p>
-        <div class="signature"></div>
-        <div class="signed-name" data-employee-field="name">David Mitnick</div>
-        <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span></div>
-      </div>
+      <div class="signoff-wrap">
+        <div class="signoff">
+          <p>Thank you,</p>
+          <div class="signature"></div>
+          <div class="signed-name" data-employee-field="name">David Mitnick</div>
+          <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span></div>
+        </div>
 
-      <div class="legal">
-        <strong>Per Maryland Real Property §§ 8-208 and the terms of your lease,</strong> the landlord or their agent may enter the rental premises at reasonable times with advance notice to inspect, make repairs, or show the property. This notice satisfies the 24-hour written notice requirement. In the case of emergency, the landlord may enter without notice.
-      </div>
-    </div>
+        <div class="legal">
+          <strong>Per Maryland Real Property §§ 8-208 and the terms of your lease,</strong> the landlord or their agent may enter the rental premises at reasonable times with advance notice to inspect, make repairs, or show the property. This notice satisfies the 24-hour written notice requirement. In the case of emergency, the landlord may enter without notice.
+        </div>
+      </div><!-- /signoff-wrap -->
+    </div><!-- /n-body -->
 
-  </div>
-</div>
+  </div><!-- /sheet -->
+</div><!-- /stage -->
 
 <script src="employee.js"></script>
 <script src="tenants.js"></script>
@@ -133,5 +164,36 @@
 <script src="vendors.js"></script>
 <script src="fill-fields.js"></script>
 <script src="template-tools.js"></script>
+<script>
+(function () {
+  var LABELS = { reason: 'Reason', persons: 'Persons Entering' };
+
+  function setRemoved(rowId, removed) {
+    document.querySelectorAll('[data-opt-row="' + rowId + '"]').forEach(function (el) {
+      el.classList.toggle('opt-removed', removed);
+    });
+    updateRestoreBar();
+  }
+
+  function updateRestoreBar() {
+    var bar = document.getElementById('opt-restore');
+    var hidden = Object.keys(LABELS).filter(function (id) {
+      return !!document.querySelector('.opt-row-cell[data-opt-row="' + id + '"].opt-removed');
+    });
+    bar.innerHTML = '';
+    hidden.forEach(function (id) {
+      var btn = document.createElement('button');
+      btn.className = 'opt-restore-btn';
+      btn.innerHTML = '<span style="font-size:11px">＋</span> ' + LABELS[id];
+      btn.addEventListener('click', function () { setRemoved(id, false); });
+      bar.appendChild(btn);
+    });
+  }
+
+  document.querySelectorAll('.opt-dismiss').forEach(function (btn) {
+    btn.addEventListener('click', function () { setRemoved(this.dataset.optRow, true); });
+  });
+})();
+</script>
 </body>
 </html>

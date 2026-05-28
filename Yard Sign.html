@@ -68,7 +68,7 @@
     letter-spacing: -0.03in; line-height: 1;
   }
   .sign-right .phone-label {
-    font-size: 0.2in; font-weight: 500; letter-spacing: 0.05in;
+    font-size: 0.35in; font-weight: 500; letter-spacing: 0.05in;
     text-transform: uppercase; color: var(--lpr-muted);
     margin-bottom: 0.1in;
   }
@@ -81,13 +81,13 @@
   .specs code { font-family: 'SF Mono', Menlo, Consolas, monospace; background: rgba(40,56,145,0.08); padding: 1px 6px; border-radius: 3px; }
 
   /* ── contact row (phone + optional QR) ── */
-  .contact-row { display: flex; align-items: flex-end; gap: 0.8in; }
+  .contact-row { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25in; }
   .qr-label {
-    font-size: 0.2in; font-weight: 500; letter-spacing: 0.05in;
+    font-size: 0.35in; font-weight: 500; letter-spacing: 0.05in;
     text-transform: uppercase; color: var(--lpr-muted);
-    margin-bottom: 0.15in; text-align: center;
+    margin-bottom: 0.1in;
   }
-  #sign-qr-img { width: 3.5in; height: 3.5in; display: block; }
+  #sign-qr-img { width: 4in; height: 4in; display: block; }
 
   /* ── settings card ── */
   .sign-settings {
@@ -224,7 +224,7 @@
     withQR(function () {
       var qr = new QRious({
         value: url,
-        size: 350,
+        size: 700,
         foreground: '#283891',
         background: '#ffffff',
         level: 'M'

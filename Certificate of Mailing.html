@@ -204,8 +204,18 @@ body { background: var(--lpr-page); }
   /* zero out calibration — text must align with the printed form image, not a physical slip */
   --cof-dx:0pt; --cof-dy:0pt; --cof-fs:8pt;
 }
-/* dim empty slots in the wysiwyg preview */
-#multi-wysiwyg-page .multi-thumb-wrap[data-empty] .sheet { opacity:0.15; }
+/* dim empty slots — layer a white gradient on top of the form image so the
+   sheet element stays at opacity:1 and the inset gold ring (which paints above
+   backgrounds but below child elements) remains fully visible when selected */
+#multi-wysiwyg-page .multi-thumb-wrap[data-empty] .sheet {
+  background-image: linear-gradient(rgba(255,255,255,0.85),rgba(255,255,255,0.85)),
+                    url('assets/ps3817-form.png') !important;
+}
+/* fade the pre-filled company address to match the dimmed form image */
+#multi-wysiwyg-page .multi-thumb-wrap[data-empty] .sheet .overlay-from,
+#multi-wysiwyg-page .multi-thumb-wrap[data-empty] .sheet .overlay-to {
+  opacity: 0.15;
+}
 /* thumbnail sheets show the real form image */
 .multi-wysiwyg-page .sheet {
   background-image:url('assets/ps3817-form.png') !important;
@@ -213,9 +223,13 @@ body { background: var(--lpr-page); }
   background-color:white !important;
   cursor:pointer;
 }
-/* gold outline when this slot is selected — on the wrap so it aligns with cut lines */
+/* gold outline when slot is selected — applied to .sheet so it rotates with
+   rotated certs (slots 4-5) and sits flush against the certificate edge */
 .multi-wysiwyg-page .multi-thumb-wrap.selected-thumb {
-  box-shadow:inset 0 0 0 4px var(--lpr-gold);
+  z-index: 10;
+}
+.multi-wysiwyg-page .multi-thumb-wrap.selected-thumb .sheet {
+  box-shadow: inset 0 0 0 4px var(--lpr-gold) !important;
 }
 /* suppress placeholder text in wysiwyg & print sheets */
 #multi-wysiwyg-page [data-tenant-field]:empty::before,
@@ -298,12 +312,10 @@ body { background: var(--lpr-page); }
 /* ── multi page layout (print) ── */
 .multi-print-page { position:relative; width:8.5in; height:11in; background:white; }
 
-/* ── multi cut lines ── */
+/* ── multi cut lines — print only ── */
 .multi-cut { position:absolute; pointer-events:none; display:none; }
 .multi-cut-h { border-top:1px dashed #999; }
 .multi-cut-v { border-left:1px dashed #999; }
-/* show cut lines in wysiwyg preview too */
-.multi-wysiwyg-page .multi-cut { display:block; }
 
 /* ── rotated form wrapper: 3in wide × 5in tall ── */
 .multi-rot-wrap { position:absolute; width:3in; height:5in; overflow:visible; }
@@ -325,7 +337,7 @@ body { background: var(--lpr-page); }
 <div class="cof-page">
 
   <!-- mode toggle -->
-  <div class="mode-bar">
+  <div class="mode-bar no-print">
     <strong>Print mode:</strong>
     <button class="mode-btn active" data-mode="overlay">Overlay — feed blank USPS form</button>
     <button class="mode-btn" data-mode="card">Full form — 3×5 card</button>
@@ -334,7 +346,7 @@ body { background: var(--lpr-page); }
   </div>
 
   <!-- calibration (overlay mode only) -->
-  <div class="cal-card" id="cal-panel">
+  <div class="cal-card no-print" id="cal-panel">
     <h3>Printer Alignment Calibration</h3>
     <p>Calibrate once: print a test on plain paper, hold it behind a blank form, nudge until text lands on the lines. Settings save automatically.</p>
     <div class="cal-row">
@@ -358,7 +370,7 @@ body { background: var(--lpr-page); }
   </div>
 
   <!-- multi-mode panel -->
-  <div id="multi-panel" style="display:none">
+  <div id="multi-panel" class="no-print" style="display:none">
     <div class="cal-card">
       <h3>Multi-print — up to 5 certificates per sheet</h3>
       <div class="cal-row" style="margin:4px 0 12px;gap:10px;flex-wrap:wrap;align-items:center;">
@@ -448,7 +460,7 @@ body { background: var(--lpr-page); }
   </div>
 
   <!-- per-mode instructions -->
-  <div class="instructions" id="instr-overlay">
+  <div class="instructions no-print" id="instr-overlay">
     <h3>Overlay mode — feed a blank PS Form 3817</h3>
     <ol>
       <li>Use <strong>Fill Fields</strong> to select a tenant — the To address fills automatically. Or click <strong>Edit</strong> in the toolbar to type it manually.</li>
@@ -460,7 +472,7 @@ body { background: var(--lpr-page); }
     <p>Blank PS Form 3817 slips are free at any USPS post office counter — just ask at the window.</p>
   </div>
 
-  <div class="instructions" id="instr-card" style="display:none">
+  <div class="instructions no-print" id="instr-card" style="display:none">
     <h3>Full form — 3×5 index card</h3>
     <ol>
       <li>Use <strong>Fill Fields</strong> to select a tenant, or click <strong>Edit</strong> to type the address manually.</li>
@@ -471,7 +483,7 @@ body { background: var(--lpr-page); }
     <p>Prints the complete official form from scratch — no blank USPS slip needed.</p>
   </div>
 
-  <div class="instructions" id="instr-letter" style="display:none">
+  <div class="instructions no-print" id="instr-letter" style="display:none">
     <h3>Full form — Letter paper (top-left corner)</h3>
     <ol>
       <li>Use <strong>Fill Fields</strong> to select a tenant, or click <strong>Edit</strong> to type the address manually.</li>
@@ -483,7 +495,7 @@ body { background: var(--lpr-page); }
     <p>Prints the complete official form from scratch — no blank USPS slip needed.</p>
   </div>
 
-  <div class="instructions" id="instr-multi" style="display:none">
+  <div class="instructions no-print" id="instr-multi" style="display:none">
     <h3>Multi — up to 5 certificates per letter sheet</h3>
     <ol>
       <li>Use the slots above to pick a tenant for each position. Slots 1–3 print upright in the left column; slots 4–5 print rotated sideways in the right column.</li>
@@ -496,7 +508,7 @@ body { background: var(--lpr-page); }
   </div>
 
   <!-- print container for multi mode — hidden on screen -->
-  <div id="multi-print-container" aria-hidden="true"></div>
+  <div id="multi-print-container" class="no-print" aria-hidden="true"></div>
 
 </div><!-- .cof-page -->
 
@@ -609,7 +621,7 @@ body { background: var(--lpr-page); }
     { type:'upright', top:'3in',   left:'0',      w:'5in', h:'3in' },
     { type:'upright', top:'6in',   left:'0',      w:'5in', h:'3in' },
     { type:'rotated', top:'0',     left:'5in', w:'3in', h:'5in' },
-    { type:'rotated', top:'5.5in', left:'5in', w:'3in', h:'5in' },
+    { type:'rotated', top:'5in',   left:'5in', w:'3in', h:'5in' },
   ];
 
 
@@ -643,7 +655,10 @@ body { background: var(--lpr-page); }
     cut('h', '6in',    '0',   '5in');
     cut('h', '9in',    '0',   '5in');
     cut('v', '0',      '5in', '11in');
-    cut('h', '5.25in', '5in', '3.5in');
+    /* cut between rotated slots 4 (y=0–5) and 5 (y=5–10) — now flush, no gap */
+    cut('h', '5in',    '5in', '3in');
+    /* right edge of rotated column: separates certs (x=5–8) from right margin */
+    cut('v', '0',      '8in', '10in');
   }
 
   /* ── build both the wysiwyg preview and the print container (once) ── */

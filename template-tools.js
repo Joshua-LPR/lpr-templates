@@ -18,7 +18,10 @@
     editBtn.id = "tt-edit-btn";
     toolbar.appendChild(editBtn);
 
-    // EXPORT dropdown
+    // EXPORT dropdown — suppressed when body has data-no-export
+    if (document.body.dataset.noExport !== undefined) {
+      // template handles its own download (e.g. .lbt) — skip the export menu
+    } else {
     const wrap = document.createElement("div");
     wrap.className = "tt-export-wrap";
     wrap.innerHTML = `
@@ -47,6 +50,7 @@
     document.addEventListener("click", e => {
       if (!wrap.contains(e.target)) expMenu.hidden = true;
     });
+    } // end export dropdown block
 
     // SAVE AS (always present)
     const saveBtn = mkBtn("Save As", saveAs);
@@ -476,6 +480,13 @@
       .tt-dialog button.muted:hover { background: #f4f1ec; color: var(--lpr-ink); }
       .tt-dialog button.danger { border-color: #c33; color: #c33; }
       .tt-dialog button.danger:hover { background: #c33; color: #fff; }
+      .tt-modal-input {
+        width: 100%; box-sizing: border-box;
+        font-family: inherit; font-size: 14px; padding: 9px 13px;
+        border: 1px solid rgba(40,56,145,0.3); border-radius: 8px;
+        outline: none; margin-bottom: 16px; color: var(--lpr-ink);
+      }
+      .tt-modal-input:focus { border-color: var(--lpr-blue); box-shadow: 0 0 0 3px rgba(40,56,145,0.12); }
 
       /* Format bar separator */
       .tt-fmt-sep {
@@ -619,8 +630,12 @@
       if (kind === "png")  return await exportPng(name);
       if (kind === "pdf")  return await exportPdf(name);
     } catch (e) {
-      alert("Export failed: " + e.message);
       console.error(e);
+      const back = document.createElement('div');
+      back.className = 'tt-backdrop';
+      back.innerHTML = `<div class="tt-dialog"><h2>Export failed</h2><p style="color:var(--lpr-muted);font-size:13px">${e.message || e}</p><div class="actions"><button data-act="ok" class="primary">OK</button></div></div>`;
+      document.body.appendChild(back);
+      back.querySelector('[data-act="ok"]').addEventListener('click', () => back.remove());
     }
   }
 
@@ -635,7 +650,7 @@
     clone.dataset.lprSnapshot = '1';
 
     // Strip editing UI, panels, browser-extension injections
-    clone.querySelectorAll(".toolbar, .no-print, #lpr-fill-panel").forEach(el => el.remove());
+    clone.querySelectorAll(".toolbar, .no-print, .label, #lpr-fill-panel").forEach(el => el.remove());
     clone.querySelectorAll("[id^='automa'], [class*='automa']").forEach(el => el.remove());
 
     // Remove all scripts — exported file is a static snapshot
@@ -728,41 +743,36 @@
   }
 
   async function exportPdf(name) {
-    await ensureLib("https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js", "html2pdf");
+    await ensureLib("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js", "html2canvas");
+    await ensureLib("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js", "jspdf");
     const sheets = [...document.querySelectorAll(".sheet")].filter(s => s.offsetHeight > 0);
     if (sheets.length === 0) return;
-    // Use first sheet's dimensions for the page size (assumes uniform pages)
-    const r = sheets[0].getBoundingClientRect();
-    const widthIn  = r.width  / 96;
-    const heightIn = r.height / 96;
-    // Build container with all sheets (one per page)
-    const container = document.createElement("div");
-    container.style.position = "absolute";
-    container.style.left = "-99999px";
-    container.style.top = "0";
-    sheets.forEach((s, i) => {
-      const clone = s.cloneNode(true);
-      clone.removeAttribute("contenteditable");
-      clone.classList.remove("tt-editing");
-      clone.style.margin = "0";
-      clone.style.boxShadow = "none";
-      clone.style.pageBreakAfter = i < sheets.length - 1 ? "always" : "auto";
-      container.appendChild(clone);
+    const r0 = sheets[0].getBoundingClientRect();
+    const widthIn  = r0.width  / 96;
+    const heightIn = r0.height / 96;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+      unit: "in",
+      format: [widthIn, heightIn],
+      orientation: widthIn > heightIn ? "landscape" : "portrait"
     });
-    document.body.appendChild(container);
-    const restorePdf = await inlineImgSrcs(container);
-    try {
-      await window.html2pdf().set({
-        margin: 0,
-        filename: name + ".pdf",
-        image: { type: "jpeg", quality: 0.97 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
-        jsPDF: { unit: "in", format: [widthIn, heightIn], orientation: widthIn > heightIn ? "landscape" : "portrait" }
-      }).from(container).save();
-    } finally {
-      restorePdf();
-      container.remove();
+    for (let i = 0; i < sheets.length; i++) {
+      const restore = await inlineImgSrcs(sheets[i]);
+      const canvas = await window.html2canvas(sheets[i], {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: false
+      });
+      restore();
+      const r = sheets[i].getBoundingClientRect();
+      const wIn = r.width  / 96;
+      const hIn = r.height / 96;
+      const imgData = canvas.toDataURL("image/jpeg", 0.97);
+      if (i > 0) doc.addPage([wIn, hIn], wIn > hIn ? "landscape" : "portrait");
+      doc.addImage(imgData, "JPEG", 0, 0, wIn, hIn);
     }
+    doc.save(name + ".pdf");
   }
 
   function ensureLib(url, globalName) {
@@ -858,24 +868,70 @@
 
   async function doSaveAs() {
     const defaultName = baseFilename() + " — Copy";
-    const name = prompt("Save this template as:", defaultName);
-    if (!name || !name.trim()) return;
+    const name = await new Promise(resolve => {
+      const back = document.createElement('div');
+      back.className = 'tt-backdrop';
+      back.innerHTML = `
+        <div class="tt-dialog">
+          <h2>Save As</h2>
+          <p>Give this template a name for your library.</p>
+          <input class="tt-modal-input" type="text" placeholder="Template name" value="${defaultName.replace(/"/g, '&quot;')}">
+          <div class="actions">
+            <button data-act="cancel" class="muted">Cancel</button>
+            <button data-act="ok" class="primary">Save</button>
+          </div>
+        </div>`;
+      document.body.appendChild(back);
+      const input = back.querySelector('input');
+      input.select();
+      const close = val => { back.remove(); resolve(val); };
+      back.querySelector('[data-act="cancel"]').addEventListener('click', () => close(null));
+      back.querySelector('[data-act="ok"]').addEventListener('click', () => close(input.value.trim() || null));
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') close(input.value.trim() || null); if (e.key === 'Escape') close(null); });
+    });
+    if (!name) return;
 
     const html = await buildSaveHtml();
     const id = "c_" + Date.now().toString(36);
     const saved = JSON.parse(localStorage.getItem("lpr_custom_templates") || "{}");
     saved[id] = { id, name: name.trim(), html, base: location.pathname.split("/").pop(), savedAt: new Date().toISOString() };
     localStorage.setItem("lpr_custom_templates", JSON.stringify(saved));
-    if (confirm('Saved "' + name + '" to your template library.\n\nGo back to the index now?')) {
-      location.href = "index.html";
-    }
+    const goIndex = await showConfirm(
+      `<strong>${name}</strong> saved to your template library.<br>Go back to the index now?`,
+      'Go to index'
+    );
+    if (goIndex) location.href = "index.html";
+  }
+
+  function showAlert(message) {
+    const back = document.createElement('div');
+    back.className = 'tt-backdrop';
+    back.innerHTML = `<div class="tt-dialog"><p style="color:var(--lpr-muted);font-size:13px;margin:0 0 16px">${message}</p><div class="actions"><button data-act="ok" class="primary">OK</button></div></div>`;
+    document.body.appendChild(back);
+    back.querySelector('[data-act="ok"]').addEventListener('click', () => back.remove());
+  }
+
+  function showConfirm(message, label) {
+    return new Promise(resolve => {
+      const back = document.createElement('div');
+      back.className = 'tt-backdrop';
+      back.innerHTML = `<div class="tt-dialog"><p style="color:var(--lpr-muted);font-size:13px;margin:0 0 16px">${message}</p><div class="actions"><button data-act="cancel" class="muted">Cancel</button><button data-act="ok" class="primary">${label || 'OK'}</button></div></div>`;
+      document.body.appendChild(back);
+      const close = val => { back.remove(); resolve(val); };
+      back.querySelector('[data-act="cancel"]').addEventListener('click', () => close(false));
+      back.querySelector('[data-act="ok"]').addEventListener('click', () => close(true));
+    });
   }
 
   /* --------- SAVE EDITS — overwrite an existing library entry --------- */
   async function doSaveEdits(id) {
     const saved = JSON.parse(localStorage.getItem("lpr_custom_templates") || "{}");
-    if (!saved[id]) { alert("This library entry no longer exists."); return; }
-    if (!confirm('Overwrite "' + saved[id].name + '" with your current edits?\n\nThis cannot be undone. Use Save As instead to keep the original.')) return;
+    if (!saved[id]) { showAlert("This library entry no longer exists."); return; }
+    const confirmed = await showConfirm(
+      `Overwrite <strong>${saved[id].name}</strong> with your current edits?<br><small>This cannot be undone. Use Save As to keep the original.</small>`,
+      'Overwrite'
+    );
+    if (!confirmed) return;
     const html = await buildSaveHtml();
     saved[id].html = html;
     saved[id].savedAt = new Date().toISOString();
