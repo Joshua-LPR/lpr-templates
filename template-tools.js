@@ -709,6 +709,7 @@
       if (!src || src.startsWith('data:')) { resolve(); return; }
       origSrcs.set(img, src);
       const tmp = new Image();
+      tmp.crossOrigin = 'anonymous';
       tmp.onload = () => {
         const c = document.createElement('canvas');
         c.width = tmp.naturalWidth || 1; c.height = tmp.naturalHeight || 1;

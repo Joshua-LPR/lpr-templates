@@ -80,14 +80,15 @@
   .specs strong { color: var(--lpr-ink); letter-spacing: 1.5px; text-transform: uppercase; font-size: 11px; }
   .specs code { font-family: 'SF Mono', Menlo, Consolas, monospace; background: rgba(40,56,145,0.08); padding: 1px 6px; border-radius: 3px; }
 
-  /* ── contact row (phone + optional QR) ── */
+  /* ── contact row (phone + optional QR on white side) ── */
   .contact-row { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25in; }
-  .qr-label {
-    font-size: 0.35in; font-weight: 500; letter-spacing: 0.05in;
-    text-transform: uppercase; color: var(--lpr-muted);
-    margin-bottom: 0.1in;
-  }
   #sign-qr-img { width: 4in; height: 4in; display: block; }
+
+  /* ── QR on blue side ── */
+  #sign-qr-left { display: none; align-self: center; line-height: 0; }
+  #sign-qr-img-blue { width: 6.8in; height: 6.8in; display: block; }
+  .sign.qr-blue #sign-qr-group { display: none !important; }
+  .sign.qr-blue #sign-qr-left { display: block; }
 
   /* ── settings card ── */
   .sign-settings {
@@ -129,6 +130,9 @@
     <div class="sheet sign">
       <div class="sign-left">
         <img class="logo" src="assets/logo-white.png" alt="LPR Management, LLC"/>
+        <div id="sign-qr-left">
+          <img id="sign-qr-img-blue" alt="QR code">
+        </div>
         <div>
           <div class="accent"></div>
           <div class="city">Pikesville · Maryland</div>
@@ -143,7 +147,6 @@
             <div class="phone" id="sign-phone">443.402.5641</div>
           </div>
           <div id="sign-qr-group" style="display:none">
-            <div class="qr-label">Scan to learn more</div>
             <img id="sign-qr-img" alt="QR code">
           </div>
         </div>
@@ -160,6 +163,11 @@
     <div class="sset-row">
       <label class="sset-label" for="inp-qr">QR code link <span class="sset-hint">— leave blank to hide</span></label>
       <input type="text" id="inp-qr" class="sset-input" placeholder="https://… or mailto:email@domain.com?subject=…">
+    </div>
+    <div class="sset-row" id="qr-side-row" style="display:none">
+      <span class="sset-label">QR placement</span>
+      <button class="mode-btn active" id="qr-side-white">White side</button>
+      <button class="mode-btn" id="qr-side-blue">Blue side</button>
     </div>
   </div>
 
@@ -183,20 +191,40 @@
 <script>
 (function () {
   'use strict';
-  var PHONE_KEY = 'lpr_yardsign_phone';
-  var QR_KEY    = 'lpr_yardsign_qr';
+  var PHONE_KEY    = 'lpr_yardsign_phone';
+  var QR_KEY       = 'lpr_yardsign_qr';
+  var QR_SIDE_KEY  = 'lpr_yardsign_qr_side';
 
-  var inpPhone  = document.getElementById('inp-phone');
-  var inpQr     = document.getElementById('inp-qr');
-  var signPhone = document.getElementById('sign-phone');
-  var qrGroup   = document.getElementById('sign-qr-group');
-  var qrImg     = document.getElementById('sign-qr-img');
+  var inpPhone     = document.getElementById('inp-phone');
+  var inpQr        = document.getElementById('inp-qr');
+  var signPhone    = document.getElementById('sign-phone');
+  var qrGroup      = document.getElementById('sign-qr-group');
+  var qrImg        = document.getElementById('sign-qr-img');
+  var qrLeft       = document.getElementById('sign-qr-left');
+  var qrImgBlue    = document.getElementById('sign-qr-img-blue');
+  var qrSideRow    = document.getElementById('qr-side-row');
+  var btnWhite     = document.getElementById('qr-side-white');
+  var btnBlue      = document.getElementById('qr-side-blue');
+  var sheet        = document.querySelector('.sheet.sign');
 
   /* restore saved values */
   var savedPhone = localStorage.getItem(PHONE_KEY);
   var savedQr    = localStorage.getItem(QR_KEY);
+  var savedSide  = localStorage.getItem(QR_SIDE_KEY) || 'white';
   if (savedPhone !== null) inpPhone.value = savedPhone;
   if (savedQr    !== null) inpQr.value    = savedQr;
+
+  function setQrSide(side) {
+    savedSide = side;
+    localStorage.setItem(QR_SIDE_KEY, side);
+    sheet.classList.toggle('qr-blue', side === 'blue');
+    btnWhite.classList.toggle('active', side === 'white');
+    btnBlue.classList.toggle('active', side === 'blue');
+  }
+  setQrSide(savedSide);
+
+  btnWhite.addEventListener('click', function () { setQrSide('white'); });
+  btnBlue.addEventListener('click',  function () { setQrSide('blue'); });
 
   function updatePhone() {
     signPhone.textContent = inpPhone.value.trim() || '443.402.5641';
@@ -219,17 +247,25 @@
   function updateQr() {
     var url = inpQr.value.trim();
     localStorage.setItem(QR_KEY, inpQr.value);
-    if (!url) { qrGroup.style.display = 'none'; qrImg.src = ''; return; }
-    qrGroup.style.display = '';
+    if (!url) {
+      qrGroup.style.display = 'none';
+      qrLeft.style.display  = 'none';
+      qrSideRow.style.display = 'none';
+      qrImg.src = ''; qrImgBlue.src = '';
+      return;
+    }
+    qrGroup.style.display   = '';
+    qrLeft.style.display    = '';
+    qrSideRow.style.display = '';
     withQR(function () {
-      var qr = new QRious({
-        value: url,
-        size: 700,
-        foreground: '#283891',
-        background: '#ffffff',
-        level: 'L'
-      });
-      qrImg.src = qr.toDataURL();
+      qrImg.src = new QRious({
+        value: url, size: 700,
+        foreground: '#283891', background: '#ffffff', level: 'L'
+      }).toDataURL();
+      qrImgBlue.src = new QRious({
+        value: url, size: 700,
+        foreground: '#ffffff', background: '#283891', level: 'L'
+      }).toDataURL();
     });
   }
 
