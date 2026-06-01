@@ -394,7 +394,7 @@ lpr-templates/
     ├── logo-email.png                  # Legacy — not currently referenced in any template
     ├── logo-current.png                # Used by LPR Logo Concepts.html
     ├── logo.png                        # Full-color logo (alternate copy)
-    ├── logo-icon.png.png               # Icon-only logo (double extension — rename to logo-icon.png)
+    ├── logo-icon.png                   # Icon-only (buildings mark), cropped from logo-cropped.png
     ├── logo-base64.txt                 # Base64-encoded logo for email signature inline embed
     ├── ps3817-form.png                 # USPS PS Form 3817 background (Certificate of Mailing)
     └── fonts/
