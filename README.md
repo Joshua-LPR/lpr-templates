@@ -4,9 +4,9 @@ Print-ready stationery, notices, and digital assets for LPR Management, LLC.
 
 ## Quick Start
 
-Open `index.html` in a browser. Click any template card to open it, then use the toolbar's **Print** button to send to a printer or save as PDF.
+Open `index.html` in a browser — first visit redirects to the **user picker** (`users.html`). Pick yourself from the list (or add a new user), then you land on the template index. Click any template card to open it, then use the toolbar's **Print** button to send to a printer or save as PDF.
 
-Set your name, title, phone, and email in the **employee picker** at the top of the index — templates open pre-filled.
+Use the **Customize for an employee** panel on the index to set name, title, phone, and email. Templates open pre-filled with those values.
 
 ## Templates
 
@@ -49,9 +49,13 @@ Every letter and notice has a **Setup** button in the toolbar that opens a side 
 - **Vendors tab** — Import a Buildium vendor CSV, pick a vendor, fill `data-vendor-field` spans.
 - **Fields tab** — Date pickers, time pickers, dollar amounts, and free-text fields for template-specific fill-in values.
 
-## Employee Picker
+## Multi-User System
 
-On the index page, enter a name, title, phone, and email and save as a preset. Templates open with those values pre-filled via `user.js`. Defaults to David Mitnick when blank.
+Pick or add a user on `users.html` (first-visit landing page). Each user has an independent localStorage namespace — favorites, library, address books, and signatures are all per-user.
+
+Default users: David Mitnick, Joshua Schoemann, Sam Teitelman. Add new users via the picker; users are stored only in the local browser.
+
+Use the **Customize for an employee** panel on the index to fill in name, title, phone, and email. Templates with employee fields (Business Card, Letterheads, Email Signature, signed notices) auto-fill on open.
 
 ## Brand Tokens (brand.css)
 
@@ -71,16 +75,23 @@ On the index page, enter a name, title, phone, and email and save as a preset. T
 ```
 lpr-templates/
 ├── index.html            — template gallery
+├── users.html            — user picker (sign-in)
+├── archive.html          — archived templates view
+├── view.html             — library template loader
+├── style-guide.html      — LPR brand style guide
 ├── brand.css             — shared design tokens and base styles
-├── user.js               — employee picker (reads URL params + localStorage)
+├── user.js               — multi-user localStorage namespacing (loads first)
 ├── employee.js           — fills data-employee-field spans on load
 ├── tenants.js            — tenant address book + Setup panel
+├── owners.js             — sender/owner tab in Setup panel
 ├── vendors.js            — vendor address book tab
 ├── fill-fields.js        — date/time/amount/text field pickers tab
 ├── template-tools.js     — Edit, Export, Save As toolbar
 ├── assets/               — fonts, logo files, form images
 └── *.html                — individual template pages
 ```
+
+> `design-canvas.jsx`, `logos.jsx`, `tweaks-panel.jsx`, `logo.html`, and `uploads/` are dev/design-tool files not part of the published template set.
 
 ## Address
 

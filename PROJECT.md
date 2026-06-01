@@ -77,7 +77,7 @@ Top-left of every page shows the active user. Click **↻ Switch user** to retur
 | **Address** | 1517 Reisterstown Road, 2nd Floor, Pikesville, MD 21208 |
 | **Phone** | 443.402.5641 |
 | **Office email** | office@lasalleparkrealty.com |
-| **Logo files** | `assets/logo-cropped.png`, `assets/logo-white.png` |
+| **Logo files** | `assets/logo-cropped.png` (full-color), `assets/logo-white.png` (white) — primary logos used across templates. See assets listing for additional files. |
 
 Montserrat is bundled locally in `assets/fonts/` so templates render identically online and offline.
 
@@ -383,11 +383,20 @@ lpr-templates/
 ├── Security Deposit.html               # Combined — Withheld / Partial Refund / Full Refund
 ├── Door Hanger.html
 ├── Yard Sign.html
+├── LPR Logo Concepts.html              # Logo exploration / brand reference page
+│
+│   # Dev / design-tool files (not part of the published template set)
+│   # design-canvas.jsx, logos.jsx, tweaks-panel.jsx, logo.html, uploads/
 │
 └── assets/
-    ├── logo-cropped.png                # Full-color logo
+    ├── logo-cropped.png                # Full-color logo (used in letterheads, notices)
     ├── logo-white.png                  # White version for dark backgrounds
-    ├── logo-email.png                  # Email-signature optimized
+    ├── logo-email.png                  # Legacy — not currently referenced in any template
+    ├── logo-current.png                # Used by LPR Logo Concepts.html
+    ├── logo.png                        # Full-color logo (alternate copy)
+    ├── logo-icon.png.png               # Icon-only logo (double extension — rename to logo-icon.png)
+    ├── logo-base64.txt                 # Base64-encoded logo for email signature inline embed
+    ├── ps3817-form.png                 # USPS PS Form 3817 background (Certificate of Mailing)
     └── fonts/
         ├── montserrat-300.woff2
         ├── montserrat-400.woff2
