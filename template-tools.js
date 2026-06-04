@@ -28,6 +28,7 @@
       <button class="tt-btn" id="tt-export-btn">Export <span class="tt-caret">▾</span></button>
       <div class="tt-export-menu" hidden>
         <button class="tt-menu-item" data-export="print">Print</button>
+        <button class="tt-menu-item" data-export="print-blank">Print Blank</button>
         <button class="tt-menu-item" data-export="pdf">PDF (.pdf)</button>
         <button class="tt-menu-item" data-export="png">Image (.png)</button>
         <button class="tt-menu-item" data-export="html">HTML (.html)</button>
@@ -43,6 +44,7 @@
     wrap.querySelectorAll(".tt-menu-item").forEach(b => {
       b.addEventListener("click", () => {
         expMenu.hidden = true;
+        if (b.dataset.export === "print-blank") { if (editing) toggleEdit(); printBlank(); return; }
         if (editing) toggleEdit(); // exit edit mode before exporting
         doExport(b.dataset.export);
       });
@@ -544,6 +546,7 @@
         display: inline-flex; align-items: center; justify-content: center;
         font-size: 15px; line-height: 1; color: #1a1a1a; font-weight: 400;
       }
+
     `;
     document.head.appendChild(s);
   }
@@ -610,6 +613,83 @@
     back.addEventListener('click', e => { if (e.target === back) close(); });
     back.querySelector('[data-act="cancel"]').addEventListener('click', close);
     back.querySelector('[data-act="ok"]').addEventListener('click', () => { close(); onContinue(); });
+  }
+
+  /* --------- PRINT BLANK --------- */
+  function printBlank() {
+    // Only clear recipient/fill-in fields — not employee or owner (company info stays)
+    const FIELD_SEL = [
+      '[data-fill-field]',
+      '[data-contact-field]',
+      '[data-tenant-field]',
+      '[data-vendor-field]',
+    ].join(',');
+
+    // 1. Clear fill-in field spans
+    const els = [...document.querySelectorAll(FIELD_SEL)];
+    const savedHtml = els.map(el => el.innerHTML);
+    els.forEach(el => { el.innerHTML = ''; });
+
+    // 2. Signoff: hide sig image, employee name, title, and separator dot
+    //    so only the company name (data-owner-field="name") remains
+    const sigEls = [
+      ...document.querySelectorAll('img.lpr-sig-img'),
+      ...document.querySelectorAll('.signed-name'),
+      ...document.querySelectorAll('.signed-role [data-employee-field="title"]'),
+      ...document.querySelectorAll('.signed-role .owner-sep'),
+    ];
+    sigEls.forEach(el => { el.style.display = 'none'; });
+
+    // 3. Preserve info-grid layout: keep .no-print spacers in grid flow but invisible
+    //    (safety net for templates that haven't been patched with the print CSS fix)
+    const gridNoPrint = [...document.querySelectorAll('.info-grid .no-print')];
+    gridNoPrint.forEach(el => { el.style.setProperty('display', 'block', 'important'); el.style.visibility = 'hidden'; el.style.height = '0'; el.style.minHeight = '0'; el.style.padding = '0'; el.style.overflow = 'hidden'; });
+
+    // 4. Hide short connector text nodes orphaned between two empty field spans
+    const sepNodes = gatherBlankSeparators();
+    const savedSepText = sepNodes.map(n => n.textContent);
+    sepNodes.forEach(n => { n.textContent = ''; });
+
+    function restore() {
+      els.forEach((el, i) => { el.innerHTML = savedHtml[i]; });
+      sigEls.forEach(el => { el.style.display = ''; });
+      gridNoPrint.forEach(el => { el.style.removeProperty('display'); el.style.visibility = ''; el.style.height = ''; el.style.minHeight = ''; el.style.padding = ''; el.style.overflow = ''; });
+      sepNodes.forEach((n, i) => { n.textContent = savedSepText[i]; });
+    }
+    window.addEventListener('afterprint', restore, { once: true });
+    window.print();
+  }
+
+  function gatherBlankSeparators() {
+    const FIELD_ATTRS = ['data-fill-field','data-contact-field','data-tenant-field',
+                         'data-employee-field','data-owner-field','data-vendor-field'];
+
+    function isEmptyFieldEl(el) {
+      return el && el.nodeType === 1 &&
+        FIELD_ATTRS.some(a => el.hasAttribute(a)) && !el.textContent.trim();
+    }
+    function prevMeaningfulSibling(node) {
+      let n = node.previousSibling;
+      while (n && n.nodeType === 3 && !n.textContent.trim()) n = n.previousSibling;
+      return n;
+    }
+    function nextMeaningfulSibling(node) {
+      let n = node.nextSibling;
+      while (n && n.nodeType === 3 && !n.textContent.trim()) n = n.nextSibling;
+      return n;
+    }
+
+    const result = [];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+    let node;
+    while ((node = walker.nextNode())) {
+      // Skip long text — it's content, not a connector (catches "to", ", ", " · ", etc.)
+      if (node.textContent.trim().length > 12) continue;
+      if (isEmptyFieldEl(prevMeaningfulSibling(node)) && isEmptyFieldEl(nextMeaningfulSibling(node))) {
+        result.push(node);
+      }
+    }
+    return result;
   }
 
   /* --------- EXPORT --------- */

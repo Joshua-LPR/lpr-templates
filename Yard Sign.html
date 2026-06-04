@@ -31,8 +31,8 @@
     transform-origin: top left;
   }
   @media print {
-    .sign-wrap { width: 24in; height: 18in; overflow: visible; box-shadow: none; }
-    .sheet.sign { transform: none; position: static; }
+    .sign-wrap { width: 24in; height: 18in; overflow: hidden; box-shadow: none; position: static; }
+    .sheet.sign { transform: none; position: absolute; top: 0; left: 0; }
   }
 
   .sign-left {
@@ -110,10 +110,11 @@
   .sset-input:focus { border-color: var(--lpr-blue); }
 
   @media print {
-    body { background: #fff; padding: 0; }
-    .stage { gap: 0; }
+    html, body { width: 24in; height: 18in; margin: 0; padding: 0; background: #fff; }
+    .stage { display: block; }
     .label, .specs { display: none; }
     #sign-qr-img { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    #sign-qr-img-blue { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
 </head>

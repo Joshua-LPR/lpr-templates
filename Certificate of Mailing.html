@@ -99,16 +99,16 @@ body { background: var(--lpr-page); }
    PRINT
    ══════════════════════════════ */
 @media print {
-  html,body { margin:0; padding:0; background:none; }
+  html,body { margin:0; padding:0; background:none; position:relative; }
 
   /* hide page chrome, show only the form */
   body > *:not(.cof-page)                               { display:none !important; }
   body:not(.mode-multi) .cof-page > *:not(.cof-preview) { display:none !important; }
   .cof-preview { margin:0 !important; padding:0 !important; justify-content:flex-start !important; }
 
-  /* single-sheet modes: fix the one sheet to top-left of page */
+  /* single-sheet modes: pin the one sheet to top-left of page */
   .cof-preview .sheet {
-    position:fixed !important; top:0 !important; left:0 !important;
+    position:absolute !important; top:0 !important; left:0 !important;
     width:5in !important; height:3in !important;
     box-shadow:none !important; overflow:visible !important;
   }
@@ -133,11 +133,11 @@ body { background: var(--lpr-page); }
 
   /* Letter mode: cut lines */
   .mode-letter .cut-line-h {
-    display:block !important; position:fixed;
+    display:block !important; position:absolute;
     top:3in; left:0; right:0; border-top:1px dashed #aaa;
   }
   .mode-letter .cut-line-v {
-    display:block !important; position:fixed;
+    display:block !important; position:absolute;
     left:5in; top:0; bottom:0; border-left:1px dashed #aaa;
   }
   .mode-card .cut-line-h,
@@ -150,7 +150,7 @@ body { background: var(--lpr-page); }
   .mode-multi .cof-page > *:not(#multi-print-container) { display:none !important; }
   .mode-multi #multi-print-container { display:block !important; margin:0 !important; padding:0 !important; }
   .mode-multi .multi-print-page {
-    position:fixed !important; top:0 !important; left:0 !important;
+    position:absolute !important; top:0 !important; left:0 !important;
     width:8.5in !important; height:11in !important;
   }
   /* all 5 sheets in multi mode print the full form image */
