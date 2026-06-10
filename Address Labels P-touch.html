@@ -26,7 +26,10 @@
   .label-text {
     font-family: 'Century Gothic', 'AppleGothic', 'ITC Century', Century, sans-serif;
     font-size: 24px; line-height: 1.22; color: #111;
-    text-align: center; width: 100%; font-weight: 400;
+    text-align: center; width: 100%; font-weight: 700;
+  }
+  body.font-arial .label-text {
+    font-family: Arial, Helvetica, sans-serif;
   }
   /* 4-line address (addr2 present) — shrink to fit */
   .sheet.label-card:has(.lbl-addr2 [data-contact-field]:not(:empty)) .label-text { font-size: 18px; }
@@ -49,6 +52,12 @@
     .label-text .lbl-name { font-size: 10pt; }
   }
 
+  /* ── Fields tab helpers ── */
+  .lpr-ff-csz { display: flex; gap: 6px; }
+  .lpr-ff-csz .lpr-ff-inp { flex: 1; min-width: 0; }
+  .lpr-ff-csz .lpr-ff-inp.ff-st  { flex: 0 0 52px; }
+  .lpr-ff-csz .lpr-ff-inp.ff-zip { flex: 0 0 82px; }
+
   /* ---- Info box ---- */
   .print-info {
     background: #fff; border-radius: 8px; padding: 16px 20px;
@@ -65,6 +74,7 @@
 
 <div class="toolbar no-print">
   <a href="index.html" class="toolbar-back">← All templates</a>
+  <button id="lpr-font-btn" onclick="toggleFont()">Font: Century Gothic</button>
   <button id="lpr-lbt-btn" onclick="downloadLbt()">Download .lbt</button>
 </div>
 
@@ -152,10 +162,11 @@ function downloadLbt() {
   for (var i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
 
   var fourLine = !!addr2;
+  var fontName = (localStorage.getItem('lpr_ptouch_font') === 'arial') ? 'Arial' : 'Century Gothic';
   bytes = utf16leReplace(bytes, 'TextCount=', String(charValue.length));
   bytes = utf16leReplace(bytes, 'TextCursor=', String(charValue.length));
   bytes = utf16leReplace(bytes, 'Char=', charValue);
-  bytes = utf16leReplace(bytes, 'Font=', fourLine ? '38,16,0,0,400,0,0,0,0,3,2,1,34,Century Gothic' : '36,14,0,0,400,0,0,0,0,3,2,1,34,Century Gothic');
+  bytes = utf16leReplace(bytes, 'Font=', (fourLine ? '38,16,0,0,700,0,0,0,0,3,2,1,34,' : '36,14,0,0,700,0,0,0,0,3,2,1,34,') + fontName);
   bytes = utf16leReplace(bytes, 'Size=', fourLine ? '18(0.403.2000000000000)' : '24(0.403.8000000000000)');
 
   // PLL2 header bytes 6-7 (little-endian 16-bit) must equal file_size - 16
@@ -171,11 +182,118 @@ function downloadLbt() {
   a.click();
   a.remove();
 }
+
+/* ---- Font toggle (Arial vs Century Gothic) ---- */
+function applyFontChoice() {
+  var arial = localStorage.getItem('lpr_ptouch_font') === 'arial';
+  document.body.classList.toggle('font-arial', arial);
+  var btn = document.getElementById('lpr-font-btn');
+  if (btn) btn.textContent = 'Font: ' + (arial ? 'Arial' : 'Century Gothic');
+}
+function toggleFont() {
+  var arial = localStorage.getItem('lpr_ptouch_font') === 'arial';
+  localStorage.setItem('lpr_ptouch_font', arial ? 'century' : 'arial');
+  applyFontChoice();
+}
+applyFontChoice();
 </script>
 
 <script src="tenants.js"></script>
 <script src="vendors.js"></script>
 <script src="fill-fields.js"></script>
 <script src="template-tools.js"></script>
+
+<script>
+/* ---- Manual address "Fields" tab ---- */
+(function () {
+  var STORAGE_KEY = 'lpr_ptouch_manual';
+  var FIELDS = [
+    { key: 'name',          label: 'Name' },
+    { key: 'address_line1', label: 'Street Address' },
+    { key: 'address_line2', label: 'Unit / Apt (optional)' }
+  ];
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function loadValues() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveValue(key, val) {
+    var v = loadValues();
+    v[key] = val;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(v));
+  }
+  function applyField(key, value) {
+    document.querySelectorAll('[data-contact-field="' + key + '"]').forEach(function (el) {
+      el.textContent = value || '';
+    });
+  }
+  function applyAll() {
+    var v = loadValues();
+    ['name', 'address_line1', 'address_line2', 'city', 'state', 'zip'].forEach(function (k) {
+      applyField(k, v[k] || '');
+    });
+  }
+
+  function render(container) {
+    var v = loadValues();
+    container.innerHTML =
+      '<div class="lpr-ff-body">' +
+        '<div class="lpr-ff-fields">' +
+          FIELDS.map(function (f) {
+            return '<div class="lpr-ff-field">' +
+              '<label class="lpr-ff-lbl">' + esc(f.label) + '</label>' +
+              '<input type="text" class="lpr-ff-inp" data-mf-key="' + f.key + '" ' +
+                'value="' + esc(v[f.key] || '') + '" placeholder="' + esc(f.label) + '" />' +
+            '</div>';
+          }).join('') +
+          '<div class="lpr-ff-field">' +
+            '<label class="lpr-ff-lbl">City / State / Zip</label>' +
+            '<div class="lpr-ff-csz">' +
+              '<input type="text" class="lpr-ff-inp" data-mf-key="city" value="' + esc(v.city || '') + '" placeholder="City" />' +
+              '<input type="text" class="lpr-ff-inp ff-st" data-mf-key="state" value="' + esc(v.state || '') + '" placeholder="ST" />' +
+              '<input type="text" class="lpr-ff-inp ff-zip" data-mf-key="zip" value="' + esc(v.zip || '') + '" placeholder="Zip" />' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="lpr-ff-foot">' +
+          '<button class="lpr-ff-clear" id="lpr-mf-clear-btn">Clear All</button>' +
+        '</div>' +
+      '</div>';
+
+    container.querySelectorAll('[data-mf-key]').forEach(function (inp) {
+      inp.addEventListener('input', function () {
+        var key = inp.getAttribute('data-mf-key');
+        saveValue(key, inp.value);
+        applyField(key, inp.value);
+      });
+    });
+
+    container.querySelector('#lpr-mf-clear-btn').onclick = function () {
+      localStorage.removeItem(STORAGE_KEY);
+      ['name', 'address_line1', 'address_line2', 'city', 'state', 'zip'].forEach(function (k) {
+        applyField(k, '');
+      });
+      render(container);
+    };
+  }
+
+  function init() {
+    window.LPR_FILL_TABS = window.LPR_FILL_TABS || [];
+    window.LPR_FILL_TABS.push({ id: 'address-fields', label: 'Fields', render: render });
+    applyAll(); // restore saved values on page load
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
 </body>
 </html>

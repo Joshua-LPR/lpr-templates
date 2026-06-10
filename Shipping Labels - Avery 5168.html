@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>LPR — Shipping Labels · Avery 5168</title>
+<link rel="stylesheet" href="brand.css">
+<script src="user.js"></script>
+<style>
+  body { background: var(--lpr-page); padding: 60px 20px 40px; }
+  /* Landscape: 11" × 8.5" sheet, labels are 5" wide × 3.5" tall */
+  @page { size: 11in 8.5in; margin: 0; }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+
+  /* ── Sheet ── */
+  .sheet.labels {
+    width: 11in; height: 8.5in;
+    padding: 0.5in;
+    box-sizing: border-box;
+  }
+
+  /* ── 2 × 2 grid: 5in wide × 3.5in tall, no column gap, 0.5in row gap ── */
+  .label-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 5in);
+    grid-template-rows: repeat(2, 3.5in);
+    column-gap: 0;
+    row-gap: 0.5in;
+  }
+
+  /* ── Individual label ── */
+  .label-cell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 0.18in 0.25in 0.15in;
+    box-sizing: border-box;
+    border: 1px dashed rgba(40,56,145,0.2);
+    overflow: hidden;
+  }
+
+  /* ── Return address (top strip) ── */
+  .lc-return {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding-bottom: 0.1in;
+    border-bottom: 1.5px solid var(--lpr-blue);
+    flex-shrink: 0;
+  }
+  .lc-return img { height: 0.42in; width: auto; }
+  .lc-from { font-size: 5.5pt; line-height: 1.5; color: var(--lpr-blue); }
+
+  /* ── Recipient address (fills remaining height, centered) ── */
+  .lc-to {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 1px;
+    color: var(--lpr-ink);
+  }
+  .lc-name { font-size: 20pt; font-weight: 700; line-height: 1.2; color: var(--lpr-ink); }
+  .lc-addr { font-size: 17pt; line-height: 1.4; color: var(--lpr-ink); }
+  .lc-addr2 { font-size: 16pt; }
+  .lc-addr2:has([data-contact-field]:empty) { display: none; }
+
+  /* ── Skip toggle ── */
+  .lc-skip-btn {
+    position: absolute; top: 7px; right: 8px;
+    width: 24px; height: 24px;
+    background: rgba(40,56,145,0.08); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; line-height: 1; color: var(--lpr-blue);
+    cursor: pointer; opacity: 0; transition: opacity 0.15s;
+    user-select: none; z-index: 10;
+    border: 1px solid rgba(40,56,145,0.15);
+  }
+  .label-cell:hover .lc-skip-btn { opacity: 1; }
+  .label-cell.skip .lc-skip-btn { opacity: 1; background: rgba(200,40,40,0.1); color: #b33; border-color: rgba(200,40,40,0.25); }
+  .label-cell.skip .lc-return,
+  .label-cell.skip .lc-to { opacity: 0.1; pointer-events: none; }
+  .label-cell.skip::after {
+    content: 'BLANK';
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 8.5pt; font-weight: 700;
+    letter-spacing: 4px; color: rgba(180,30,30,0.3);
+    pointer-events: none;
+  }
+
+  /* ── Fields tab sidebar helpers ── */
+  .lpr-ff-csz { display: flex; gap: 6px; }
+  .lpr-ff-csz .lpr-ff-inp { flex: 1; min-width: 0; }
+  .lpr-ff-csz .lpr-ff-inp.ff-st  { flex: 0 0 52px; }
+  .lpr-ff-csz .lpr-ff-inp.ff-zip { flex: 0 0 82px; }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; padding: 0; }
+    .stage { gap: 0; }
+    .label { display: none; }
+    .label-cell { border: none; }
+    .lc-skip-btn { display: none; }
+    .label-cell.skip .lc-return,
+    .label-cell.skip .lc-to { visibility: hidden; opacity: 1; }
+    .label-cell.skip::after { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+</div>
+
+<div class="stage">
+  <div class="label">SHIPPING LABELS — AVERY 5168 · 4/SHEET · LANDSCAPE · 5″ × 3.5″ — Click any label to leave it blank</div>
+
+  <div class="sheet labels">
+    <div class="label-grid" id="grid"></div>
+  </div>
+</div>
+
+<!-- Early init: shared helpers, label build, skip toggle, restore saved values -->
+<script>
+var SKIP_KEY = 'lpr_5168_skipped';
+var ME_KEY   = 'lpr_5168_manual';
+
+function loadSkipped() { try { return JSON.parse(localStorage.getItem(SKIP_KEY)) || []; } catch(e) { return []; } }
+function saveSkipped(arr) { localStorage.setItem(SKIP_KEY, JSON.stringify(arr)); }
+function loadManual()  { try { return JSON.parse(localStorage.getItem(ME_KEY))   || {}; } catch(e) { return {}; } }
+function saveManual(obj) { localStorage.setItem(ME_KEY, JSON.stringify(obj)); }
+
+function applyContactField(field, value) {
+  document.querySelectorAll('[data-contact-field="' + field + '"]').forEach(function(el) {
+    el.textContent = value;
+  });
+}
+
+var LABEL_HTML =
+  '<div class="lc-return">' +
+    '<img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>' +
+    '<div class="lc-from">1517 Reisterstown Road, 2nd Floor<br/>Pikesville, MD 21208</div>' +
+  '</div>' +
+  '<div class="lc-to">' +
+    '<div class="lc-name"><span data-contact-field="name"></span></div>' +
+    '<div class="lc-addr"><span data-contact-field="address_line1"></span></div>' +
+    '<div class="lc-addr lc-addr2"><span data-contact-field="address_line2"></span></div>' +
+    '<div class="lc-addr"><span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span></div>' +
+  '</div>' +
+  '<div class="lc-skip-btn" title="Toggle this label blank">×</div>';
+
+var grid = document.getElementById('grid');
+var skipped = loadSkipped();
+for (var i = 0; i < 4; i++) {
+  var cell = document.createElement('div');
+  cell.className = 'label-cell';
+  cell.dataset.slot = String(i);
+  if (skipped.indexOf(i) !== -1) cell.classList.add('skip');
+  cell.innerHTML = LABEL_HTML;
+  grid.appendChild(cell);
+}
+
+/* Restore saved manual values — must run after grid cells are in the DOM */
+(function() {
+  var s = loadManual();
+  Object.keys(s).forEach(function(f) { if (s[f]) applyContactField(f, s[f]); });
+})();
+
+grid.addEventListener('click', function(e) {
+  var btn = e.target.closest('.lc-skip-btn');
+  if (!btn) return;
+  var cell = btn.closest('.label-cell');
+  var slot = parseInt(cell.dataset.slot, 10);
+  cell.classList.toggle('skip');
+  var arr = loadSkipped();
+  arr = cell.classList.contains('skip')
+    ? (arr.indexOf(slot) === -1 ? arr.concat(slot) : arr)
+    : arr.filter(function(s) { return s !== slot; });
+  saveSkipped(arr);
+});
+</script>
+
+<script src="tenants.js"></script>
+<script src="vendors.js"></script>
+<script src="fill-fields.js"></script>
+<script src="template-tools.js"></script>
+
+<!-- Post-init: register Fields tab AFTER external scripts so it lands after Vendors.
+     Replace fill-fields.js's empty "Fields" tab with our address form. -->
+<script>
+(function() {
+  var tabs = window.LPR_FILL_TABS = window.LPR_FILL_TABS || [];
+
+  /* Remove the fill-fields tab — this template has no data-fill-field spans */
+  var idx = tabs.findIndex ? tabs.findIndex(function(t) { return t.id === 'fill-fields'; })
+                           : (function() { for (var i=0;i<tabs.length;i++) if (tabs[i].id==='fill-fields') return i; return -1; })();
+  if (idx !== -1) tabs.splice(idx, 1);
+
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function renderAddressTab(container) {
+    var s = loadManual();
+    container.innerHTML =
+      '<div class="lpr-ff-body">' +
+        '<div class="lpr-ff-fields">' +
+
+          '<div class="lpr-ff-field">' +
+            '<label class="lpr-ff-lbl">Name</label>' +
+            '<input class="lpr-ff-inp" type="text" data-me="name" placeholder="Full name" value="' + esc(s.name) + '">' +
+          '</div>' +
+
+          '<div class="lpr-ff-field">' +
+            '<label class="lpr-ff-lbl">Street Address</label>' +
+            '<input class="lpr-ff-inp" type="text" data-me="address_line1" placeholder="Street address" value="' + esc(s.address_line1) + '">' +
+          '</div>' +
+
+          '<div class="lpr-ff-field">' +
+            '<label class="lpr-ff-lbl">Unit / Apt <span style="font-weight:400;letter-spacing:0;text-transform:none;color:var(--lpr-muted);">(optional)</span></label>' +
+            '<input class="lpr-ff-inp" type="text" data-me="address_line2" placeholder="Unit, Apt, Suite…" value="' + esc(s.address_line2) + '">' +
+          '</div>' +
+
+          '<div class="lpr-ff-field">' +
+            '<label class="lpr-ff-lbl">City · State · Zip</label>' +
+            '<div class="lpr-ff-csz">' +
+              '<input class="lpr-ff-inp" type="text" data-me="city"  placeholder="City"  value="' + esc(s.city)  + '">' +
+              '<input class="lpr-ff-inp ff-st"  type="text" data-me="state" placeholder="ST"   value="' + esc(s.state) + '">' +
+              '<input class="lpr-ff-inp ff-zip" type="text" data-me="zip"   placeholder="Zip"  value="' + esc(s.zip)   + '">' +
+            '</div>' +
+          '</div>' +
+
+        '</div>' +
+        '<div class="lpr-ff-foot">' +
+          '<button class="lpr-ff-clear" id="lpr-5168-clear">Clear Address</button>' +
+        '</div>' +
+      '</div>';
+
+    container.querySelectorAll('[data-me]').forEach(function(inp) {
+      inp.addEventListener('input', function() {
+        var obj = loadManual();
+        obj[inp.dataset.me] = inp.value;
+        saveManual(obj);
+        applyContactField(inp.dataset.me, inp.value);
+      });
+    });
+
+    document.getElementById('lpr-5168-clear').addEventListener('click', function() {
+      container.querySelectorAll('[data-me]').forEach(function(inp) {
+        inp.value = '';
+        applyContactField(inp.dataset.me, '');
+      });
+      localStorage.removeItem(ME_KEY);
+    });
+  }
+
+  tabs.push({ id: 'address-fields', label: 'Fields', render: renderAddressTab });
+})();
+</script>
+</body>
+</html>

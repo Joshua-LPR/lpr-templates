@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>LPR — TOPA Notice · DHCD</title>
+<link rel="stylesheet" href="brand.css">
+<script src="user.js"></script>
+<style>
+  body { background: var(--lpr-page); padding: 60px 20px 40px; }
+  @page { size: 8.5in 11in; margin: 0; }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+
+  /* ── Shared letter sheet ── */
+  .sheet.letter { width: 8.5in; height: 11in; padding: 0.75in 0.85in; display: flex; flex-direction: column; }
+  .lh-header { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 18px; border-bottom: 2px solid var(--lpr-blue); }
+  .lh-header img { height: 0.95in; width: auto; }
+  .lh-header .meta { text-align: right; font-size: 8.5pt; line-height: 1.55; color: var(--lpr-ink); font-weight: 400; }
+  .doc-badge { margin-top: 0.45in; font-size: 9pt; letter-spacing: 4px; text-transform: uppercase; color: var(--lpr-blue); font-weight: 600; }
+  .doc-title { font-size: 26pt; font-weight: 700; letter-spacing: -0.4px; line-height: 1.05; margin-top: 8px; color: var(--lpr-ink); }
+  .lh-body { flex: 1; padding-top: 0.35in; font-size: 11pt; line-height: 1.65; color: var(--lpr-text); }
+  .lh-body .date { color: var(--lpr-muted); font-size: 10pt; margin-bottom: 22px; }
+  .lh-body .recipient { margin-bottom: 18px; line-height: 1.45; }
+  .lh-body .subject { font-weight: 700; color: var(--lpr-ink); margin: 0 0 14px; }
+  .lh-body p { margin: 0 0 12px; }
+  .signoff { margin-top: 0.45in; }
+  .signature { height: auto; min-height: 0; }
+
+  /* ── Page 2: tenant letter — tighter to fit content ── */
+  .sheet.letter-2 .lh-body { padding-top: 0.15in; font-size: 10.5pt; line-height: 1.55; }
+  .sheet.letter-2 .lh-body .date { margin-bottom: 10px; }
+  .sheet.letter-2 .lh-body .recipient { margin-bottom: 10px; line-height: 1.4; }
+  .sheet.letter-2 .lh-body p { margin: 0 0 8px; }
+  .sheet.letter-2 .signoff { margin-top: 0.2in; }
+
+  /* ── TOPA explanation sections ── */
+  .topa-section-head {
+    font-size: 8.5pt; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--lpr-blue);
+    margin: 12px 0 5px;
+  }
+  .topa-block {
+    border-left: 3px solid var(--lpr-blue);
+    background: rgba(40,56,145,0.04);
+    padding: 6px 12px;
+    margin-bottom: 8px;
+    font-size: 10pt;
+    line-height: 1.5;
+  }
+  .topa-block p { margin: 0 0 5px; }
+  .topa-block p:last-child { margin: 0; }
+  .topa-bullets { margin: 4px 0 0; padding: 0; list-style: none; }
+  .topa-bullets li {
+    padding: 5px 0 5px 18px;
+    border-bottom: 1px solid rgba(40,56,145,0.10);
+    position: relative;
+    font-size: 10pt;
+    line-height: 1.45;
+  }
+  .topa-bullets li:last-child { border-bottom: none; }
+  .topa-bullets li::before {
+    content: '';
+    position: absolute; left: 0; top: 11px;
+    width: 8px; height: 2px;
+    background: var(--lpr-blue); border-radius: 1px;
+  }
+  .topa-bullets li strong { color: var(--lpr-ink); display: block; margin-bottom: 1px; }
+
+  /* ── Blank-date mode ── */
+  .date-blank-line { display: none; font-style: normal; color: var(--lpr-ink); }
+  .date-blank-line .date-blank-rule { display: inline-block; width: 1.8in; border-bottom: 1.5px solid var(--lpr-ink); margin-left: 4px; vertical-align: bottom; }
+  body.date-blank .date-token { display: none; }
+  body.date-blank .date-blank-line { display: inline; }
+
+  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label { display: none; } }
+</style>
+</head>
+<body>
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+</div>
+<script>
+  if (localStorage.getItem('lpr_topa_date_blank') === '1') {
+    document.body.classList.add('date-blank');
+  }
+</script>
+<div class="stage">
+  <div class="label">TOPA NOTICE · DHCD — PAGE 1 OF 2</div>
+
+  <!-- ═══════════════════════════════════════════════
+       PAGE 1  —  Letter to DHCD
+  ════════════════════════════════════════════════════ -->
+  <div class="sheet letter">
+    <div class="lh-header">
+      <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
+      <div class="meta">
+        1517 Reisterstown Road, 2nd Floor<br/>
+        Pikesville, MD 21208<br/>
+        <span data-employee-field="phone">443.402.5641</span><br/>
+        <span data-employee-field="email">david@lasalleparkrealty.com</span>
+      </div>
+    </div>
+
+    <div class="doc-badge">TOPA Compliance</div>
+    <div class="doc-title">Notice of Intent to Sell</div>
+
+    <div class="lh-body">
+
+      <div class="date"><span class="date-token" data-fill-field="date" data-fill-label="Letter Date"></span><span class="date-blank-line">Date:<span class="date-blank-rule"></span></span></div>
+
+      <div class="recipient">
+        Maryland Department of Housing and Community Development<br/>
+        417 E. Fayette Street, 14th Floor<br/>
+        Baltimore, Maryland 21202
+      </div>
+
+      <p>To Whom it May Concern,</p>
+
+      <p>Enclosed is a "Notice of Intent to Sell and Tenant's Exclusive Negotiation Period" Appendix A Form for <strong><span data-tenant-field="address_line1"></span></strong>. A duplicate copy of this form was also delivered to the tenant that currently resides at the property: <strong><span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span></strong>.</p>
+
+      <div class="signoff">
+        <p>Sincerely,</p>
+        <div class="signature"></div>
+        <div class="signed-name" data-employee-field="name">David Mitnick</div>
+        <div class="signed-role" data-employee-hide-if-empty="title">
+          <span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="label">TOPA NOTICE · DHCD — PAGE 2 OF 2</div>
+
+  <!-- ═══════════════════════════════════════════════
+       PAGE 2  —  Letter to Tenant
+  ════════════════════════════════════════════════════ -->
+  <div class="sheet letter letter-2">
+    <div class="lh-header">
+      <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
+      <div class="meta">
+        1517 Reisterstown Road, 2nd Floor<br/>
+        Pikesville, MD 21208<br/>
+        <span data-employee-field="phone">443.402.5641</span><br/>
+        <span data-employee-field="email">david@lasalleparkrealty.com</span>
+      </div>
+    </div>
+
+    <div class="lh-body">
+
+      <div class="date"><span class="date-token" data-fill-field="date" data-fill-label="Letter Date"></span><span class="date-blank-line">Date:<span class="date-blank-rule"></span></span></div>
+
+      <div class="recipient">
+        <span data-contact-field="name"></span><br/>
+        <span data-contact-field="address_line1"></span><br/>
+        <span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span>
+      </div>
+
+      <p class="subject">Notice of Intent to Sell and Your Exclusive Negotiation Period</p>
+
+      <p>Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</p>
+
+      <p>Enclosed please find the "Notice of Intent to Sell and Tenant's Exclusive Negotiation Period" (Appendix A Form) for the property you currently reside in at <strong><span data-tenant-field="address_line1"></span></strong>.</p>
+
+      <p>As required by local housing regulations, a duplicate copy of this form has also been delivered to the Maryland Department of Housing and Community Development (DHCD).</p>
+
+      <div class="topa-section-head">What This Notice Means</div>
+      <div class="topa-block">
+        <p>This notice is a formal legal requirement when an owner decides to put a rental property on the market. Because you are the current resident, local law grants you the right of first refusal. This officially opens an exclusive window where you have the first option to negotiate the purchase of the property, should you be interested in buying it.</p>
+      </div>
+
+      <div class="topa-section-head">Important Reassurance for You</div>
+      <div class="topa-block">
+        <p>We understand that receiving a notice like this can cause uncertainty, so we want to be completely clear about your current living situation:</p>
+        <ul class="topa-bullets">
+          <li>
+            <strong>Nothing changes for you right now</strong>
+            Your current lease agreement, rent terms, and tenancy remain fully in effect. This notice does not mean you have to move.
+          </li>
+          <li>
+            <strong>Continued property management</strong>
+            We remain fully committed to managing and caring for the property just as we always have. Maintenance and day-to-day operations will continue without interruption throughout this process.
+          </li>
+        </ul>
+      </div>
+
+      <div class="topa-section-head">Showing Cooperation</div>
+      <div class="topa-block">
+        <p>As part of the sale process, a licensed real estate agent may need to schedule property showings. We kindly ask for your cooperation in allowing reasonable access for these visits, which will always be coordinated with advance notice in accordance with your lease. Your assistance is greatly appreciated and helps ensure a smooth process for everyone involved.</p>
+      </div>
+
+      <div class="signoff">
+        <p>Sincerely,</p>
+        <div class="signature"></div>
+        <div class="signed-name" data-employee-field="name">David Mitnick</div>
+        <div class="signed-role" data-employee-hide-if-empty="title">
+          <span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+<script src="employee.js"></script>
+<script src="tenants.js"></script>
+<script src="owners.js"></script>
+<script src="vendors.js"></script>
+<script src="fill-fields.js"></script>
+<script src="template-tools.js"></script>
+<script>
+(function () {
+  var STOR = 'lpr_topa_date_blank';
+
+  function injectToggle(fieldsEl) {
+    if (fieldsEl.querySelector('#topa-date-blank-chk')) return; // already injected
+    var dateInp = fieldsEl.querySelector('input[type="date"], .flatpickr-input[type="text"]');
+    if (!dateInp) return;
+    var fieldRow = dateInp.closest('.lpr-ff-field');
+    if (!fieldRow) return;
+    var isBlank = document.body.classList.contains('date-blank');
+    var row = document.createElement('div');
+    row.style.cssText = 'padding: 6px 0 0; margin-top: -4px;';
+    row.innerHTML =
+      '<label style="display:flex;align-items:center;gap:7px;cursor:pointer;' +
+      'font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#aaa;">' +
+      '<input type="checkbox" id="topa-date-blank-chk"' + (isBlank ? ' checked' : '') +
+      ' style="width:13px;height:13px;cursor:pointer;accent-color:#283891;flex-shrink:0;">' +
+      'Leave blank (hand-fill)</label>';
+    fieldRow.insertAdjacentElement('afterend', row);
+    document.getElementById('topa-date-blank-chk').addEventListener('change', function () {
+      document.body.classList.toggle('date-blank', this.checked);
+      localStorage.setItem(STOR, this.checked ? '1' : '');
+    });
+  }
+
+  new MutationObserver(function (mutations) {
+    mutations.forEach(function (m) {
+      m.addedNodes.forEach(function (node) {
+        if (node.nodeType !== 1) return;
+        var fields = node.classList && node.classList.contains('lpr-ff-fields')
+          ? node
+          : node.querySelector && node.querySelector('.lpr-ff-fields');
+        if (fields) injectToggle(fields);
+      });
+    });
+  }).observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+</body>
+</html>

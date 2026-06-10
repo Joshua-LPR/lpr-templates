@@ -982,7 +982,7 @@
     const html = await buildSaveHtml();
     const id = "c_" + Date.now().toString(36);
     const saved = JSON.parse(localStorage.getItem("lpr_custom_templates") || "{}");
-    saved[id] = { id, name: name.trim(), html, base: location.pathname.split("/").pop(), savedAt: new Date().toISOString() };
+    saved[id] = { id, name: name.trim(), html, base: decodeURIComponent(location.pathname.split("/").pop()), savedAt: new Date().toISOString() };
     localStorage.setItem("lpr_custom_templates", JSON.stringify(saved));
     const goIndex = await showConfirm(
       `<strong>${name}</strong> saved to your template library.<br>Go back to the index now?`,

@@ -357,9 +357,9 @@
      INIT
      ================================================================ */
   function init() {
-    if (getFieldDefs().length === 0) return; // no fill fields on this page — silent no-op
+    injectStyles(); // always inject — other tabs (e.g. manual address) need these classes
 
-    injectStyles();
+    if (getFieldDefs().length === 0) return; // no fill fields on this page — stop here
     labelFillFields();
     applyAll(); // restore any previously saved values
 

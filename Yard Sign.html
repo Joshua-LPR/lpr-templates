@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -11,44 +11,45 @@
   @page { size: 24in 18in; margin: 0; }
   .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
 
-  /* Wrapper sized for display; actual sign inside is real size, scaled down */
+  /* ── sign wrapper ── */
   .sign-wrap {
-    width: 8.4in;     /* 24in × 0.35 */
-    height: 6.3in;    /* 18in × 0.35 */
-    position: relative;
-    overflow: hidden;
+    width: 8.4in; height: 6.3in;
+    position: relative; overflow: hidden;
     box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 2px rgba(0,0,0,0.06);
     background: #fff;
   }
+
+  /* ── ORIGINAL sign sheet ── */
   .sheet.sign {
-    width: 24in; height: 18in;
-    background: #fff;
-    display: grid;
-    grid-template-columns: 1fr 1.05fr;
-    grid-template-rows: 1fr;
+    width: 24in; height: 18in; background: #fff;
+    display: grid; grid-template-columns: 1fr 1.05fr;
     position: absolute; top: 0; left: 0;
-    transform: scale(0.35);
-    transform-origin: top left;
-  }
-  @media print {
-    .sign-wrap { width: 24in; height: 18in; overflow: hidden; box-shadow: none; position: static; }
-    .sheet.sign { transform: none; position: absolute; top: 0; left: 0; }
+    transform: scale(0.35); transform-origin: top left;
   }
 
+  /* ── V2 sign sheet (A2 design) ── */
+  .sheet.sign-v2 {
+    width: 24in; height: 18in; background: #fff;
+    display: grid; grid-template-columns: 0.38fr 1.95fr;
+    position: absolute; top: 0; left: 0;
+    transform: scale(0.35); transform-origin: top left;
+  }
+
+  /* ── shared left panel ── */
   .sign-left {
-    background: var(--lpr-blue);
-    color: #fff;
+    background: var(--lpr-blue); color: #fff;
     padding: 1.2in 1.1in;
     display: flex; flex-direction: column; justify-content: space-between;
   }
   .sign-left img.logo { width: 7.5in; height: auto; display: block; }
   .sign-left .accent { width: 3in; height: 0.05in; background: #fff; opacity: 0.5; margin-top: 0.4in; }
   .sign-left .city {
-    font-size: 0.36in; font-weight: 600; letter-spacing: 0.08in;
+    font-size: 0.36in; font-weight: 600; letter-spacing: 0.07in;
     text-transform: uppercase; color: rgba(255,255,255,0.9);
-    margin-top: 0.3in;
+    margin-top: 0.3in; white-space: nowrap;
   }
 
+  /* ── shared right panel base ── */
   .sign-right {
     padding: 1in 1.2in;
     display: flex; flex-direction: column; justify-content: center; gap: 0.4in;
@@ -69,26 +70,55 @@
   }
   .sign-right .phone-label {
     font-size: 0.35in; font-weight: 500; letter-spacing: 0.05in;
-    text-transform: uppercase; color: var(--lpr-muted);
-    margin-bottom: 0.1in;
+    text-transform: uppercase; color: var(--lpr-muted); margin-bottom: 0.1in;
   }
 
-  .specs {
-    max-width: 720px; padding: 0 12px; font-size: 12px; line-height: 1.6;
-    color: var(--lpr-text);
-  }
-  .specs strong { color: var(--lpr-ink); letter-spacing: 1.5px; text-transform: uppercase; font-size: 11px; }
-  .specs code { font-family: 'SF Mono', Menlo, Consolas, monospace; background: rgba(40,56,145,0.08); padding: 1px 6px; border-radius: 3px; }
-
-  /* ── contact row (phone + optional QR on white side) ── */
+  /* ── original contact row ── */
   .contact-row { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25in; }
   #sign-qr-img { width: 4in; height: 4in; display: block; }
-
-  /* ── QR on blue side ── */
   #sign-qr-left { display: none; align-self: center; line-height: 0; }
   #sign-qr-img-blue { width: 6.8in; height: 6.8in; display: block; }
   .sign.qr-blue #sign-qr-group { display: none !important; }
   .sign.qr-blue #sign-qr-left { display: block; }
+
+  /* ── V2 right panel overrides ── */
+  .sign-v2 .sign-right {
+    gap: 0;
+    padding: 0.75in 0.85in 0.75in 0.7in;
+  }
+  .sign-v2 .sign-right .super {
+    font-size: 0.37in; letter-spacing: 0.12in;
+    border-bottom-width: 0.08in; padding-bottom: 0.22in;
+    margin-bottom: 0.22in;
+  }
+  .sign-v2 .sign-right .for-rent {
+    font-size: 3.1in; margin-bottom: 0.2in;
+  }
+  .sign-v2 .homes-line {
+    font-size: 0.72in; font-weight: 700; color: var(--lpr-blue);
+    letter-spacing: -0.005in; line-height: 1.2;
+    margin-bottom: 0.16in;
+  }
+  .sign-v2 .v2-divider {
+    height: 0.03in; background: rgba(40,56,145,0.15);
+    margin-bottom: 0.18in;
+  }
+  .sign-v2 .contact-row {
+    flex-direction: row; align-items: center; gap: 0;
+  }
+  .sign-v2 .sign-right .phone { font-size: 1.35in; }
+  .sign-v2 .sign-right .phone-label { font-size: 0.28in; }
+  .sign-v2 .qr-zone {
+    display: flex; flex-direction: column-reverse; align-items: center;
+    gap: 0.12in; margin-left: 0.65in;
+  }
+  .sign-v2 .sign-left img.logo { width: 4.5in; }
+  .sign-v2 .sign-left { padding: 1in 0.7in 1.6in; }
+  #sign-qr-img-v2 { width: 4.7in; height: 4.7in; display: block; }
+  .sign-v2 .qr-caption {
+    font-size: 0.22in; font-weight: 600; letter-spacing: 0.05in;
+    text-transform: uppercase; color: var(--lpr-muted); white-space: nowrap;
+  }
 
   /* ── settings card ── */
   .sign-settings {
@@ -96,7 +126,7 @@
     padding: 16px 20px; background: #fff;
     border: 1px solid #dde; border-radius: 8px;
   }
-  .sign-settings h4 { margin: 0 0 12px; font-size: 13px; font-weight: 700; color: var(--lpr-blue); }
+  .sign-settings h4 { margin: 0 0 14px; font-size: 13px; font-weight: 700; color: var(--lpr-blue); }
   .sset-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
   .sset-row:last-child { margin-bottom: 0; }
   .sset-label { font-size: 12px; font-weight: 600; color: var(--lpr-ink); min-width: 140px; }
@@ -108,17 +138,38 @@
     outline: none;
   }
   .sset-input:focus { border-color: var(--lpr-blue); }
+  .sset-textarea {
+    flex: 1; padding: 7px 10px;
+    border: 1px solid #dde; border-radius: 6px;
+    font-family: Montserrat, sans-serif; font-size: 13px; color: var(--lpr-ink);
+    outline: none; resize: vertical; min-height: 58px; line-height: 1.5;
+  }
+  .sset-textarea:focus { border-color: var(--lpr-blue); }
 
+  /* ── specs ── */
+  .specs {
+    max-width: 720px; padding: 0 12px; font-size: 12px; line-height: 1.6;
+    color: var(--lpr-text);
+  }
+  .specs strong { color: var(--lpr-ink); letter-spacing: 1.5px; text-transform: uppercase; font-size: 11px; }
+  .specs code { font-family: 'SF Mono', Menlo, Consolas, monospace; background: rgba(40,56,145,0.08); padding: 1px 6px; border-radius: 3px; }
+
+  /* ── print ── */
   @media print {
     html, body { width: 24in; height: 18in; margin: 0; padding: 0; background: #fff; }
     .stage { display: block; }
-    .label, .specs { display: none; }
-    #sign-qr-img { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    #sign-qr-img-blue { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .label, .specs, .sign-settings, .toolbar { display: none !important; }
+    .sign-wrap { width: 24in; height: 18in; overflow: hidden; box-shadow: none; position: static; }
+    .sheet.sign, .sheet.sign-v2 { transform: none; position: absolute; top: 0; left: 0; }
+    body.design-original .sheet.sign-v2 { display: none !important; }
+    body.design-v2 .sheet.sign { display: none !important; }
+    #sign-qr-img, #sign-qr-img-blue, #sign-qr-img-v2 {
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
   }
 </style>
 </head>
-<body>
+<body class="design-original">
 
 <div class="toolbar no-print">
   <a href="index.html" class="toolbar-back">← All templates</a>
@@ -128,6 +179,8 @@
   <div class="label">YARD SIGN · FOR RENT — 24″ × 18″ LANDSCAPE</div>
 
   <div class="sign-wrap">
+
+    <!-- ──── ORIGINAL DESIGN ──── -->
     <div class="sheet sign">
       <div class="sign-left">
         <img class="logo" src="assets/logo-white.png" alt="LPR Management, LLC"/>
@@ -153,23 +206,67 @@
         </div>
       </div>
     </div>
-  </div>
 
+    <!-- ──── NEW DESIGN — A2 ──── -->
+    <div class="sheet sign-v2" style="display:none">
+      <div class="sign-left">
+        <img class="logo" src="assets/logo-white.png" alt="LPR Management, LLC"/>
+        <div>
+          <div class="accent"></div>
+          <div class="city">Pikesville · Maryland</div>
+        </div>
+      </div>
+      <div class="sign-right">
+        <div class="super">Available Now</div>
+        <div class="for-rent">FOR<br/>RENT</div>
+        <div class="homes-line" id="sign-homes-line">We Also Have Many Other 2, 3 &amp; 4<br/>Bedroom Homes Available!</div>
+        <div class="v2-divider"></div>
+        <div class="contact-row">
+          <div>
+            <div class="phone-label">Call to inquire</div>
+            <div class="phone" id="sign-phone-v2">443.402.5641</div>
+          </div>
+          <div class="qr-zone" id="sign-qr-zone-v2" style="display:none">
+            <img id="sign-qr-img-v2" alt="QR code">
+            <div class="qr-caption">Email to inquire</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sign-wrap -->
+
+  <!-- ──── Settings ──── -->
   <div class="sign-settings no-print">
     <h4>Sign settings</h4>
+
+    <div class="sset-row">
+      <span class="sset-label">Design</span>
+      <button class="mode-btn active" id="btn-design-original">Original</button>
+      <button class="mode-btn" id="btn-design-v2">New Design</button>
+    </div>
+
     <div class="sset-row">
       <label class="sset-label" for="inp-phone">Phone number</label>
       <input type="text" id="inp-phone" class="sset-input" placeholder="443.402.5641">
     </div>
+
     <div class="sset-row">
       <label class="sset-label" for="inp-qr">QR code link <span class="sset-hint">— leave blank to hide</span></label>
-      <input type="text" id="inp-qr" class="sset-input" placeholder="https://… or mailto:email@domain.com?subject=…">
+      <input type="text" id="inp-qr" class="sset-input" placeholder="mailto:info@lprmanagement.com?subject=Rental Inquiry">
     </div>
+
     <div class="sset-row" id="qr-side-row" style="display:none">
       <span class="sset-label">QR placement</span>
       <button class="mode-btn active" id="qr-side-white">White side</button>
       <button class="mode-btn" id="qr-side-blue">Blue side</button>
     </div>
+
+    <div class="sset-row" id="homes-line-row" style="display:none">
+      <label class="sset-label" for="inp-homes-line">Homes line text</label>
+      <textarea id="inp-homes-line" class="sset-textarea" placeholder="We Also Have Many Other 2, 3 &amp; 4 Bedroom Homes Available!"></textarea>
+    </div>
+
   </div>
 
   <div class="specs no-print">
@@ -187,51 +284,44 @@
     </p>
   </div>
 </div>
+
 <script src="fill-fields.js"></script>
 <script src="template-tools.js"></script>
 <script>
 (function () {
   'use strict';
-  var PHONE_KEY    = 'lpr_yardsign_phone';
-  var QR_KEY       = 'lpr_yardsign_qr';
-  var QR_SIDE_KEY  = 'lpr_yardsign_qr_side';
+
+  var PHONE_KEY  = 'lpr_yardsign_phone';
+  var QR_KEY     = 'lpr_yardsign_qr';
+  var SIDE_KEY   = 'lpr_yardsign_qr_side';
+  var DESIGN_KEY = 'lpr_yardsign_design';
+  var HOMES_KEY  = 'lpr_yardsign_homes_line';
 
   var inpPhone     = document.getElementById('inp-phone');
   var inpQr        = document.getElementById('inp-qr');
+  var inpHomes     = document.getElementById('inp-homes-line');
+
   var signPhone    = document.getElementById('sign-phone');
+  var signPhoneV2  = document.getElementById('sign-phone-v2');
+  var signHomes    = document.getElementById('sign-homes-line');
+
   var qrGroup      = document.getElementById('sign-qr-group');
   var qrImg        = document.getElementById('sign-qr-img');
   var qrLeft       = document.getElementById('sign-qr-left');
   var qrImgBlue    = document.getElementById('sign-qr-img-blue');
+  var qrZoneV2     = document.getElementById('sign-qr-zone-v2');
+  var qrImgV2      = document.getElementById('sign-qr-img-v2');
+
   var qrSideRow    = document.getElementById('qr-side-row');
+  var homesRow     = document.getElementById('homes-line-row');
   var btnWhite     = document.getElementById('qr-side-white');
   var btnBlue      = document.getElementById('qr-side-blue');
-  var sheet        = document.querySelector('.sheet.sign');
+  var btnOriginal  = document.getElementById('btn-design-original');
+  var btnV2        = document.getElementById('btn-design-v2');
+  var sheetOrig    = document.querySelector('.sheet.sign');
+  var sheetV2      = document.querySelector('.sheet.sign-v2');
 
-  /* restore saved values */
-  var savedPhone = localStorage.getItem(PHONE_KEY);
-  var savedQr    = localStorage.getItem(QR_KEY);
-  var savedSide  = localStorage.getItem(QR_SIDE_KEY) || 'white';
-  if (savedPhone !== null) inpPhone.value = savedPhone;
-  if (savedQr    !== null) inpQr.value    = savedQr;
-
-  function setQrSide(side) {
-    savedSide = side;
-    localStorage.setItem(QR_SIDE_KEY, side);
-    sheet.classList.toggle('qr-blue', side === 'blue');
-    btnWhite.classList.toggle('active', side === 'white');
-    btnBlue.classList.toggle('active', side === 'blue');
-  }
-  setQrSide(savedSide);
-
-  btnWhite.addEventListener('click', function () { setQrSide('white'); });
-  btnBlue.addEventListener('click',  function () { setQrSide('blue'); });
-
-  function updatePhone() {
-    signPhone.textContent = inpPhone.value.trim() || '443.402.5641';
-    localStorage.setItem(PHONE_KEY, inpPhone.value);
-  }
-
+  /* ── QR library loader ── */
   var _qrReady = false, _qrLoading = false, _qrQueue = [];
   function withQR(cb) {
     if (_qrReady) { cb(); return; }
@@ -241,40 +331,91 @@
     var s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js';
     s.onload = function () { _qrReady = true; _qrQueue.forEach(function(fn){ fn(); }); _qrQueue = []; };
-    s.onerror = function () { console.error('QR library failed to load'); };
     document.head.appendChild(s);
   }
 
+  /* ── Design toggle ── */
+  var currentDesign = 'original';
+
+  function setDesign(d) {
+    currentDesign = d;
+    localStorage.setItem(DESIGN_KEY, d);
+    document.body.className = 'design-' + d;
+    sheetOrig.style.display  = d === 'original' ? '' : 'none';
+    sheetV2.style.display    = d === 'v2'       ? '' : 'none';
+    btnOriginal.classList.toggle('active', d === 'original');
+    btnV2.classList.toggle('active', d === 'v2');
+    var hasQr = inpQr.value.trim() !== '';
+    qrSideRow.style.display = (d === 'original' && hasQr) ? '' : 'none';
+    homesRow.style.display  = d === 'v2' ? '' : 'none';
+  }
+
+  btnOriginal.addEventListener('click', function () { setDesign('original'); });
+  btnV2.addEventListener('click',       function () { setDesign('v2'); });
+
+  /* ── Phone ── */
+  function updatePhone() {
+    var v = inpPhone.value.trim() || '443.402.5641';
+    signPhone.textContent   = v;
+    signPhoneV2.textContent = v;
+    localStorage.setItem(PHONE_KEY, inpPhone.value);
+  }
+  inpPhone.addEventListener('input', updatePhone);
+
+  /* ── QR ── */
   function updateQr() {
     var url = inpQr.value.trim();
     localStorage.setItem(QR_KEY, inpQr.value);
-    if (!url) {
-      qrGroup.style.display = 'none';
-      qrLeft.style.display  = 'none';
-      qrSideRow.style.display = 'none';
-      qrImg.src = ''; qrImgBlue.src = '';
-      return;
-    }
-    qrGroup.style.display   = '';
-    qrLeft.style.display    = '';
-    qrSideRow.style.display = '';
+    var has = url !== '';
+    qrGroup.style.display    = has ? '' : 'none';
+    qrLeft.style.display     = has ? '' : 'none';
+    qrZoneV2.style.display   = has ? '' : 'none';
+    qrSideRow.style.display  = (has && currentDesign === 'original') ? '' : 'none';
+    if (!has) { qrImg.src = ''; qrImgBlue.src = ''; qrImgV2.src = ''; return; }
     withQR(function () {
-      qrImg.src = new QRious({
-        value: url, size: 700,
-        foreground: '#283891', background: '#ffffff', level: 'L'
-      }).toDataURL();
-      qrImgBlue.src = new QRious({
-        value: url, size: 700,
-        foreground: '#ffffff', background: '#283891', level: 'L'
-      }).toDataURL();
+      var dark  = new QRious({ value: url, size: 700, foreground: '#283891', background: '#ffffff', level: 'L' }).toDataURL();
+      var light = new QRious({ value: url, size: 700, foreground: '#ffffff', background: '#283891', level: 'L' }).toDataURL();
+      qrImg.src     = dark;
+      qrImgBlue.src = light;
+      qrImgV2.src   = dark;
     });
   }
-
-  inpPhone.addEventListener('input', updatePhone);
   inpQr.addEventListener('input', updateQr);
 
+  /* ── QR side (original only) ── */
+  function setQrSide(side) {
+    localStorage.setItem(SIDE_KEY, side);
+    sheetOrig.classList.toggle('qr-blue', side === 'blue');
+    btnWhite.classList.toggle('active', side === 'white');
+    btnBlue.classList.toggle('active',  side === 'blue');
+  }
+  btnWhite.addEventListener('click', function () { setQrSide('white'); });
+  btnBlue.addEventListener('click',  function () { setQrSide('blue'); });
+
+  /* ── Homes line ── */
+  var DEFAULT_HOMES = 'We Also Have Many Other 2, 3 & 4\nBedroom Homes Available!';
+  function updateHomes() {
+    var raw = inpHomes.value.trim() || DEFAULT_HOMES;
+    signHomes.innerHTML = raw
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br/>');
+    localStorage.setItem(HOMES_KEY, inpHomes.value);
+  }
+  inpHomes.addEventListener('input', updateHomes);
+
+  /* ── Restore & init ── */
+  var sv = localStorage.getItem(PHONE_KEY);  if (sv !== null) inpPhone.value = sv;
+  var sq = localStorage.getItem(QR_KEY);     if (sq !== null) inpQr.value    = sq;
+  var sh = localStorage.getItem(HOMES_KEY);  if (sh !== null) inpHomes.value = sh;
+
+  setDesign(localStorage.getItem(DESIGN_KEY) || 'original');
+  setQrSide(localStorage.getItem(SIDE_KEY)   || 'white');
   updatePhone();
   updateQr();
+  updateHomes();
+
 })();
 </script>
 </body>

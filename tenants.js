@@ -486,7 +486,10 @@
   function renderFillPanel(opts) {
     if (!fillPanel) return;
 
-    const tabs     = window.LPR_FILL_TABS || [];
+    const TAB_ORDER = { sender: 0, tenants: 1, vendors: 2, 'fill-fields': 3, 'address-fields': 3 };
+    const tabs     = (window.LPR_FILL_TABS || [])
+      .slice()
+      .sort(function(a, b) { return (TAB_ORDER[a.id] ?? 99) - (TAB_ORDER[b.id] ?? 99); });
     const showTabs = tabs.length > 1;
 
     fillPanel.innerHTML = `

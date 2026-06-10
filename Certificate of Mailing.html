@@ -178,12 +178,19 @@ body { background: var(--lpr-page); }
 }
 
 /* hide address line 2 row when span is empty */
-.cof-line2:has([data-tenant-field]:empty) { display: none; }
+.cof-line2:has([data-contact-field]:empty) { display: none; }
 /* reveal in edit mode so the field is clickable */
-.sheet.tt-editing .cof-line2:has([data-tenant-field]:empty) { display: block; }
+.sheet.tt-editing .cof-line2:has([data-contact-field]:empty) { display: block; }
 
-/* suppress tenant-field placeholder border lines — the form image has its own lines */
+/* suppress placeholder border lines — the form image has its own lines */
 .sheet [data-tenant-field]:empty::before { border-bottom:none !important; }
+.sheet [data-contact-field]:empty::before { border-bottom:none !important; }
+
+/* ── Fields tab helpers ── */
+.lpr-ff-csz { display: flex; gap: 6px; }
+.lpr-ff-csz .lpr-ff-inp { flex: 1; min-width: 0; }
+.lpr-ff-csz .lpr-ff-inp.ff-st  { flex: 0 0 52px; }
+.lpr-ff-csz .lpr-ff-inp.ff-zip { flex: 0 0 82px; }
 
 /* ── multi-mode layout ── */
 .multi-ui { display:flex; gap:18px; align-items:flex-start; margin-top:10px; }
@@ -446,10 +453,10 @@ body { background: var(--lpr-page); }
       </div>
 
       <div class="overlay-to">
-        <div><span data-tenant-field="first_name"></span>&nbsp;<span data-tenant-field="last_name"></span></div>
-        <div><span data-tenant-field="address_line1"></span></div>
-        <div class="cof-line2"><span data-tenant-field="address_line2"></span></div>
-        <div><span data-tenant-field="city"></span>,&nbsp;<span data-tenant-field="state"></span>&nbsp;<span data-tenant-field="zip"></span></div>
+        <div><span data-contact-field="name"></span></div>
+        <div><span data-contact-field="address_line1"></span></div>
+        <div class="cof-line2"><span data-contact-field="address_line2"></span></div>
+        <div><span data-contact-field="city"></span>,&nbsp;<span data-contact-field="state"></span>&nbsp;<span data-contact-field="zip"></span></div>
       </div>
 
       <!-- cut lines inside .sheet so they're positioned relative to the form, not the container -->
@@ -956,6 +963,77 @@ body { background: var(--lpr-page); }
   // If the page was reloaded with multi mode already saved, init runs before
   // LPR_COF_MULTI was defined. Re-run it now that it exists.
   if (document.body.classList.contains('mode-multi')) init();
+})();
+</script>
+
+<script>
+(function () {
+  var ME_KEY = 'lpr_cof_manual';
+  function loadManual()    { try { return JSON.parse(localStorage.getItem(ME_KEY)) || {}; } catch(e) { return {}; } }
+  function saveManual(obj) { localStorage.setItem(ME_KEY, JSON.stringify(obj)); }
+  function applyField(field, value) {
+    document.querySelectorAll('[data-contact-field="' + field + '"]').forEach(function(el) {
+      el.textContent = value;
+    });
+  }
+
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function renderFieldsTab(container) {
+    var s = loadManual();
+    container.innerHTML =
+      '<div class="lpr-ff-body">' +
+        '<div class="lpr-ff-fields">' +
+          '<div class="lpr-ff-field">' +
+            '<label class="lpr-ff-lbl">Name</label>' +
+            '<input class="lpr-ff-inp" type="text" data-me="name" placeholder="Full name" value="' + esc(s.name) + '">' +
+          '</div>' +
+          '<div class="lpr-ff-field">' +
+            '<label class="lpr-ff-lbl">Street Address</label>' +
+            '<input class="lpr-ff-inp" type="text" data-me="address_line1" placeholder="Street address" value="' + esc(s.address_line1) + '">' +
+          '</div>' +
+          '<div class="lpr-ff-field">' +
+            '<label class="lpr-ff-lbl">Unit / Apt <span style="font-weight:400;letter-spacing:0;text-transform:none;color:var(--lpr-muted);">(optional)</span></label>' +
+            '<input class="lpr-ff-inp" type="text" data-me="address_line2" placeholder="Unit, Apt, Suite…" value="' + esc(s.address_line2) + '">' +
+          '</div>' +
+          '<div class="lpr-ff-field">' +
+            '<label class="lpr-ff-lbl">City · State · Zip</label>' +
+            '<div class="lpr-ff-csz">' +
+              '<input class="lpr-ff-inp" type="text" data-me="city"  placeholder="City"  value="' + esc(s.city)  + '">' +
+              '<input class="lpr-ff-inp ff-st"  type="text" data-me="state" placeholder="ST"   value="' + esc(s.state) + '">' +
+              '<input class="lpr-ff-inp ff-zip" type="text" data-me="zip"   placeholder="Zip"  value="' + esc(s.zip)   + '">' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="lpr-ff-foot">' +
+          '<button class="lpr-ff-clear" id="lpr-cof-clear">Clear Address</button>' +
+        '</div>' +
+      '</div>';
+
+    container.querySelectorAll('[data-me]').forEach(function(inp) {
+      inp.addEventListener('input', function() {
+        var obj = loadManual();
+        obj[inp.dataset.me] = inp.value;
+        saveManual(obj);
+        applyField(inp.dataset.me, inp.value);
+      });
+    });
+
+    document.getElementById('lpr-cof-clear').addEventListener('click', function() {
+      container.querySelectorAll('[data-me]').forEach(function(inp) {
+        inp.value = '';
+        applyField(inp.dataset.me, '');
+      });
+      localStorage.removeItem(ME_KEY);
+    });
+  }
+
+  /* Push Fields tab (sorted to position 3 by tenants.js renderFillPanel) */
+  (window.LPR_FILL_TABS = window.LPR_FILL_TABS || []).push({ id: 'address-fields', label: 'Fields', render: renderFieldsTab });
+
+  /* Restore saved values on load */
+  var saved = loadManual();
+  Object.keys(saved).forEach(function(f) { if (saved[f]) applyField(f, saved[f]); });
 })();
 </script>
 </body>
