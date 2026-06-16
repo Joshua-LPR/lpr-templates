@@ -33,6 +33,7 @@ Use the **Customize for an employee** panel on the index to set name, title, pho
 | Rent Increase Notice | 8.5″ × 11″ | Renewal letter with new rent and effective date |
 | Non-Renewal Notice | 8.5″ × 11″ | Vacate-by date and forwarding-address request |
 | Security Deposit Notices | 8.5″ × 11″ | Three variants: Withheld, Partial Refund, Full Refund |
+| Utilities Addendum | 8.5″ × 11″ | Lease addendum: T/O utility assignments. Full mode includes fuel type checkboxes; Simplified mode hides that column. Hardcoded office contact in header. |
 | Door Hanger | 4.25″ × 11″ | Die-cut notice card for door knob |
 | Yard Sign — For Rent | 24″ × 18″ | Print-shop ready; H-stake spec included |
 

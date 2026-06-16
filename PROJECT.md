@@ -110,6 +110,7 @@ Montserrat is bundled locally in `assets/fonts/` so templates render identically
 | **Rent Increase Notice** | Renewal letter with new monthly rent and effective date. |
 | **Non-Renewal Notice** | Lease will not renew. Vacate-by date and forwarding address request. |
 | **Security Deposit Notices** | Three variants in one file: Withheld, Partial Refund, Full Refund. Mode bar at top switches between them (same pattern as Certificate of Mailing). Save As / Export captures only the active variant via `cloneNode` override. |
+| **Utilities Addendum** | Lease addendum designating which utilities are paid by tenant (T) or owner (O). Fuel type checkboxes (Natural Gas / Bottle gas / Oil or Electric / Coal or other) for heating/cooking/water heating. Community Name and resident address via Setup panel. Blank signature lines for wet or electronic signing. |
 | **Door Hanger** | 4.25″ × 11″ with die-cut guide. Blank lines for handwriting. |
 | **Yard Sign — For Rent** | 24″ × 18″ landscape. Print-shop spec for vinyl/coroplast. |
 
@@ -381,6 +382,7 @@ lpr-templates/
 ├── Rent Increase Notice.html
 ├── Non-Renewal Notice.html
 ├── Security Deposit.html               # Combined — Withheld / Partial Refund / Full Refund
+├── Utilities Addendum.html             # Lease addendum — T/O utility assignments + fuel type checkboxes
 ├── Door Hanger.html
 ├── Yard Sign.html
 ├── LPR Logo Concepts.html              # Logo exploration / brand reference page

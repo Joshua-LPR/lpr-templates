@@ -13,6 +13,9 @@
     const toolbar = document.querySelector(".toolbar");
     if (!toolbar) return;
 
+    // Normalize title: replace em/en dash with plain hyphen so Print → PDF filenames are clean
+    document.title = document.title.replace(/\s*[—–]\s*/g, ' - ');
+
     // EDIT toggle
     const editBtn = mkBtn("Edit", toggleEdit);
     editBtn.id = "tt-edit-btn";

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>LPR — Utilities Addendum</title>
+<link rel="stylesheet" href="brand.css">
+<script src="user.js"></script>
+<style>
+  body { background: var(--lpr-page); padding: 60px 20px 40px; }
+  @page { size: 8.5in 11in; margin: 0; }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .sheet.letter {
+    width: 8.5in; height: 11in; padding: 0.75in 0.85in;
+    box-sizing: border-box;
+    display: flex; flex-direction: column;
+  }
+
+  /* Header */
+  .lh-header { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 18px; border-bottom: 2px solid var(--lpr-blue); }
+  .lh-header img { height: 0.95in; width: auto; }
+  .lh-header .meta { text-align: right; font-size: 8.5pt; line-height: 1.55; color: var(--lpr-ink); font-weight: 400; }
+
+  /* Title */
+  .ua-title {
+    text-align: center;
+    font-size: 16pt; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--lpr-ink);
+    margin-top: 0.25in;
+    margin-bottom: 0.22in;
+  }
+
+  /* Identification fields */
+  .ua-fields { font-size: 11pt; line-height: 1.9; color: var(--lpr-text); margin-bottom: 0.28in; }
+  .ua-fields .row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+  .ua-fields .lbl { color: var(--lpr-ink); font-weight: 600; white-space: nowrap; }
+  .ua-fields .val {
+    flex: 1;
+    border-bottom: 1px solid var(--lpr-rule);
+    padding: 0 4px 1px;
+    min-height: 1.3em;
+  }
+
+  /* Body paragraphs */
+  .ua-body { font-size: 10.5pt; line-height: 1.6; color: var(--lpr-text); }
+  .ua-body p { margin: 0 0 12px; }
+
+  /* Utility table */
+  .ua-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.18in 0 0.32in;
+    font-size: 9.5pt;
+    color: var(--lpr-text);
+  }
+  .ua-table th, .ua-table td {
+    border: 1px solid var(--lpr-rule);
+    padding: 7px 8px;
+    vertical-align: middle;
+  }
+  .ua-table thead th {
+    background: rgba(40,56,145,0.06);
+    color: var(--lpr-ink);
+    font-weight: 700;
+    font-size: 8.5pt;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-align: left;
+  }
+  .ua-table th.col-util { width: 24%; }
+  .ua-table th.col-fuel { width: 52%; }
+  .ua-table th.col-paid { width: 24%; text-align: center; }
+  .ua-table td.util-name { font-weight: 600; color: var(--lpr-ink); }
+  .ua-table td.fuel-cell { color: var(--lpr-muted); }
+
+  .fuel-opts { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+  .fuel-opts label { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .fuel-opts input[type="checkbox"] { width: 11px; height: 11px; accent-color: var(--lpr-blue); margin: 0; }
+  .fuel-cell .na { color: var(--lpr-muted); font-style: italic; }
+
+  .paid-opts { display: flex; justify-content: center; gap: 16px; }
+  .paid-opts label { display: inline-flex; align-items: center; gap: 5px; font-weight: 600; color: var(--lpr-ink); }
+  .paid-opts input[type="radio"] { width: 12px; height: 12px; accent-color: var(--lpr-blue); margin: 0; }
+
+  /* Signature block */
+  .ua-sign { margin-top: 0.45in; display: flex; flex-direction: column; gap: 0.28in; }
+  .ua-sign .sig-row { display: flex; align-items: baseline; gap: 8px; }
+  .ua-sign .sig-label { font-size: 10pt; color: var(--lpr-ink); white-space: nowrap; }
+  .ua-sign .sig-line { flex: 1; border-bottom: 1px solid var(--lpr-ink); display: inline-block; }
+  .ua-sign .date-label { font-size: 10pt; color: var(--lpr-ink); white-space: nowrap; padding-left: 8px; }
+  .ua-sign .date-line { width: 1.4in; border-bottom: 1px solid var(--lpr-ink); display: inline-block; }
+
+  /* Simple mode — hide fuel type column */
+  .ua-simple .col-fuel,
+  .ua-simple .fuel-cell { display: none; }
+  .ua-simple .col-util { width: 60%; text-align: center; }
+  .ua-simple td.util-name { text-align: center; }
+  .ua-simple .col-paid { width: 40%; }
+
+  /* Mode bar */
+  .mode-bar { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; width: 8.5in; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .stage { gap: 0; }
+    .label { display: none; }
+    .mode-bar { display: none; }
+    .fuel-opts input[type="checkbox"],
+    .paid-opts input[type="radio"] {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+</div>
+
+<div class="stage">
+  <div class="mode-bar no-print">
+    <button class="mode-btn active" data-ua-mode="full">Full — with Fuel Type</button>
+    <button class="mode-btn" data-ua-mode="simple">Simplified — no Fuel Type</button>
+  </div>
+  <div class="label">UTILITIES ADDENDUM — US LETTER</div>
+  <div class="sheet letter">
+
+    <div class="lh-header">
+      <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
+      <div class="meta">1517 Reisterstown Road, 2nd Floor<br/>
+      Pikesville, MD 21208<br/>
+      443.402.5641<br/>
+      office@lasalleparkrealty.com</div>
+    </div>
+
+    <div class="ua-title">Utilities Addendum</div>
+
+    <div class="ua-fields">
+      <div class="row">
+        <span class="lbl">Property Owner:</span>
+        <span class="val"><span data-owner-field="name"></span></span>
+      </div>
+      <div class="row">
+        <span class="lbl">Resident Name:</span>
+        <span class="val"><span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span></span>
+      </div>
+      <div class="row">
+        <span class="lbl">Address:</span>
+        <span class="val"><span data-tenant-field="address_line1"></span>, <span data-tenant-field="city"></span>, <span data-tenant-field="state"></span> <span data-tenant-field="zip"></span></span>
+      </div>
+    </div>
+
+    <div class="ua-body">
+      <p>Tenant(s) must pay all utility bills that are individually metered or charged to the premises as and when the same shall become due, and make all required deposits therefore.</p>
+      <p>The owner shall pay for the utilities indicated below by an &ldquo;O&rdquo;. The tenant shall pay for the utilities indicated below by a &ldquo;T&rdquo;. Unless otherwise specified below, owner shall pay for all utilities provided by the owner.</p>
+
+      <table class="ua-table">
+        <thead>
+          <tr>
+            <th class="col-util">Utility</th>
+            <th class="col-fuel">Fuel Type</th>
+            <th class="col-paid">Paid By</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="util-name">Heating</td>
+            <td class="fuel-cell">
+              <div class="fuel-opts">
+                <label><input type="checkbox" /> Natural Gas</label>
+                <label><input type="checkbox" /> Bottle gas</label>
+                <label><input type="checkbox" /> Oil or Electric</label>
+              </div>
+            </td>
+            <td>
+              <div class="paid-opts">
+                <label><input type="radio" name="paid-heating" /> T</label>
+                <label><input type="radio" name="paid-heating" /> O</label>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="util-name">Cooking</td>
+            <td class="fuel-cell">
+              <div class="fuel-opts">
+                <label><input type="checkbox" /> Natural Gas</label>
+                <label><input type="checkbox" /> Bottle gas</label>
+                <label><input type="checkbox" /> Oil or Electric</label>
+              </div>
+            </td>
+            <td>
+              <div class="paid-opts">
+                <label><input type="radio" name="paid-cooking" /> T</label>
+                <label><input type="radio" name="paid-cooking" /> O</label>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="util-name">Water Heating</td>
+            <td class="fuel-cell">
+              <div class="fuel-opts">
+                <label><input type="checkbox" /> Natural Gas</label>
+                <label><input type="checkbox" /> Bottle gas</label>
+                <label><input type="checkbox" /> Oil or Electric</label>
+              </div>
+            </td>
+            <td>
+              <div class="paid-opts">
+                <label><input type="radio" name="paid-waterheating" /> T</label>
+                <label><input type="radio" name="paid-waterheating" /> O</label>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="util-name">Air Conditioning</td>
+            <td class="fuel-cell"><span class="na">—</span></td>
+            <td>
+              <div class="paid-opts">
+                <label><input type="radio" name="paid-ac" /> T</label>
+                <label><input type="radio" name="paid-ac" /> O</label>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="util-name">Other Electric</td>
+            <td class="fuel-cell"><span class="na">—</span></td>
+            <td>
+              <div class="paid-opts">
+                <label><input type="radio" name="paid-otherelectric" /> T</label>
+                <label><input type="radio" name="paid-otherelectric" /> O</label>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="util-name">Water</td>
+            <td class="fuel-cell"><span class="na">—</span></td>
+            <td>
+              <div class="paid-opts">
+                <label><input type="radio" name="paid-water" /> T</label>
+                <label><input type="radio" name="paid-water" /> O</label>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="util-name">Sewer</td>
+            <td class="fuel-cell"><span class="na">—</span></td>
+            <td>
+              <div class="paid-opts">
+                <label><input type="radio" name="paid-sewer" /> T</label>
+                <label><input type="radio" name="paid-sewer" /> O</label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ua-sign">
+      <div class="sig-row">
+        <span class="sig-label">Resident Signature</span>
+        <span class="sig-line"></span>
+        <span class="date-label">Date</span>
+        <span class="date-line"></span>
+      </div>
+      <div class="sig-row">
+        <span class="sig-label">Landlord/Agent Signature</span>
+        <span class="sig-line"></span>
+        <span class="date-label">Date</span>
+        <span class="date-line"></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  function setUAMode(mode) {
+    document.querySelectorAll('[data-ua-mode]').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.uaMode === mode);
+    });
+    document.querySelectorAll('.sheet').forEach(function (el) {
+      el.classList.toggle('ua-simple', mode === 'simple');
+    });
+  }
+  document.querySelectorAll('[data-ua-mode]').forEach(function (btn) {
+    btn.addEventListener('click', function () { setUAMode(btn.dataset.uaMode); });
+  });
+})();
+</script>
+<script src="tenants.js"></script>
+<script src="owners.js"></script>
+<script src="template-tools.js"></script>
+<script>
+(function () {
+  var ownerEl = document.querySelector('[data-owner-field="name"]');
+
+  /* 1. Clear owner on load — prints blank until sender is applied */
+  if (ownerEl) ownerEl.textContent = '';
+
+  /* 2. Clear owner during Print Blank (printBlank clears tenant fields before window.print,
+        so if tenant fields are empty at beforeprint time, it's a blank print) */
+  if (ownerEl) {
+    var _saved = null;
+    window.addEventListener('beforeprint', function () {
+      var allEmpty = [...document.querySelectorAll('[data-tenant-field]')]
+        .every(function (el) { return !el.textContent.trim(); });
+      if (allEmpty) { _saved = ownerEl.textContent; ownerEl.textContent = ''; }
+      else { _saved = null; }
+    });
+    window.addEventListener('afterprint', function () {
+      if (_saved !== null) { ownerEl.textContent = _saved; _saved = null; }
+    });
+  }
+})();
+</script>
+</body>
+</html>
