@@ -112,7 +112,7 @@ Montserrat is bundled locally in `assets/fonts/` so templates render identically
 | **Security Deposit Notices** | Three variants in one file: Withheld, Partial Refund, Full Refund. Mode bar at top switches between them (same pattern as Certificate of Mailing). Save As / Export captures only the active variant via `cloneNode` override. |
 | **Utilities Addendum** | Lease addendum designating which utilities are paid by tenant (T) or owner (O). Fuel type checkboxes (Natural Gas / Bottle gas / Oil or Electric / Coal or other) for heating/cooking/water heating. Community Name and resident address via Setup panel. Blank signature lines for wet or electronic signing. |
 | **Door Hanger** | 4.25″ × 11″ with die-cut guide. Blank lines for handwriting. |
-| **Yard Sign — For Rent** | 24″ × 18″ landscape. Print-shop spec for vinyl/coroplast. |
+| **Yard Sign — For Rent** | 24″ × 18″ landscape. Print-shop spec for vinyl/coroplast. Equal Housing Opportunity mark on both design variants. Export menu includes a high-res 2400×1800 PNG (via html2canvas) in addition to the standard exports. |
 
 ### Digital
 

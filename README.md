@@ -35,7 +35,7 @@ Use the **Customize for an employee** panel on the index to set name, title, pho
 | Security Deposit Notices | 8.5″ × 11″ | Three variants: Withheld, Partial Refund, Full Refund |
 | Utilities Addendum | 8.5″ × 11″ | Lease addendum: T/O utility assignments. Full mode includes fuel type checkboxes; Simplified mode hides that column. Hardcoded office contact in header. |
 | Door Hanger | 4.25″ × 11″ | Die-cut notice card for door knob |
-| Yard Sign — For Rent | 24″ × 18″ | Print-shop ready; H-stake spec included |
+| Yard Sign — For Rent | 24″ × 18″ | Print-shop ready; H-stake spec included. EHO mark on both variants; high-res 2400×1800 PNG export |
 
 ### Digital
 | Template | Notes |

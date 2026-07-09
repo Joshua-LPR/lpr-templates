@@ -49,6 +49,14 @@
     margin-top: 0.3in; white-space: nowrap;
   }
 
+  /* ── Equal Housing Opportunity mark ── */
+  .eho { display: flex; align-items: center; margin-top: 0.55in; }
+  .eho .eho-mark { display: block; height: auto; }
+  .sign .eho .eho-mark { width: 1.5in; }
+  .sign-v2 .eho { margin-top: 0.4in; }
+  .sign-v2 .eho .eho-mark { width: 1.25in; }
+  .sign-v2 .eho .eho-text { font-size: 0.145in; letter-spacing: 0.015in; }
+
   /* ── shared right panel base ── */
   .sign-right {
     padding: 1in 1.2in;
@@ -190,6 +198,9 @@
         <div>
           <div class="accent"></div>
           <div class="city">Pikesville · Maryland</div>
+          <div class="eho">
+            <img class="eho-mark" src="assets/eho-white.png" alt="Equal Housing Opportunity"/>
+          </div>
         </div>
       </div>
       <div class="sign-right">
@@ -214,6 +225,9 @@
         <div>
           <div class="accent"></div>
           <div class="city">Pikesville · Maryland</div>
+          <div class="eho">
+            <img class="eho-mark" src="assets/eho-white.png" alt="Equal Housing Opportunity"/>
+          </div>
         </div>
       </div>
       <div class="sign-right">
@@ -287,6 +301,100 @@
 
 <script src="fill-fields.js"></script>
 <script src="template-tools.js"></script>
+<script>
+/* ── High-res PNG override (2400×1800) ──
+   Intercepts the Export › Image (.png) click before template-tools.js
+   handles it, temporarily strips the preview scale transform, captures
+   the full 24in×18in sheet with html2canvas, then restores everything. */
+(function () {
+  document.addEventListener('click', function (e) {
+    var item = e.target.closest && e.target.closest('.tt-menu-item[data-export="png"]');
+    if (!item) return;
+    e.stopImmediatePropagation();
+    var menu = document.querySelector('.tt-export-menu');
+    if (menu) menu.hidden = true;
+    doHighResPng();
+  }, true);
+
+  function doHighResPng() {
+    var sheet = [...document.querySelectorAll('.sheet')].find(function (s) { return s.offsetHeight > 0; });
+    if (!sheet) return;
+    var wrap = document.querySelector('.sign-wrap');
+
+    /* save state */
+    var savedTransform = sheet.style.transform;
+    var savedWrap = wrap ? { overflow: wrap.style.overflow, width: wrap.style.width, height: wrap.style.height } : null;
+
+    /* show a brief status message */
+    var msg = document.createElement('div');
+    msg.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#283891;color:#fff;font-family:Montserrat,sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:10px 22px;border-radius:999px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.2)';
+    msg.textContent = 'Rendering 2400 × 1800 PNG…';
+    document.body.appendChild(msg);
+
+    /* strip transform so html2canvas sees the full 24in×18in sheet */
+    sheet.style.transform = 'none';
+    if (wrap) { wrap.style.overflow = 'visible'; wrap.style.width = '24in'; wrap.style.height = '18in'; }
+
+    function restore() {
+      sheet.style.transform = savedTransform;
+      if (wrap && savedWrap) { wrap.style.overflow = savedWrap.overflow; wrap.style.width = savedWrap.width; wrap.style.height = savedWrap.height; }
+    }
+
+    /* inline images as data-URIs so html2canvas can draw them without CORS issues */
+    var imgs = [...sheet.querySelectorAll('img')];
+    var origSrcs = new Map();
+    Promise.all(imgs.map(function (img) {
+      return new Promise(function (res) {
+        var src = img.getAttribute('src') || '';
+        if (!src || src.startsWith('data:')) { res(); return; }
+        origSrcs.set(img, src);
+        var tmp = new Image();
+        tmp.onload = function () {
+          var c = document.createElement('canvas');
+          c.width = tmp.naturalWidth || 1; c.height = tmp.naturalHeight || 1;
+          c.getContext('2d').drawImage(tmp, 0, 0);
+          try { img.src = c.toDataURL(); } catch (err) {}
+          res();
+        };
+        tmp.onerror = res;
+        tmp.src = src;
+      });
+    })).then(function () {
+      function restoreImgs() { origSrcs.forEach(function (src, img) { img.setAttribute('src', src); }); }
+
+      /* load html2canvas */
+      var load = window.html2canvas
+        ? Promise.resolve()
+        : new Promise(function (res, rej) {
+            var s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+            s.onload = res; s.onerror = function () { rej(new Error('html2canvas failed to load')); };
+            document.head.appendChild(s);
+          });
+
+      load.then(function () {
+        /* 24in × 96dpi = 2304px wide, 18in = 1728px tall
+           scale 2400/2304 ≈ 1.0417 → output exactly 2400×1800          */
+        var W = 2304, H = 1728, scale = 2400 / W;
+        window.html2canvas(sheet, {
+          scale: scale, width: W, height: H,
+          useCORS: false, allowTaint: true,
+          backgroundColor: '#ffffff', logging: false
+        }).then(function (canvas) {
+          restoreImgs(); restore(); msg.remove();
+          canvas.toBlob(function (blob) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url; a.download = 'Yard Sign.png';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
+          }, 'image/png');
+        }).catch(function (err) { restoreImgs(); restore(); msg.remove(); console.error(err); });
+      }).catch(function (err) { restoreImgs(); restore(); msg.remove(); console.error(err); });
+    });
+  }
+})();
+</script>
 <script>
 (function () {
   'use strict';
