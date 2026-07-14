@@ -107,4 +107,30 @@
     setActive, clearActive,
     deleteUser
   };
+
+  /* ============================================================
+     SCHEMA VERSIONING & MIGRATIONS
+     ------------------------------------------------------------
+     Runs after active-user resolution (above) so any migration's
+     up() reads/writes through the already-patched localStorage
+     and therefore lands in the active user's namespace. Ordered,
+     idempotent: each up() must guard its own work so re-running
+     it (e.g. cur already >= m.v) is a no-op. lpr_schema_version
+     itself is namespaced like every other lpr_* key.
+     ============================================================ */
+  const LPR_SCHEMA_VERSION = 1;
+  const LPR_MIGRATIONS = [
+    // { v: 2, up() { /* e.g. copy lpr_addr_* legacy key -> canonical; relabel Date -> Notice Date */ } },
+  ];
+  function runMigrations() {
+    let cur = parseInt(localStorage.getItem('lpr_schema_version') || '1', 10);
+    for (const m of LPR_MIGRATIONS) {
+      if (m.v > cur) {
+        try { m.up(); } catch (e) { console.warn('migration', m.v, e); }
+        cur = m.v;
+      }
+    }
+    localStorage.setItem('lpr_schema_version', String(LPR_SCHEMA_VERSION));
+  }
+  runMigrations();
 })();

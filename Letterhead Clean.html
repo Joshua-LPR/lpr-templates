@@ -2,28 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>LPR — Letterhead (No Watermark)</title>
 <link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="letter.css">
 <script src="user.js"></script>
 <style>
-  body { background: var(--lpr-page); padding: 60px 20px 40px; }
-  @page { size: 8.5in 11in; margin: 0; }
-  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
-  .sheet.letter { width: 8.5in; height: 11in; padding: 0.75in 0.85in; display: flex; flex-direction: column; position: relative; }
-  .lh-header { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 18px; border-bottom: 2px solid var(--lpr-blue); }
-  .lh-header img { height: 0.95in; width: auto; }
-  .lh-header .meta { text-align: right; font-size: 8.5pt; line-height: 1.55; color: var(--lpr-ink); font-weight: 400; }
-  .lh-body { flex: 1; padding-top: 0.5in; font-size: 11pt; line-height: 1.6; color: var(--lpr-text); font-weight: 400; }
-  .lh-body .date { color: var(--lpr-muted); font-size: 10pt; margin-bottom: 24px; }
-  .lh-body .recipient { margin-bottom: 24px; line-height: 1.45; }
   .lh-addr2:has([data-contact-field]:empty) { display: none; }
   .sheet.tt-editing .lh-addr2:has([data-contact-field]:empty) { display: block; }
-  .lh-body p { margin: 0 0 12px; }
-  .lh-body .signoff { margin-top: 36px; }
-  .lh-body .signature { height: auto; min-height: 0; }
   .lh-footer { padding-top: 12px; display: flex; justify-content: center; align-items: center; }
   .lh-footer .stripe { width: 1.4in; height: 2px; background: var(--lpr-blue); border-radius: 1px; }
-  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label { display: none; } }
 </style>
 </head>
 <body>
@@ -32,7 +20,7 @@
 </div>
 <div class="stage">
   <div class="label">LETTERHEAD (NO WATERMARK) — US LETTER (8.5″ × 11″)</div>
-  <div class="sheet letter">
+  <div class="sheet letter lh-plain">
     <div class="lh-header">
       <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
       <div class="meta">

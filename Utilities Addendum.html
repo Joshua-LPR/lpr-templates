@@ -2,24 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>LPR — Utilities Addendum</title>
 <link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="letter.css">
 <script src="user.js"></script>
 <style>
-  body { background: var(--lpr-page); padding: 60px 20px 40px; }
-  @page { size: 8.5in 11in; margin: 0; }
-  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
-  .sheet.letter {
-    width: 8.5in; height: 11in; padding: 0.75in 0.85in;
-    box-sizing: border-box;
-    display: flex; flex-direction: column;
-  }
-
-  /* Header */
-  .lh-header { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 18px; border-bottom: 2px solid var(--lpr-blue); }
-  .lh-header img { height: 0.95in; width: auto; }
-  .lh-header .meta { text-align: right; font-size: 8.5pt; line-height: 1.55; color: var(--lpr-ink); font-weight: 400; }
-
   /* Title */
   .ua-title {
     text-align: center;
@@ -90,21 +78,14 @@
   .ua-sign .date-label { font-size: 10pt; color: var(--lpr-ink); white-space: nowrap; padding-left: 8px; }
   .ua-sign .date-line { width: 1.4in; border-bottom: 1px solid var(--lpr-ink); display: inline-block; }
 
-  /* Simple mode — hide fuel type column */
-  .ua-simple .col-fuel,
-  .ua-simple .fuel-cell { display: none; }
-  .ua-simple .col-util { width: 60%; text-align: center; }
-  .ua-simple td.util-name { text-align: center; }
-  .ua-simple .col-paid { width: 40%; }
-
-  /* Mode bar */
-  .mode-bar { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; width: 8.5in; }
+  /* Simple mode — fuel-type column hidden via [data-mode-when="doc:full"] +
+     the shared .mode-hidden mechanism (mode-bar.js). Width/alignment shift
+     stays here, keyed on the body class mode-bar.js sets on mode switch. */
+  body.mode-doc-simple .col-util { width: 60%; text-align: center; }
+  body.mode-doc-simple td.util-name { text-align: center; }
+  body.mode-doc-simple .col-paid { width: 40%; }
 
   @media print {
-    body { background: #fff; padding: 0; }
-    .stage { gap: 0; }
-    .label { display: none; }
-    .mode-bar { display: none; }
     .fuel-opts input[type="checkbox"],
     .paid-opts input[type="radio"] {
       -webkit-print-color-adjust: exact;
@@ -120,9 +101,9 @@
 </div>
 
 <div class="stage">
-  <div class="mode-bar no-print">
-    <button class="mode-btn active" data-ua-mode="full">Full — with Fuel Type</button>
-    <button class="mode-btn" data-ua-mode="simple">Simplified — no Fuel Type</button>
+  <div class="mode-bar no-print" data-mode-group="doc" data-mode-key="ua">
+    <button class="mode-btn active" data-mode="full">Full — with Fuel Type</button>
+    <button class="mode-btn" data-mode="simple">Simplified — no Fuel Type</button>
   </div>
   <div class="label">UTILITIES ADDENDUM — US LETTER</div>
   <div class="sheet letter">
@@ -144,11 +125,11 @@
       </div>
       <div class="row">
         <span class="lbl">Resident Name:</span>
-        <span class="val"><span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span></span>
+        <span class="val"><span data-contact-field="first_name"></span> <span data-contact-field="last_name"></span></span>
       </div>
       <div class="row">
         <span class="lbl">Address:</span>
-        <span class="val"><span data-tenant-field="address_line1"></span>, <span data-tenant-field="city"></span>, <span data-tenant-field="state"></span> <span data-tenant-field="zip"></span></span>
+        <span class="val"><span data-contact-field="address_line1"></span>, <span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span></span>
       </div>
     </div>
 
@@ -160,14 +141,14 @@
         <thead>
           <tr>
             <th class="col-util">Utility</th>
-            <th class="col-fuel">Fuel Type</th>
+            <th class="col-fuel" data-mode-when="doc:full">Fuel Type</th>
             <th class="col-paid">Paid By</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td class="util-name">Heating</td>
-            <td class="fuel-cell">
+            <td class="fuel-cell" data-mode-when="doc:full">
               <div class="fuel-opts">
                 <label><input type="checkbox" /> Natural Gas</label>
                 <label><input type="checkbox" /> Bottle gas</label>
@@ -183,7 +164,7 @@
           </tr>
           <tr>
             <td class="util-name">Cooking</td>
-            <td class="fuel-cell">
+            <td class="fuel-cell" data-mode-when="doc:full">
               <div class="fuel-opts">
                 <label><input type="checkbox" /> Natural Gas</label>
                 <label><input type="checkbox" /> Bottle gas</label>
@@ -199,7 +180,7 @@
           </tr>
           <tr>
             <td class="util-name">Water Heating</td>
-            <td class="fuel-cell">
+            <td class="fuel-cell" data-mode-when="doc:full">
               <div class="fuel-opts">
                 <label><input type="checkbox" /> Natural Gas</label>
                 <label><input type="checkbox" /> Bottle gas</label>
@@ -215,7 +196,7 @@
           </tr>
           <tr>
             <td class="util-name">Air Conditioning</td>
-            <td class="fuel-cell"><span class="na">—</span></td>
+            <td class="fuel-cell" data-mode-when="doc:full"><span class="na">—</span></td>
             <td>
               <div class="paid-opts">
                 <label><input type="radio" name="paid-ac" /> T</label>
@@ -225,7 +206,7 @@
           </tr>
           <tr>
             <td class="util-name">Other Electric</td>
-            <td class="fuel-cell"><span class="na">—</span></td>
+            <td class="fuel-cell" data-mode-when="doc:full"><span class="na">—</span></td>
             <td>
               <div class="paid-opts">
                 <label><input type="radio" name="paid-otherelectric" /> T</label>
@@ -235,7 +216,7 @@
           </tr>
           <tr>
             <td class="util-name">Water</td>
-            <td class="fuel-cell"><span class="na">—</span></td>
+            <td class="fuel-cell" data-mode-when="doc:full"><span class="na">—</span></td>
             <td>
               <div class="paid-opts">
                 <label><input type="radio" name="paid-water" /> T</label>
@@ -245,7 +226,7 @@
           </tr>
           <tr>
             <td class="util-name">Sewer</td>
-            <td class="fuel-cell"><span class="na">—</span></td>
+            <td class="fuel-cell" data-mode-when="doc:full"><span class="na">—</span></td>
             <td>
               <div class="paid-opts">
                 <label><input type="radio" name="paid-sewer" /> T</label>
@@ -275,23 +256,9 @@
   </div>
 </div>
 
-<script>
-(function () {
-  function setUAMode(mode) {
-    document.querySelectorAll('[data-ua-mode]').forEach(function (btn) {
-      btn.classList.toggle('active', btn.dataset.uaMode === mode);
-    });
-    document.querySelectorAll('.sheet').forEach(function (el) {
-      el.classList.toggle('ua-simple', mode === 'simple');
-    });
-  }
-  document.querySelectorAll('[data-ua-mode]').forEach(function (btn) {
-    btn.addEventListener('click', function () { setUAMode(btn.dataset.uaMode); });
-  });
-})();
-</script>
 <script src="tenants.js"></script>
 <script src="owners.js"></script>
+<script src="mode-bar.js"></script>
 <script src="template-tools.js"></script>
 <script>
 (function () {
@@ -305,7 +272,7 @@
   if (ownerEl) {
     var _saved = null;
     window.addEventListener('beforeprint', function () {
-      var allEmpty = [...document.querySelectorAll('[data-tenant-field]')]
+      var allEmpty = [...document.querySelectorAll('[data-contact-field]')]
         .every(function (el) { return !el.textContent.trim(); });
       if (allEmpty) { _saved = ownerEl.textContent; ownerEl.textContent = ''; }
       else { _saved = null; }

@@ -6,7 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="stylesheet" href="brand.css">
 <script src="user.js"></script>
+<script src="templates-manifest.js"></script>
 <style>
+  html { scroll-behavior: smooth; }
   body { background: var(--lpr-page); min-height: 100vh; }
   .container { max-width: 1180px; margin: 0 auto; padding: 56px 32px 80px; }
   .hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: center; background: #fff; border-radius: 12px; padding: 48px 56px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); margin-bottom: 48px; }
@@ -65,7 +67,7 @@
   .mini-watermark .wm { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 55%; opacity: 0.1; }
 
   .mini-env { width: 92%; aspect-ratio: 9.5/4.125; background: #fff; border: 1px solid var(--lpr-rule); border-radius: 3px; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; }
-  .mini-env .stripe { width: 5%; background: var(--lpr-blue); }
+  .mini-env .ret .vr { width: 1px; background: var(--lpr-blue); align-self: stretch; margin: 2px 0; }
   .mini-env .body { flex: 1; padding: 8px 10px; display: flex; flex-direction: column; justify-content: space-between; }
   .mini-env .ret { display: flex; gap: 6px; align-items: center; }
   .mini-env .ret img { height: 22px; width: auto; }
@@ -318,6 +320,25 @@
     line-height: 1.5;
   }
 
+  /* How-to quick guide strip */
+  .how-strip { background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); margin-bottom: 36px; padding: 0 40px; }
+  .how-strip summary {
+    cursor: pointer; list-style: none;
+    display: flex; justify-content: space-between; align-items: center;
+    font-weight: 700; font-size: 15px; color: var(--lpr-ink);
+    padding: 20px 0; letter-spacing: -0.1px;
+  }
+  .how-strip summary::-webkit-details-marker { display: none; }
+  .how-strip summary::after { content: "+"; color: var(--lpr-blue); font-weight: 400; font-size: 20px; }
+  .how-strip[open] summary::after { content: "–"; }
+  .how-strip .how-strip-body {
+    border-top: 1px solid var(--lpr-rule);
+    padding: 4px 0 22px; font-size: 13px; line-height: 1.7; color: var(--lpr-text);
+  }
+  .how-strip .how-strip-body p { margin: 12px 0 0; }
+  .how-strip .how-strip-body strong { color: var(--lpr-blue); }
+  .how-strip .how-strip-body a { color: var(--lpr-blue); font-weight: 600; text-decoration: underline; }
+
   /* Employee picker */
   .emp-picker { background: #fff; border-radius: 12px; padding: 32px 40px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); margin-bottom: 36px; }
   .emp-picker h2 { font-size: 16px; font-weight: 700; color: var(--lpr-ink); margin: 0 0 4px; letter-spacing: -0.2px; }
@@ -429,6 +450,8 @@
   .usage .doc-body strong { color: var(--lpr-ink); }
   .usage .doc-body code { font-family: 'SF Mono', Menlo, Consolas, monospace; background: #fbf9f5; padding: 1px 6px; border-radius: 3px; font-size: 12px; color: var(--lpr-blue); }
   .usage .doc-body .tip { background: rgba(40,56,145,0.06); border-left: 2px solid var(--lpr-blue); padding: 10px 14px; margin: 10px 0; font-size: 12.5px; }
+  .usage .group-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--lpr-muted); font-weight: 600; margin: 4px 0 2px; padding-left: 4px; }
+  .usage .group-label.second { margin-top: 32px; }
 
   /* ---- Template search ---- */
   .tmpl-search-wrap { position: relative; margin-bottom: 32px; }
@@ -474,7 +497,7 @@
     <div class="logo"><img src="assets/logo-cropped.png" alt="LPR Management, LLC"/></div>
     <div>
       <h1>Brand Template Library</h1>
-      <p>Print-ready stationery and digital assets — all built on your existing logo, type system, and royal blue. Click any template to open, then use the <strong>Print</strong> button (top-right) to send to a printer or save as PDF.</p>
+      <p>Print-ready stationery and digital assets — all built on your existing logo, type system, and royal blue. Click any template to open, then use <strong>Export → Print</strong> (top-right) to send to a printer or save as PDF.</p>
       <div class="meta">
         <div><strong>Type</strong><span>Montserrat (300/500/700/800)</span></div>
         <div><strong>Brand color</strong><span>#283891 royal blue</span></div>
@@ -488,6 +511,17 @@
       </div>
     </div>
   </div>
+
+  <details class="how-strip">
+    <summary>How to use this site — quick guide</summary>
+    <div class="how-strip-body">
+      <p><strong>Set up once:</strong> fill the <strong>Customize for an employee</strong> form and add <strong>Signatures</strong> below; every template opens pre-filled.</p>
+      <p><strong>Using a template:</strong> <strong>Setup</strong> fills in who and what · <strong>Edit</strong> changes wording (one-offs only) · <strong>Export</strong> prints, saves PDF/PNG, or saves to the library.</p>
+      <p><strong>Organize:</strong> hover a card to <strong>★ star</strong> or <strong>⌫ archive</strong> it; drag to reorder; <strong>Save As</strong> inside a template stores your filled copy in the Library section.</p>
+      <p><strong>Protect your data:</strong> use <strong>Backup &amp; Restore</strong> (bottom of this page) to download everything as one file.</p>
+      <p><a href="#usage-guide">Full guide + template-specific notes ↓</a></p>
+    </div>
+  </details>
 
   <div class="emp-picker">
     <h2>Customize for an employee <span id="emp-active-tag" class="emp-active" style="display:none;"></span></h2>
@@ -535,38 +569,21 @@
   </div>
   <div class="tmpl-search-none" id="tmpl-search-none">No templates match your search.</div>
 
-  <div id="sections-wrap">
+  <!-- Thumbnail defs (Track 4 / P1a): bespoke card-thumbnail markup, cloned by renderCards()
+       via templates-manifest.js. Kept as real HTML (not manifest strings) — see track4-design.md §1.2.
+       <template> content is inert, so the two thumbs that used to build repeated cells with
+       document.write() are unrolled here into literal repeated markup instead (document.write
+       inside a template never executes when cloned). -->
+  <div id="thumb-defs" hidden>
 
-    <!-- Favorites: shown only when there are starred items -->
-    <div class="section-block" data-section-id="favorites" id="favorites-section" style="display:none;">
-      <div class="section-head">
-        <div class="section-title">★ FAVORITES</div>
-      </div>
-      <div class="grid" data-section="favorites"></div>
-    </div>
-
-    <div class="section-block" data-section-id="stationery">
-      <div class="section-head">
-        <div class="section-title">STATIONERY</div>
-      </div>
-      <div class="grid" data-section="stationery">
-
-    <a href="Business Card.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Business Card.html">
         <div class="mini-card">
           <div class="l"><img src="assets/logo-cropped.png" alt=""/></div>
           <div class="r"><div class="a"></div><div class="b"></div><div class="c"></div><div class="c s"></div><div class="c t"></div></div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">3.5″ × 2″ · Personal</div>
-        <h3>Business Card</h3>
-        <p>Mark left, employee contact right. Royal blue back with full lockup.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="Business Card Company.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Business Card Company.html">
         <div class="mini-bcc">
           <img src="assets/logo-cropped.png" alt=""/>
           <div class="mini-bcc-rows">
@@ -575,16 +592,9 @@
             <div class="mini-bcc-row" style="width:80%;"></div>
           </div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">3.5″ × 2″ · Company</div>
-        <h3>Business Card — Company</h3>
-        <p>No name version. Centered logo + office phone & address. For the main line.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="Letterhead.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Letterhead.html">
         <div class="mini-letter">
           <div class="head">
             <img src="assets/logo-cropped.png" alt=""/>
@@ -593,77 +603,38 @@
           <div class="lines"><div></div><div></div><div></div><div></div><div></div><div></div></div>
           <img class="wm" src="assets/logo-cropped.png" alt=""/>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">8.5″ × 11″ · US Letter</div>
-        <h3>Letterhead</h3>
-        <p>Header, body block, signature. Toggle watermark on or off.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="Letter Watermark.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Letter Watermark.html">
         <div class="mini-watermark">
           <div class="top"></div>
           <img class="wm" src="assets/logo-cropped.png" alt=""/>
           <div class="bot"></div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">8.5″ × 11″ · US Letter</div>
-        <h3>Letter Watermark</h3>
-        <p>Pre-printable background — top brand band, foot stripe, ghosted mark.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="Envelope.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Envelope.html">
         <div class="mini-env">
-          <div class="stripe"></div>
           <div class="body">
             <div class="ret">
               <img src="assets/logo-cropped.png" alt=""/>
+              <div class="vr"></div>
               <div class="lines"><div></div><div></div><div></div></div>
             </div>
             <div class="recip"><div></div><div></div><div></div></div>
           </div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">9.5″ × 4.125″ · #10</div>
-        <h3>Envelopes</h3>
-        <p>Three styles: Standard stripe, Premium ivory, and Send-address-only for pre-printed envelopes.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="Mailing Labels.html" class="card">
-      <div class="thumb">
-        <div class="mini-grid">
-          <script>document.write(Array(30).fill('<div class="cell"></div>').join(''));</script>
-        </div>
-      </div>
-      <div class="body">
-        <div class="role">Avery 5160 · 30 / Sheet</div>
-        <h3>Mailing Labels</h3>
-        <p>Return-address sheet with logo, name, and address per label.</p>
-      </div>
-    </a>
+    <template data-thumb-id="Mailing Labels.html">
+        <div class="mini-grid"><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div></div>
+    </template>
 
-    <a href="Shipping Labels - Avery 5168.html" class="card">
-      <div class="thumb">
-        <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:100%;height:100%;padding:4px;box-sizing:border-box;">
-          <script>document.write(Array(4).fill('<div style="background:#fff;border-radius:3px;border:1px solid rgba(40,56,145,.15);display:flex;flex-direction:column;overflow:hidden;"><div style="padding:3px 4px 2px;border-bottom:1px solid rgba(40,56,145,.2);display:flex;align-items:center;gap:3px;"><img src=\'assets/logo-cropped.png\' style=\'height:10px;width:auto;\'/><div style=\'font-size:3px;line-height:1.3;color:#283891;\'></div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px;"><div style=\'width:55%;height:2px;background:#c8cde8;border-radius:1px;\'></div><div style=\'width:45%;height:2px;background:#c8cde8;border-radius:1px;\'></div><div style=\'width:40%;height:2px;background:#c8cde8;border-radius:1px;\'></div></div></div>').join(''));</script>
-        </div>
-      </div>
-      <div class="body">
-        <div class="role">Avery 5168 · 4 / Sheet · 3.5″ × 5″</div>
-        <h3>Shipping Labels</h3>
-        <p>Large mailing labels with LPR return address and fillable recipient. Print on a standard laser or inkjet printer.</p>
-      </div>
-    </a>
+    <template data-thumb-id="Shipping Labels - Avery 5168.html">
+        <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:100%;height:100%;padding:4px;box-sizing:border-box;"><div style="background:#fff;border-radius:3px;border:1px solid rgba(40,56,145,.15);display:flex;flex-direction:column;overflow:hidden;"><div style="padding:3px 4px 2px;border-bottom:1px solid rgba(40,56,145,.2);display:flex;align-items:center;gap:3px;"><img src='assets/logo-cropped.png' style='height:10px;width:auto;'/><div style='font-size:3px;line-height:1.3;color:#283891;'></div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px;"><div style='width:55%;height:2px;background:#c8cde8;border-radius:1px;'></div><div style='width:45%;height:2px;background:#c8cde8;border-radius:1px;'></div><div style='width:40%;height:2px;background:#c8cde8;border-radius:1px;'></div></div></div><div style="background:#fff;border-radius:3px;border:1px solid rgba(40,56,145,.15);display:flex;flex-direction:column;overflow:hidden;"><div style="padding:3px 4px 2px;border-bottom:1px solid rgba(40,56,145,.2);display:flex;align-items:center;gap:3px;"><img src='assets/logo-cropped.png' style='height:10px;width:auto;'/><div style='font-size:3px;line-height:1.3;color:#283891;'></div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px;"><div style='width:55%;height:2px;background:#c8cde8;border-radius:1px;'></div><div style='width:45%;height:2px;background:#c8cde8;border-radius:1px;'></div><div style='width:40%;height:2px;background:#c8cde8;border-radius:1px;'></div></div></div><div style="background:#fff;border-radius:3px;border:1px solid rgba(40,56,145,.15);display:flex;flex-direction:column;overflow:hidden;"><div style="padding:3px 4px 2px;border-bottom:1px solid rgba(40,56,145,.2);display:flex;align-items:center;gap:3px;"><img src='assets/logo-cropped.png' style='height:10px;width:auto;'/><div style='font-size:3px;line-height:1.3;color:#283891;'></div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px;"><div style='width:55%;height:2px;background:#c8cde8;border-radius:1px;'></div><div style='width:45%;height:2px;background:#c8cde8;border-radius:1px;'></div><div style='width:40%;height:2px;background:#c8cde8;border-radius:1px;'></div></div></div><div style="background:#fff;border-radius:3px;border:1px solid rgba(40,56,145,.15);display:flex;flex-direction:column;overflow:hidden;"><div style="padding:3px 4px 2px;border-bottom:1px solid rgba(40,56,145,.2);display:flex;align-items:center;gap:3px;"><img src='assets/logo-cropped.png' style='height:10px;width:auto;'/><div style='font-size:3px;line-height:1.3;color:#283891;'></div></div><div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:3px;"><div style='width:55%;height:2px;background:#c8cde8;border-radius:1px;'></div><div style='width:45%;height:2px;background:#c8cde8;border-radius:1px;'></div><div style='width:40%;height:2px;background:#c8cde8;border-radius:1px;'></div></div></div></div>
+    </template>
 
-    <a href="Address Labels P-touch.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Address Labels P-touch.html">
         <div class="mini-ptouch">
           <div class="mini-pt-lbl">
             <div class="ptl n"></div>
@@ -671,29 +642,15 @@
             <div class="ptl c"></div>
           </div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">DK-1201 · 29×90mm · Brother QL-810W</div>
-        <h3>Address Labels — P-touch</h3>
-        <p>Generates a .lbt label file per tenant. Opens directly in P-touch Editor, ready to print.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="Certificate of Mailing.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Certificate of Mailing.html">
         <div class="mini-cof">
           <img src="assets/ps3817-form.png" alt="PS Form 3817"/>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">5″ × 3″ · PS Form 3817 · Feed &amp; Fill</div>
-        <h3>Certificate of Mailing</h3>
-        <p>Prints From/To directly onto a blank USPS PS Form 3817 fed through your printer. Calibration sliders dial in your printer's offset.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="Lease Cover.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Lease Cover.html">
         <div class="mini-cover">
           <div class="band">
             <div class="doc">Residential Lease Agreement</div>
@@ -706,26 +663,9 @@
             <div class="row"><div class="key">Term</div><div class="val"></div></div>
           </div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">8.5″ × 11″ · US Letter</div>
-        <h3>Lease Cover Page</h3>
-        <p>Branded title sheet with property, landlord, tenant, and term blanks.</p>
-      </div>
-    </a>
+    </template>
 
-  </div>
-
-    </div>
-
-    <div class="section-block" data-section-id="property-management">
-      <div class="section-head">
-        <div class="section-title">PROPERTY MANAGEMENT</div>
-      </div>
-      <div class="grid" data-section="property-management">
-
-    <a href="Notice Template.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Notice Template.html">
         <div class="mini-letter">
           <div class="head">
             <img src="assets/logo-cropped.png" alt=""/>
@@ -735,16 +675,9 @@
           <div style="font-size:9px; font-weight:700; line-height:1; color:var(--lpr-ink); margin-top:2px;">[Notice Title]</div>
           <div class="lines"><div></div><div></div><div></div><div></div></div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">8.5″ × 11″ · US Letter · Blank</div>
-        <h3>Notice Template — Blank</h3>
-        <p>Reusable shell for any new notice. Same layout as the other letters, with placeholders for category, title, and body.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="24-Hour Notice.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="24-Hour Notice.html">
         <div class="mini-letter">
           <div class="head">
             <img src="assets/logo-cropped.png" alt=""/>
@@ -758,16 +691,9 @@
             <div style="height:1.5px; background:var(--lpr-rule); width:50%;"></div>
           </div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">8.5″ × 11″ · US Letter</div>
-        <h3>24-Hour Notice of Entry</h3>
-        <p>Required-by-MD-law entry notice with date, time, reason, and entrant fields.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="Rent Increase Notice.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Rent Increase Notice.html">
         <div class="mini-letter">
           <div class="head">
             <img src="assets/logo-cropped.png" alt=""/>
@@ -777,16 +703,9 @@
           <div style="font-size:9px; font-weight:700; line-height:1; color:var(--lpr-ink); margin-top:2px;">Notice of Rent<br/>Increase</div>
           <div class="lines"><div></div><div></div><div></div><div></div></div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">8.5″ × 11″ · US Letter</div>
-        <h3>Rent Increase Notice</h3>
-        <p>Renewal letter announcing new monthly rent amount and effective date.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="Non-Renewal Notice.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Non-Renewal Notice.html">
         <div class="mini-letter">
           <div class="head">
             <img src="assets/logo-cropped.png" alt=""/>
@@ -796,16 +715,9 @@
           <div style="font-size:9px; font-weight:700; line-height:1; color:var(--lpr-ink); margin-top:2px;">Notice of<br/>Non-Renewal</div>
           <div class="lines"><div></div><div></div><div></div><div></div></div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">8.5″ × 11″ · US Letter</div>
-        <h3>Non-Renewal Notice</h3>
-        <p>Lease will not renew. Vacate-by date and forwarding-address request.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="TOPA Notice - DHCD.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="TOPA Notice - DHCD.html">
         <div class="mini-letter">
           <div class="head">
             <img src="assets/logo-cropped.png" alt=""/>
@@ -815,16 +727,9 @@
           <div style="font-size:9px; font-weight:700; line-height:1; color:var(--lpr-ink); margin-top:2px;">Notice of<br/>Intent to Sell</div>
           <div class="lines"><div></div><div></div><div></div></div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">8.5″ × 11″ · US Letter</div>
-        <h3>TOPA Notice — DHCD</h3>
-        <p>Cover letter to DHCD enclosing the Appendix A Form. Fill in property address and tenant name.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="Security Deposit.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Security Deposit.html">
         <div class="mini-letter">
           <div class="head">
             <img src="assets/logo-cropped.png" alt=""/>
@@ -834,16 +739,9 @@
           <div style="font-size:7px; font-weight:600; line-height:1.3; color:var(--lpr-ink); margin-top:2px;">Withheld · Partial · Returned</div>
           <div class="lines"><div></div><div></div><div></div></div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">8.5″ × 11″ · US Letter</div>
-        <h3>Security Deposit Notices</h3>
-        <p>Three notice variants: Withheld, Partial Refund, and Full Refund. Toggle between them inside the template.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="Utilities Addendum.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Utilities Addendum.html">
         <div class="mini-letter">
           <div style="font-size:6px; letter-spacing:1.5px; text-transform:uppercase; color:var(--lpr-ink); font-weight:700; text-align:center; border-bottom:1.5px solid var(--lpr-blue); padding-bottom:5px;">Utilities Addendum</div>
           <div class="lines"><div></div><div></div><div></div></div>
@@ -855,16 +753,9 @@
           </div>
           <div style="display:flex; gap:8px; margin-top:auto; padding-top:6px;"><div style="flex:1; height:2px; background:var(--lpr-rule); border-radius:1px;"></div><div style="flex:1; height:2px; background:var(--lpr-rule); border-radius:1px;"></div></div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">8.5″ × 11″ · US Letter · Lease Addendum</div>
-        <h3>Utilities Addendum</h3>
-        <p>Designates which utilities are paid by tenant (T) or owner (O). Fuel type checkboxes; blank signature lines for wet or electronic signing.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="Door Hanger.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Door Hanger.html">
         <div style="width:33%; aspect-ratio:4.25/11; background:#fff; border:1px solid var(--lpr-rule); border-radius:2px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:hidden; display:flex; flex-direction:column;">
           <div style="height:18%; border-bottom:1px dashed rgba(40,56,145,0.25); display:flex; align-items:center; justify-content:center;">
             <div style="width:50%; height:55%; border-radius:999px; border:1px dashed rgba(40,56,145,0.5);"></div>
@@ -883,16 +774,9 @@
             <div style="font-size:7px; font-weight:700; color:#fff;">443.402.5641</div>
           </div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">4.25″ × 11″ · Door-knob</div>
-        <h3>Door Hanger</h3>
-        <p>Notice card with die-cut for the door knob. Checkboxes for visit reason.</p>
-      </div>
-    </a>
+    </template>
 
-    <a href="Yard Sign.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Yard Sign.html">
         <div style="width:90%; aspect-ratio:24/18; background:#fff; border:1px solid var(--lpr-rule); border-radius:3px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:hidden; display:grid; grid-template-columns:1fr 1.05fr;">
           <div style="background:var(--lpr-blue); padding:10px; display:flex; flex-direction:column; justify-content:space-between;">
             <img src="assets/logo-white.png" alt="" style="width:90%; height:auto;"/>
@@ -904,25 +788,9 @@
             <div style="font-size:11px; font-weight:700; color:var(--lpr-blue); margin-top:2px;">443.402.5641</div>
           </div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">24″ × 18″ · Vinyl / Coroplast</div>
-        <h3>Yard Sign — For Rent</h3>
-        <p>Print-shop ready. Sized for standard H-stake yard signs. Includes spec sheet for printer.</p>
-      </div>
-    </a>
+    </template>
 
-  </div>
-
-    </div>
-
-    <div class="section-block" data-section-id="digital">
-      <div class="section-head">
-        <div class="section-title">DIGITAL</div>
-      </div>
-      <div class="grid" data-section="digital">
-    <a href="Email Signature.html" class="card">
-      <div class="thumb">
+    <template data-thumb-id="Email Signature.html">
         <div class="mini-email">
           <div class="lines"><div></div><div></div><div></div></div>
           <div class="sig">
@@ -930,14 +798,41 @@
             <div class="right"><div></div><div></div><div></div><div></div></div>
           </div>
         </div>
-      </div>
-      <div class="body">
-        <div class="role">HTML · Gmail / Outlook</div>
-        <h3>Email Signature</h3>
-        <p>Live preview with one-click copy of the signature HTML.</p>
-      </div>
-    </a>
+    </template>
+
   </div>
+
+  <div id="sections-wrap">
+
+    <!-- Favorites: shown only when there are starred items -->
+    <div class="section-block" data-section-id="favorites" id="favorites-section" style="display:none;">
+      <div class="section-head">
+        <div class="section-title">★ FAVORITES</div>
+      </div>
+      <div class="grid" data-section="favorites"></div>
+    </div>
+
+    <div class="section-block" data-section-id="stationery">
+      <div class="section-head">
+        <div class="section-title">STATIONERY</div>
+      </div>
+      <div class="grid" data-section="stationery"></div>
+
+    </div>
+
+    <div class="section-block" data-section-id="property-management">
+      <div class="section-head">
+        <div class="section-title">PROPERTY MANAGEMENT</div>
+      </div>
+      <div class="grid" data-section="property-management"></div>
+
+    </div>
+
+    <div class="section-block" data-section-id="digital">
+      <div class="section-head">
+        <div class="section-title">DIGITAL</div>
+      </div>
+      <div class="grid" data-section="digital"></div>
 
     </div>
 
@@ -970,18 +865,21 @@
     <div class="scope-note" id="backup-scope"></div>
   </div>
 
-  <div class="usage">
-    <h2>How to use these templates</h2>
-    <p>Click each section below for setup steps. Most templates are print-ready — just click Print in any template’s toolbar to save as PDF or send to a printer.</p>
+  <div class="usage" id="usage-guide">
+    <h2>How to use this site</h2>
+    <p>Click any section to expand. Site basics first, then notes for the few templates that work differently.</p>
+
+    <div class="group-label">Site Basics</div>
 
     <details>
       <summary>Editing, exporting &amp; saving (Edit / Export / Save As)</summary>
       <div class="doc-body">
         <ul>
           <li><strong>Edit</strong> — on any template, click <em>Edit</em> in the top-right toolbar. The page gets a dashed blue outline and every text element becomes editable. Click any text and just type. Click <em>✓ Done editing</em> to exit.</li>
-          <li><strong>Export ▾</strong> — opens a menu with four options:
+          <li><strong>Export ▾</strong> — opens a menu with five options:
             <ul>
               <li><strong>Print</strong> — sends to your browser's print dialog. Use this for paper printing or to save a system PDF.</li>
+              <li><strong>Print Blank</strong> — prints the letter with the recipient and fill fields left empty, for filling in by hand.</li>
               <li><strong>PDF</strong> — saves a real PDF in the page's exact dimensions (envelope, card, letter, etc.).</li>
               <li><strong>Image (.png)</strong> — saves a 2× resolution PNG. Multi-sheet templates export as multiple files.</li>
               <li><strong>HTML (.html)</strong> — saves a self-contained HTML file you can re-open, email, or archive.</li>
@@ -989,6 +887,62 @@
           </li>
           <li><strong>Save As</strong> — saves the current filled-in template into your <em>Your Library</em> section on the index. All filled content, the signer name, and the recipient address are preserved in the saved copy. Keeps the original blank template untouched.</li>
         </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Setup panel — Tenants, Vendors &amp; Sender</summary>
+      <div class="doc-body">
+        <p>The <strong>Setup</strong> button in any template toolbar opens a panel with up to five tabs: <strong>Sender</strong>, <strong>Tenants</strong>, <strong>Vendors</strong>, <strong>Fields</strong>, and <strong>Options</strong>. Use it to fill the recipient address block, body field references, and the signoff — without typing anything manually.</p>
+
+        <h4 style="margin:14px 0 6px;font-size:13px;color:var(--lpr-ink)">Sender tab</h4>
+        <ul>
+          <li>Pick which owner LLC appears in the signoff (e.g. <em>LPR Management, LLC</em> vs. a specific property LLC). Import your owner list from a Buildium CSV or add manually.</li>
+          <li>Toggle <strong>Include signer name</strong> to show or hide the employee name and title below the signature.</li>
+          <li>Toggle <strong>Use office contact</strong> to replace the signer's direct phone/email with the main office line.</li>
+          <li>Click <strong>Apply to Template</strong> to update the signoff.</li>
+        </ul>
+
+        <h4 style="margin:14px 0 6px;font-size:13px;color:var(--lpr-ink)">Tenants tab</h4>
+        <ol>
+          <li>First time: click <strong>↑ Import CSV</strong> and pick your Buildium tenant export. The list is saved in your browser for future visits.</li>
+          <li>Search or scroll to find a tenant, then click their row.</li>
+          <li>Review or edit any field — edits are saved per-tenant and survive future CSV re-imports unless Buildium now matches the edited value.</li>
+          <li><strong>Apply as Recipient</strong> — fills the mailing address block at the top of the document <em>and</em> any tenant body-reference fields (name, address mentioned in the letter body).</li>
+          <li><strong>Body fields only</strong> — fills only the body references, leaving the recipient address block untouched. Use this when the letter is addressed to a vendor but references a tenant's property.</li>
+        </ol>
+
+        <h4 style="margin:14px 0 6px;font-size:13px;color:var(--lpr-ink)">Vendors tab</h4>
+        <ol>
+          <li>Click <strong>↑ Import CSV</strong> and pick your Buildium vendor export.</li>
+          <li>Select a vendor from the list. Edit any field directly in the panel — same override system as tenants.</li>
+          <li><strong>Apply as Recipient</strong> — fills the mailing address block with the vendor's name and address.</li>
+          <li><strong>Body fields only</strong> — fills only vendor body references, leaving the recipient block for a tenant.</li>
+        </ol>
+
+        <h4 style="margin:14px 0 6px;font-size:13px;color:var(--lpr-ink)">Fields tab</h4>
+        <p>Fill in dates, amounts, and other one-off values that get inserted into the letter body. On label templates (Address Labels, Shipping Labels) this tab is the manual address form instead.</p>
+
+        <h4 style="margin:14px 0 6px;font-size:13px;color:var(--lpr-ink)">Options tab</h4>
+        <p>Template-specific settings — for example, the Yard Sign's phone number and QR code, or the Certificate of Mailing's print alignment. Only shows up on templates that have settings to offer.</p>
+
+        <div class="tip"><strong>Cross-party letters:</strong> writing to a vendor about a tenant's property? Use <em>Vendor → Apply as Recipient</em> for the address block, then <em>Tenant → Body fields only</em> for the property references in the body. The two are fully independent.</div>
+        <div class="tip"><strong>Unfilled field warning:</strong> if you Export or Save As while some field types are still empty, a prompt tells you exactly which fields will print blank and lets you go back or continue anyway.</div>
+        <div class="tip"><strong>Insert fields while editing:</strong> click <em>Edit</em> first, then open Setup — an <em>Insert Field</em> sidebar appears. Click any field button to paste a field marker at your cursor, useful when building a new custom notice. <em>Clear All Fields</em> empties all filled spots in one click.</div>
+      </div>
+    </details>
+
+    <details>
+      <summary>Editing for a specific employee</summary>
+      <div class="doc-body">
+        <ol>
+          <li>Fill in the <strong>Customize for an employee</strong> form at the top of this page.</li>
+          <li>Click any template card. The template opens with that employee’s name, title, phone, and email already filled in.</li>
+          <li>To switch employees, change the values above and click another template — no need to refresh anything.</li>
+        </ol>
+        <div class="tip"><strong>Signer options per letter:</strong> on any letter template, open <strong>Setup → Sender</strong> to change which LLC appears in the signoff, toggle the signer name on/off, or switch to the office contact line — without leaving the template.</div>
+        <div class="tip"><strong>Templates that respect the employee fields:</strong> Business Card, Letterheads, all notices, and Email Signature. Business Card — Company, Envelopes, Mailing Labels, and Watermark Paper are company-only and don’t change per employee.</div>
+        <p>You can also bookmark a template with an employee baked into the URL — e.g. <code>Business Card.html?name=Jane%20Smith&amp;title=Leasing%20Agent&amp;phone=410.555.0123&amp;email=jane@lasalleparkrealty.com</code></p>
       </div>
     </details>
 
@@ -1017,13 +971,15 @@
     </details>
 
     <details>
-      <summary>Backup &amp; Restore</summary>
+      <summary>Organizing your templates</summary>
       <div class="doc-body">
         <ul>
-          <li>The <strong>Backup &amp; Restore</strong> panel above the instructions lets you download a single JSON file containing every customization on this browser — all users' favorites, archives, libraries, presets, and order preferences.</li>
-          <li><strong>Strongly recommended:</strong> click <em>Download backup</em> after any major reorganization, and email the file to yourself or drop it in Google Drive. If browser data ever gets cleared, you can restore everything in one click.</li>
-          <li>The file is plain text — readable in any text editor. Safe to keep multiple versions.</li>
-          <li>Restoring overwrites current data, so back up first if you're not sure.</li>
+          <li><strong>Star (★)</strong> — hover any card, click the ★ button to mark it as a favorite. Starred templates move to a <strong>★ Favorites</strong> section at the top of the page. Click again to unstar.</li>
+          <li><strong>Archive (⌫)</strong> — hover any card, click the ⌫ button to move it to the archive. It disappears from the main page but isn't deleted. Visit <a href="archive.html">Archive</a> from the link at the top of the page to restore or permanently delete.</li>
+          <li><strong>Delete (×)</strong> — only appears on your saved Library items. Permanently removes a custom template.</li>
+          <li><strong>Drag to reorder</strong> — drag any template card around within its section to change the order. Drag the section <em>title</em> (e.g. "STATIONERY") up or down to reorder whole sections. Your order is remembered.</li>
+          <li><strong>Your Library</strong> — at the bottom of the page. Holds copies of templates you've filled out and saved with the <em>Save As</em> button on individual templates.</li>
+          <li><strong>Reset Everything</strong> — the red button at the very bottom of the page. Clears all your customizations (stars, archive, library, presets, order) and restores the original layout. Doesn't delete any template files.</li>
         </ul>
       </div>
     </details>
@@ -1042,69 +998,30 @@
       </div>
     </details>
 
-    <details open>
-      <summary>Organizing your templates</summary>
-      <div class="doc-body">
-        <ul>
-          <li><strong>Star (★)</strong> — hover any card, click the ★ button to mark it as a favorite. Starred templates move to a <strong>★ Favorites</strong> section at the top of the page. Click again to unstar.</li>
-          <li><strong>Archive (⌫)</strong> — hover any card, click the ⌫ button to move it to the archive. It disappears from the main page but isn't deleted. Visit <a href="archive.html">Archive</a> from the link at the top of the page to restore or permanently delete.</li>
-          <li><strong>Delete (×)</strong> — only appears on your saved Library items. Permanently removes a custom template.</li>
-          <li><strong>Drag to reorder</strong> — drag any template card around within its section to change the order. Drag the section <em>title</em> (e.g. "STATIONERY") up or down to reorder whole sections. Your order is remembered.</li>
-          <li><strong>Your Library</strong> — at the bottom of the page. Holds copies of templates you've filled out and saved with the <em>Save As</em> button on individual templates.</li>
-          <li><strong>Reset Everything</strong> — the red button at the very bottom of the page. Clears all your customizations (stars, archive, library, presets, order) and restores the original layout. Doesn't delete any template files.</li>
-        </ul>
-      </div>
-    </details>
-
     <details>
-      <summary>Setup panel — Tenants, Vendors &amp; Sender</summary>
+      <summary>Backup &amp; Restore</summary>
       <div class="doc-body">
-        <p>The <strong>Setup</strong> button in any template toolbar opens a panel with three tabs: <strong>Sender</strong>, <strong>Tenants</strong>, and <strong>Vendors</strong>. Use it to fill the recipient address block, body field references, and the signoff — without typing anything manually.</p>
-
-        <h4 style="margin:14px 0 6px;font-size:13px;color:var(--lpr-ink)">Sender tab</h4>
         <ul>
-          <li>Pick which owner LLC appears in the signoff (e.g. <em>LPR Management, LLC</em> vs. a specific property LLC). Import your owner list from a Buildium CSV or add manually.</li>
-          <li>Toggle <strong>Include signer name</strong> to show or hide the employee name and title below the signature.</li>
-          <li>Toggle <strong>Use office contact</strong> to replace the signer's direct phone/email with the main office line.</li>
-          <li>Click <strong>Apply to Template</strong> to update the signoff.</li>
+          <li>The <strong>Backup &amp; Restore</strong> panel above these instructions lets you download a single JSON file containing every customization on this browser — all users' favorites, archives, libraries, presets, and order preferences.</li>
+          <li><strong>Strongly recommended:</strong> click <em>Download backup</em> after any major reorganization, and email the file to yourself or drop it in Google Drive. If browser data ever gets cleared, you can restore everything in one click.</li>
+          <li>The file is plain text — readable in any text editor. Safe to keep multiple versions.</li>
+          <li>Restoring overwrites current data, so back up first if you're not sure.</li>
         </ul>
-
-        <h4 style="margin:14px 0 6px;font-size:13px;color:var(--lpr-ink)">Tenants tab</h4>
-        <ol>
-          <li>First time: click <strong>↑ Import CSV</strong> and pick your Buildium tenant export. The list is saved in your browser for future visits.</li>
-          <li>Search or scroll to find a tenant, then click their row.</li>
-          <li>Review or edit any field — edits are saved per-tenant and survive future CSV re-imports unless Buildium now matches the edited value.</li>
-          <li><strong>Apply as Recipient</strong> — fills the mailing address block at the top of the document <em>and</em> any tenant body-reference fields (name, address mentioned in the letter body).</li>
-          <li><strong>Body fields only</strong> — fills only the body references, leaving the recipient address block untouched. Use this when the letter is addressed to a vendor but references a tenant's property.</li>
-        </ol>
-
-        <h4 style="margin:14px 0 6px;font-size:13px;color:var(--lpr-ink)">Vendors tab</h4>
-        <ol>
-          <li>Click <strong>↑ Import CSV</strong> and pick your Buildium vendor export.</li>
-          <li>Select a vendor from the list. Edit any field directly in the panel — same override system as tenants.</li>
-          <li><strong>Apply as Recipient</strong> — fills the mailing address block with the vendor's name and address.</li>
-          <li><strong>Body fields only</strong> — fills only vendor body references, leaving the recipient block for a tenant.</li>
-        </ol>
-
-        <div class="tip"><strong>Cross-party letters:</strong> writing to a vendor about a tenant's property? Use <em>Vendor → Apply as Recipient</em> for the address block, then <em>Tenant → Body fields only</em> for the property references in the body. The two are fully independent.</div>
-        <div class="tip"><strong>Unfilled field warning:</strong> if you Export or Save As while some field types are still empty, a prompt tells you exactly which fields will print blank and lets you go back or continue anyway.</div>
-        <div class="tip"><strong>Insert fields while editing:</strong> click <em>Edit</em> first, then open Setup — an <em>Insert Field</em> sidebar appears. Click any field button to paste a field marker at your cursor, useful when building a new custom notice. <em>Clear All Fields</em> empties all filled spots in one click.</div>
       </div>
     </details>
+
+    <div class="group-label second">Template-Specific Notes</div>
 
     <details>
       <summary>Address labels (P-touch, Brother QL-810W)</summary>
       <div class="doc-body">
         <ol>
-          <li>Open <strong>Address Labels — P-touch</strong> from the Stationery section.</li>
-          <li>Click <strong>Setup</strong> → Tenants tab → pick a tenant → click <em>Apply as Recipient</em>. The label preview updates with their name and address. Works for vendors too — use the Vendors tab.</li>
-          <li>Click <strong>Download .lbt</strong> in the toolbar. A file named after the recipient is saved.</li>
-          <li>Double-click the <code>.lbt</code> file — it opens in P-touch Editor (or Lite) with the address already populated.</li>
-          <li>Make sure a <strong>DK-1201</strong> standard address tape (29mm × 90mm) is loaded in your QL-810W, then click Print.</li>
+          <li>Open <strong>Address Labels — P-touch</strong>, use <strong>Setup</strong> to fill in the recipient, then click <strong>Download .lbt</strong> in the toolbar.</li>
+          <li>Double-click the downloaded <code>.lbt</code> file — it opens in P-touch Editor (or Lite) with the address already populated.</li>
+          <li>Make sure a <strong>DK-1201</strong> standard address tape (29mm × 90mm) is loaded in your QL-810W, then print from P-touch Editor.</li>
         </ol>
-        <div class="tip">You can also click <em>Edit</em> on the label page and type directly into the preview to adjust the address before downloading.</div>
-        <div class="tip"><strong>Font:</strong> Labels use Arial — a standard Windows font that P-touch Editor reliably supports.</div>
-        <div class="tip"><strong>Large labels (DK-1202):</strong> The size toggle is visible but download is disabled until a DK-1202 template file is created. See the notice on the template page for how to enable it.</div>
+        <div class="tip"><strong>Font &amp; Bold:</strong> the Font and Bold toggle buttons sit directly above the label preview. Labels use Arial by default — a standard Windows font that P-touch Editor reliably supports.</div>
+        <div class="tip"><strong>Large labels (DK-1202):</strong> the size toggle is visible but download is disabled until a DK-1202 template file is created.</div>
       </div>
     </details>
 
@@ -1113,52 +1030,13 @@
       <div class="doc-body">
         <ol>
           <li>Get free blank <strong>PS Form 3817</strong> slips from any USPS post office counter.</li>
-          <li>Open <strong>Certificate of Mailing</strong> from the Stationery section. Click <strong>Setup</strong> and pick a tenant or vendor — the "To" address fills automatically. Or click <strong>Edit</strong> to type it manually.</li>
-          <li><strong>Calibrate once:</strong> click Print and print on plain paper first. Hold the printout behind a blank form to check alignment. Use the <em>Up/Down</em> and <em>Left/Right</em> sliders at the top of the template page to nudge the text until it lands on the form's lines. Calibration saves automatically.</li>
+          <li>Open <strong>Certificate of Mailing</strong>. Click <strong>Setup</strong> and pick a tenant or vendor — the "To" address fills automatically. Or click <strong>Edit</strong> to type it manually.</li>
+          <li><strong>Calibrate once:</strong> click Print and print on plain paper first. Hold the printout behind a blank form to check alignment, then open <strong>Setup → Options</strong> and use the <em>Up/Down</em> and <em>Left/Right</em> sliders to nudge the text until it lands on the form's lines. Calibration saves automatically.</li>
           <li>Feed a blank PS Form 3817 into your printer's <strong>manual/bypass tray</strong>. Try face-up first; flip it if text prints on the wrong side.</li>
           <li>Click <strong>Print</strong> in the toolbar. Set paper size to <strong>5″ × 3″</strong> in the print dialog (or select the manual feed tray if your printer auto-detects size).</li>
           <li>Bring the filled form to the post office. The postal worker stamps <em>Postmark Here</em> and returns it — that's your proof of mailing.</li>
         </ol>
         <div class="tip">The From address (LPR Management, LLC) is pre-filled. Click <strong>Edit</strong> in the toolbar if you ever need to change it.</div>
-      </div>
-    </details>
-
-    <details>
-      <summary>Editing for a specific employee</summary>
-      <div class="doc-body">
-        <ol>
-          <li>Fill in the <strong>Customize for an employee</strong> form at the top of this page.</li>
-          <li>Click any template card. The template opens with that employee’s name, title, phone, and email already filled in.</li>
-          <li>To switch employees, change the values above and click another template — no need to refresh anything.</li>
-        </ol>
-        <div class="tip"><strong>Signer options per letter:</strong> on any letter template, open <strong>Setup → Sender</strong> to change which LLC appears in the signoff, toggle the signer name on/off, or switch to the office contact line — without leaving the template.</div>
-        <div class="tip"><strong>Templates that respect the employee fields:</strong> Business Card, Letterheads, all notices, and Email Signature. Business Card — Company, Envelopes, Mailing Labels, and Letter Watermark are company-only and don’t change per employee.</div>
-        <p>You can also bookmark a template with an employee baked into the URL — e.g. <code>Business Card.html?name=Jane%20Smith&amp;title=Leasing%20Agent&amp;phone=410.555.0123&amp;email=jane@lasalleparkrealty.com</code></p>
-      </div>
-    </details>
-
-    <details>
-      <summary>Business Cards (Personal &amp; Company)</summary>
-      <div class="doc-body">
-        <ol>
-          <li><strong>Business Card</strong> — personal card for a specific employee. Fill in the employee form above first.</li>
-          <li><strong>Business Card — Company</strong> — office card with no name. Uses the main office phone, email, and address.</li>
-          <li>Open the template. You’ll see front + back on screen.</li>
-          <li>Click <strong>Print</strong> in the top toolbar. In the print dialog, choose <strong>Save as PDF</strong>, and set the paper size to <em>US Letter</em> with margins <em>None</em>.</li>
-          <li>Send the PDF to a print shop (e.g. VistaPrint, Moo, or a local printer). Tell them: <em>standard 3.5″×2″, two-sided, full-bleed.</em></li>
-        </ol>
-      </div>
-    </details>
-
-    <details>
-      <summary>Letterhead</summary>
-      <div class="doc-body">
-        <ol>
-          <li>Open <strong>Letterhead</strong>. Use the <strong>Watermark</strong> toggle at the top to switch between the ghosted-logo version and a clean layout — your preference saves automatically.</li>
-          <li>Fill in your employee details above, then replace the bracketed <code>[Date]</code>, <code>[Recipient]</code>, and body placeholders by clicking directly into the page (or use <strong>Setup → Tenants</strong> to auto-fill the recipient address).</li>
-          <li>Click <strong>Print</strong> → <em>Save as PDF</em> (or print directly on letterhead paper).</li>
-        </ol>
-        <div class="tip">For repeated use, save a PDF version per employee — then paste your letter content into Word/Google Docs and merge with the PDF letterhead, or just type into the HTML each time.</div>
       </div>
     </details>
 
@@ -1178,106 +1056,13 @@
     </details>
 
     <details>
-      <summary>Envelopes</summary>
-      <div class="doc-body">
-        <ol>
-          <li>Open <strong>Envelope</strong> and pick a style from the toggle bar at the top:
-            <ul style="margin-top:6px;">
-              <li><strong>Standard — blue stripe</strong> · bold everyday mail with the brand blue side stripe.</li>
-              <li><strong>Premium — ivory</strong> · refined warm-white layout. Includes an on-screen print-shop spec for bulk pre-printed runs.</li>
-              <li><strong>Send address only</strong> · prints only the recipient block — for envelopes that already have a pre-printed or embossed return address.</li>
-            </ul>
-          </li>
-          <li>Click <strong>Setup</strong> → Tenants or Vendors tab → pick a recipient → <em>Apply as Recipient</em>. The address fills automatically. Or click <strong>Edit</strong> to type directly.</li>
-          <li>Click <strong>Export → Print</strong>, set paper size to <em>#10 Envelope (9.5″ × 4.125″)</em>, margins <em>None</em>.</li>
-        </ol>
-      </div>
-    </details>
-
-    <details>
-      <summary>Mailing Labels (Avery 5160)</summary>
-      <div class="doc-body">
-        <ol>
-          <li>Buy <strong>Avery 5160</strong> sheets (or compatible — 30 labels per sheet, 1″ × 2⅔″).</li>
-          <li>Open <strong>Mailing Labels</strong>. The grid is pre-aligned to the Avery template.</li>
-          <li>Click <strong>Print</strong>. In the print dialog: paper size <em>US Letter</em>, scaling <em>100% / Actual size</em>, margins <em>None</em>. Run a test page on plain paper first.</li>
-        </ol>
-      </div>
-    </details>
-
-    <details>
-      <summary>Lease Cover Page</summary>
-      <div class="doc-body">
-        <ol>
-          <li>Open <strong>Lease Cover Page</strong>.</li>
-          <li>Click any bracketed field (Property, Landlord, Tenant) and type in the details.</li>
-          <li>Print and staple/bind to the front of your lease document. Or save as PDF and merge with the lease in Acrobat / Preview.</li>
-        </ol>
-      </div>
-    </details>
-
-    <details>
-      <summary>Letter Watermark (Pre-printed paper)</summary>
-      <div class="doc-body">
-        <ol>
-          <li>This is a <em>background</em> for pre-printing in bulk — your staff types letters into the body area after the paper comes back from the printer.</li>
-          <li>Send the printed PDF to a print shop. Spec: <em>US Letter, 24lb writing stock, full bleed, 4/0 CMYK.</em></li>
-          <li>For one-off letters, use the Letterhead templates instead.</li>
-        </ol>
-      </div>
-    </details>
-
-    <details>
-      <summary>File formats — what to send to printers / use at home</summary>
-      <div class="doc-body">
-        <p>Templates are <strong>HTML files</strong> in this project. To print or hand off to a printer, save each as <strong>PDF</strong> using your browser:</p>
-        <ul>
-          <li>Open the template → click <strong>Print</strong> in the toolbar (or ⌘/Ctrl + P).</li>
-          <li>In the print dialog, set <strong>Destination = Save as PDF</strong> and click Save.</li>
-        </ul>
-
-        <p><strong>Business cards (commercial printer — e.g. VistaPrint, Moo, local shop):</strong></p>
-        <ul>
-          <li>Send the <strong>PDF</strong>. Tell them: <em>3.5″ × 2″, two-sided, no bleed required (artwork sits inside the safe area).</em></li>
-          <li>If they ask for bleed (some shops require it), let me know and I’ll produce a bleed version with 0.125″ added on each edge.</li>
-          <li>Some shops prefer <strong>print-ready PDF/X-1a</strong> or <strong>300 DPI CMYK</strong>. PDFs exported from a browser are RGB — most consumer printers (VistaPrint, Moo) convert this automatically and the result is fine for a royal-blue + grayscale card. For a high-end stationer who wants exact PMS 287, ask me for a CMYK / spot-color version.</li>
-        </ul>
-
-        <p><strong>Envelopes — home printer:</strong></p>
-        <ul>
-          <li>Save as PDF, open in Preview / Adobe Reader, click Print.</li>
-          <li>Set paper size to <strong>#10 Envelope (9.5″ × 4.125″)</strong>, scaling <strong>100%</strong>, margins <strong>None</strong>.</li>
-          <li>Load envelopes in the printer’s manual-feed tray, flap closed, address-side up (check your printer’s envelope guide).</li>
-          <li>Run one test on plain paper first to confirm alignment before burning envelopes.</li>
-        </ul>
-
-        <p><strong>Envelopes — print shop bulk run:</strong></p>
-        <ul>
-          <li>Send the <strong>PDF</strong>. The default Envelope template includes an on-screen spec block (size, stock, ink, finish) to copy-paste into your order.</li>
-        </ul>
-
-        <p><strong>Letterhead — home printer:</strong></p>
-        <ul>
-          <li>Save as PDF → print on US Letter, 24lb writing stock, 100% scale, margins None.</li>
-          <li>For everyday letters you can also print the live HTML directly via the template’s Print button.</li>
-        </ul>
-
-        <p><strong>Mailing labels (Avery 5160):</strong> save as PDF, print on Avery 5160 sheets at 100% scale, margins None. Test on plain paper first.</p>
-
-        <p><strong>Email signature:</strong> not a file at all — you copy the HTML directly out of the page and paste into Gmail/Outlook (see the Email Signature section above).</p>
-
-        <div class="tip"><strong>Quick reference:</strong> Browser HTML → Print → Save as PDF is the universal path. Send PDF to printers. Send HTML (copy-paste) into Gmail/Outlook.</div>
-      </div>
-    </details>
-
-    <details>
-      <summary>Accessing these files</summary>
+      <summary>Printing &amp; print-shop tips</summary>
       <div class="doc-body">
         <ul>
-          <li><strong>This project workspace</strong> — the canonical home. Open it any time from your Claude account to view, edit, or download.</li>
-          <li><strong>Download as a ZIP</strong> — just ask (“download everything”) and you’ll get a folder of HTML files you can open in any browser, share over email, or post to a shared drive.</li>
-          <li><strong>Bookmark in your browser</strong> — you can bookmark individual template URLs (with employee params baked in) for one-click access.</li>
-          <li><strong>Host on your website</strong> — if you want these accessible from any computer, your web developer can drop the folder onto your domain. Ask me for a developer handoff package.</li>
+          <li><strong>Labels &amp; card stock (home printer):</strong> in the print dialog set paper size <em>US Letter</em>, scaling <em>100% / Actual size</em>, margins <em>None</em>. Run one test on plain paper first to confirm alignment.</li>
+          <li><strong>Envelopes:</strong> load in the printer's manual-feed tray, flap closed, address-side up (check your printer's envelope guide).</li>
+          <li><strong>Business cards:</strong> export as PDF and send it to any print shop (VistaPrint, Moo, a local shop). Spec: <em>3.5″ × 2″, two-sided, full-bleed.</em></li>
+          <li><strong>Watermark Paper:</strong> this is a bulk pre-print background — send its PDF to a print shop. Spec: <em>US Letter, 24lb writing stock, full bleed, 4/0 CMYK.</em> For one-off letters, use <strong>Letterhead</strong> instead.</li>
         </ul>
       </div>
     </details>
@@ -1321,7 +1106,7 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="assets/vendor/Sortable.min.js"></script>
 <script>
 /* ============================================================
    Index state: favorites, archive, custom library, ordering.
@@ -1356,6 +1141,43 @@
     if (card.dataset.customId) return "custom:" + card.dataset.customId;
     const h = card.getAttribute("href"); if (!h) return null;
     return h.split("?")[0];
+  }
+
+  /* ---------- 0. Render cards from the manifest (Track 4 / P1a) ----------
+     Runs once, before the first rebuild(). Groups window.LPR_MANIFEST rows by
+     `section` and appends one <a class="card"> per row into the matching
+     static .grid[data-section]. Retired rows (section:null) are skipped —
+     they render no card, matching pre-migration behavior where their files
+     had no static card either. Thumbnails are cloned from the hidden
+     #thumb-defs <template> block by id (see track4-design.md §1.2/§2.3);
+     everything downstream (augmentCard/rebuild/initSortables) is unchanged
+     and keys off the same data-template-id / data-section contract the old
+     static markup produced. */
+  function renderCards() {
+    if (!window.LPR_MANIFEST) return; // templates-manifest.js not loaded — nothing to render
+    const bySection = {};
+    for (const t of window.LPR_MANIFEST) {
+      if (!t.section) continue; // retired entries: no static home
+      (bySection[t.section] = bySection[t.section] || []).push(t);
+    }
+    document.querySelectorAll('.grid[data-section]').forEach(grid => {
+      const sec = grid.dataset.section;
+      if (sec === 'favorites' || sec === 'library') return; // dynamic — left to rebuild()
+      (bySection[sec] || []).forEach(t => grid.appendChild(buildCard(t)));
+    });
+  }
+
+  function buildCard(t) {
+    const a = document.createElement('a');
+    a.href = t.id;
+    a.className = 'card';
+    const thumbTpl = document.querySelector('#thumb-defs [data-thumb-id="' + CSS.escape(t.id) + '"]');
+    a.innerHTML =
+      '<div class="thumb">' + (thumbTpl ? thumbTpl.innerHTML : '') + '</div>' +
+      '<div class="body"><div class="role">' + escapeHtml(t.role) + '</div>' +
+      '<h3>' + escapeHtml(t.title) + '</h3><p>' + escapeHtml(t.desc) + '</p>' +
+      (t.badge ? '<span class="card-badge">' + escapeHtml(t.badge) + '</span>' : '') + '</div>';
+    return a;
   }
 
   /* ---------- 1. Tag every card with id + augment with star/archive buttons ---------- */
@@ -1764,6 +1586,7 @@
     return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
   }
 
+  renderCards();
   rebuild();
   window.lprRebuild = rebuild;
 

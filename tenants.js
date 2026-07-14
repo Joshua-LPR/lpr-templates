@@ -217,6 +217,8 @@
      INSERT FIELD AT CURSOR
      ================================================================ */
   const CONTACT_FIELD_LABELS = {
+    first_name:    'First Name',
+    last_name:     'Last Name',
     name:          'Recipient Name',
     address_line1: 'Street Address',
     address_line2: 'Address Line 2',
@@ -232,6 +234,8 @@
     const name = [tenant.effective.first_name, tenant.effective.last_name].filter(Boolean).join(' ');
     const contactMap = {
       name,
+      first_name:    tenant.effective.first_name,
+      last_name:     tenant.effective.last_name,
       address_line1: tenant.effective.address_line1,
       address_line2: tenant.effective.address_line2,
       city:          tenant.effective.city,
@@ -251,10 +255,13 @@
     if (!sel || sel.rangeCount === 0) return false;
 
     const range = sel.getRangeAt(0);
-    const sheet = document.querySelector('.sheet');
-    if (!sheet || !sheet.contains(range.commonAncestorContainer)) return false;
-
-    range.deleteContents();
+    // Derive sheet from the range's ancestor
+    let sheet = range.commonAncestorContainer;
+    if (sheet.nodeType === Node.TEXT_NODE) {
+      sheet = sheet.parentElement;
+    }
+    sheet = sheet ? sheet.closest('.sheet') : null;
+    if (!sheet) return false;
 
     const span = document.createElement('span');
     const attr  = ns === 'contact' ? 'data-contact-field'
@@ -265,6 +272,10 @@
                 : FIELD_LABELS[key];
     span.setAttribute(attr, key);
     if (label) span.setAttribute(attr.replace('-field', '-label'), label);
+    // Atomic chip while editing (template-tools strips this on edit exit)
+    if (sheet.classList.contains('tt-editing')) span.setAttribute('contenteditable', 'false');
+
+    range.deleteContents();
     range.insertNode(span);
 
     const after = range.cloneRange();
@@ -272,6 +283,10 @@
     after.collapse(true);
     sel.removeAllRanges();
     sel.addRange(after);
+
+    // Programmatic inserts are invisible to the browser's undo stack —
+    // register with the token-aware undo in template-tools so Ctrl+Z works.
+    window.LPR_EDIT_UNDO?.noteTokenInsert(span);
     return true;
   }
 
@@ -284,15 +299,23 @@
     var sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return false;
     var range = sel.getRangeAt(0);
-    var sheet = document.querySelector('.sheet');
-    if (!sheet || !sheet.contains(range.commonAncestorContainer)) return false;
+    // Derive sheet from the range's ancestor
+    var sheet = range.commonAncestorContainer;
+    if (sheet.nodeType === Node.TEXT_NODE) {
+      sheet = sheet.parentElement;
+    }
+    sheet = sheet ? sheet.closest('.sheet') : null;
+    if (!sheet) return false;
 
-    range.deleteContents();
     var span = document.createElement('span');
     var label = FILL_FIELD_LABELS[type] || type;
     span.setAttribute('data-fill-field', type);
     span.setAttribute('data-fill-label', label);
     span.setAttribute('data-fill-placeholder', label);
+    // Atomic chip while editing (template-tools strips this on edit exit)
+    if (sheet.classList.contains('tt-editing')) span.setAttribute('contenteditable', 'false');
+
+    range.deleteContents();
     range.insertNode(span);
 
     var after = range.cloneRange();
@@ -300,6 +323,10 @@
     after.collapse(true);
     sel.removeAllRanges();
     sel.addRange(after);
+
+    // Programmatic inserts are invisible to the browser's undo stack —
+    // register with the token-aware undo in template-tools so Ctrl+Z works.
+    window.LPR_EDIT_UNDO?.noteTokenInsert(span);
 
     // Re-apply any saved fill-field values so the new span gets populated if its key exists
     if (window.LPR_FILL_APPLY) window.LPR_FILL_APPLY();
@@ -314,10 +341,11 @@
   let autoOpened  = false;  // was insert sidebar opened by edit mode?
 
   function observeEditMode() {
-    const sheet = document.querySelector('.sheet');
-    if (!sheet) return;
-    new MutationObserver(() => {
-      const editing = sheet.classList.contains('tt-editing');
+    const sheets = document.querySelectorAll('.sheet');
+    if (!sheets.length) return;
+
+    const checkEditMode = () => {
+      const editing = Array.from(sheets).some(s => s.classList.contains('tt-editing'));
       if (editing === isEditMode) return;
       isEditMode = editing;
       if (editing) {
@@ -326,7 +354,11 @@
         if (autoOpened) closeInsertSidebar();
         autoOpened = false;
       }
-    }).observe(sheet, { attributes: true, attributeFilter: ['class'] });
+    };
+
+    sheets.forEach(sheet => {
+      new MutationObserver(checkEditMode).observe(sheet, { attributes: true, attributeFilter: ['class'] });
+    });
   }
 
   function openInsertSidebar() {
@@ -596,7 +628,9 @@
 
     gid('lpr-tp-q').oninput = e => {
       searchQ = e.target.value;
-      renderFillPanel({ refocus: true });
+      const caretStart = e.target.selectionStart;
+      const caretEnd = e.target.selectionEnd;
+      renderFillPanel({ refocus: true, caretStart, caretEnd });
     };
 
     fillPanel.querySelectorAll('.lpr-tp-item').forEach(el => {
@@ -611,7 +645,12 @@
     if (addMode) wireAddForm();
     if (opts?.refocus) {
       const q = gid('lpr-tp-q');
-      if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+      if (q) {
+        q.focus();
+        const len = q.value.length;
+        const clamp = n => Math.max(0, Math.min(n ?? len, len));
+        q.setSelectionRange(clamp(opts.caretStart), clamp(opts.caretEnd));
+      }
     }
   }
 

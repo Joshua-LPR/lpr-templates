@@ -2,37 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>LPR — Letterhead</title>
 <link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="letter.css">
 <script src="user.js"></script>
 <style>
-  body { background: var(--lpr-page); padding: 60px 20px 40px; }
-  @page { size: 8.5in 11in; margin: 0; }
-  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
-  .sheet.letter { width: 8.5in; height: 11in; padding: 0.75in 0.85in; display: flex; flex-direction: column; position: relative; }
-  .lh-header { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 18px; border-bottom: 2px solid var(--lpr-blue); }
-  .lh-header img { height: 0.95in; width: auto; }
-  .lh-header .meta { text-align: right; font-size: 8.5pt; line-height: 1.55; color: var(--lpr-ink); font-weight: 400; }
   .lh-header .meta .web { font-weight: 600; color: var(--lpr-blue); letter-spacing: 0.5px; }
   .watermark { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 6in; opacity: 0.06; pointer-events: none; z-index: 0; }
-  .lh-body { flex: 1; padding-top: 0.5in; font-size: 11pt; line-height: 1.6; color: var(--lpr-text); position: relative; z-index: 1; font-weight: 400; }
-  .lh-body .date { color: var(--lpr-muted); font-size: 10pt; margin-bottom: 24px; }
-  .lh-body .recipient { margin-bottom: 24px; line-height: 1.45; }
+  .lh-body { position: relative; z-index: 1; }
   .lh-addr2:has([data-contact-field]:empty) { display: none; }
   .sheet.tt-editing .lh-addr2:has([data-contact-field]:empty) { display: block; }
-  .lh-body p { margin: 0 0 12px; }
-  .lh-body .signoff { margin-top: 36px; }
-  .lh-body .signature { height: auto; min-height: 0; }
   .lh-footer { padding-top: 12px; display: flex; justify-content: center; align-items: center; }
   .lh-footer .stripe { width: 1.4in; height: 2px; background: var(--lpr-blue); border-radius: 1px; }
-  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label, .mode-bar { display: none; } }
-
-  /* ── watermark toggle bar ── */
-  .mode-bar {
-    background:#fff; border:1px solid #dde; border-radius:8px;
-    padding:14px 20px; width:8.5in; max-width:calc(100vw - 64px);
-    display:flex; flex-wrap:wrap; gap:8px; align-items:center;
-  }
+  @media print { .mode-bar { display: none; } }
 </style>
 </head>
 <body>
@@ -40,14 +23,13 @@
   <a href="index.html" class="toolbar-back">← All templates</a>
 </div>
 <div class="stage">
-  <div class="mode-bar no-print">
-    <strong>Watermark:</strong>
-    <button class="mode-btn active" data-wm="on">With watermark</button>
-    <button class="mode-btn" data-wm="off">Clean (none)</button>
+  <div class="mode-bar no-print" data-mode-group="wm">
+    <button class="mode-btn active" data-mode="off">Clean (none)</button>
+    <button class="mode-btn" data-mode="on">With watermark</button>
   </div>
   <div class="label">LETTERHEAD — US LETTER (8.5″ × 11″)</div>
-  <div class="sheet letter">
-    <img class="watermark" src="assets/logo-cropped.png" alt=""/>
+  <div class="sheet letter lh-plain">
+    <img class="watermark" src="assets/logo-cropped.png" alt="" data-mode-when="wm:on"/>
     <div class="lh-header">
       <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
       <div class="meta">
@@ -84,19 +66,27 @@
 <script src="owners.js"></script>
 <script src="vendors.js"></script>
 <script src="fill-fields.js"></script>
-<script src="template-tools.js"></script>
 <script>
-(function () {
-  var wm = document.querySelector('.watermark');
-  var btns = document.querySelectorAll('[data-wm]');
-  function set(on) {
-    wm.style.display = on ? '' : 'none';
-    btns.forEach(function (b) { b.classList.toggle('active', (b.dataset.wm === 'on') === on); });
-    localStorage.setItem('lpr_lh_wm', on ? '1' : '0');
-  }
-  btns.forEach(function (b) { b.addEventListener('click', function () { set(b.dataset.wm === 'on'); }); });
-  set(localStorage.getItem('lpr_lh_wm') !== '0');
+/* ── Track 4 P1f: legacy mode-key adoption ──
+   mode-bar.js (loaded next) persists to lpr_mode_<pageKey>_wm. Seed it
+   once from the pre-Track-4 flat '1'/'0' key so a previously saved
+   watermark preference survives the migration — same pattern used by
+   Certificate of Mailing's lpr_cof_mode adoption. Must run before
+   mode-bar.js resolves the initial mode, so it stays in this early,
+   synchronously-run script block (ahead of mode-bar.js's own <script>
+   tag). */
+(function adoptLegacyMode() {
+  try {
+    var legacy = localStorage.getItem('lpr_lh_wm');
+    if (legacy == null) return;
+    var mode = (legacy === '0') ? 'off' : 'on';
+    var basename = (location.pathname.split('/').pop() || 'page').replace(/\.html?$/i, '');
+    var newKey = 'lpr_mode_' + basename + '_wm';
+    if (localStorage.getItem(newKey) == null) localStorage.setItem(newKey, mode);
+  } catch (e) {}
 })();
 </script>
+<script src="mode-bar.js"></script>
+<script src="template-tools.js"></script>
 </body>
 </html>

@@ -17,7 +17,7 @@ Use the **Customize for an employee** panel on the index to set name, title, pho
 | Business Card — Company | 3.5″ × 2″ · Company | No name, office line + address |
 | Letterhead | 8.5″ × 11″ | Header, body, signature; optional watermark |
 | Letterhead Clean | 8.5″ × 11″ | Simplified header, no watermark |
-| Letter Watermark | 8.5″ × 11″ | Pre-printable background page |
+| Watermark Paper | 8.5″ × 11″ | Pre-printable background page (file: `Letter Watermark.html`) |
 | Envelopes | 9.5″ × 4.125″ · #10 | Standard, stripe, and send-address-only modes |
 | Envelope Premium | 9.5″ × 4.125″ | Ivory stock spec for print shop |
 | Mailing Labels | Avery 5160 · 30/sheet | Return-address labels |
@@ -30,9 +30,9 @@ Use the **Customize for an employee** panel on the index to set name, title, pho
 |---|---|---|
 | Notice Template — Blank | 8.5″ × 11″ | Reusable shell for any new notice |
 | 24-Hour Notice of Entry | 8.5″ × 11″ | Required-by-MD-law entry notice |
-| Rent Increase Notice | 8.5″ × 11″ | Renewal letter with new rent and effective date |
-| Non-Renewal Notice | 8.5″ × 11″ | Vacate-by date and forwarding-address request |
-| Security Deposit Notices | 8.5″ × 11″ | Three variants: Withheld, Partial Refund, Full Refund |
+| Rent Increase Notice | 8.5″ × 11″ | Renewal letter; key-facts grid with current/new rent, effective date, response deadline |
+| Non-Renewal Notice | 8.5″ × 11″ | Gold vacate-date callout + move-out checklist |
+| Security Deposit Notices | 8.5″ × 11″ | Three variants: Withheld, Partial Refund, Full Refund; account summary tables |
 | Utilities Addendum | 8.5″ × 11″ | Lease addendum: T/O utility assignments. Full mode includes fuel type checkboxes; Simplified mode hides that column. Hardcoded office contact in header. |
 | Door Hanger | 4.25″ × 11″ | Die-cut notice card for door knob |
 | Yard Sign — For Rent | 24″ × 18″ | Print-shop ready; H-stake spec included. EHO mark on both variants; high-res 2400×1800 PNG export |
@@ -92,7 +92,9 @@ lpr-templates/
 └── *.html                — individual template pages
 ```
 
-> `design-canvas.jsx`, `logos.jsx`, `tweaks-panel.jsx`, `logo.html`, and `uploads/` are dev/design-tool files not part of the published template set.
+> `design-canvas.jsx`, `logos.jsx`, `tweaks-panel.jsx`, and `logo.html` are dev/design-tool files not part of the published template set. Original source PDFs live in `archive/source-docs/`. Third-party libraries are vendored in `assets/vendor/` (no CDN dependency at runtime).
+
+**Architecture (July 2026 consolidation):** template metadata lives in `templates-manifest.js` (index cards + archive registry derive from it); the letter family shares `letter.css`; multi-mode templates use the standardized `mode-bar.js` contract; template settings register into the Setup panel's Options tab (`template-options.js`); one shared `manual-address.js` serves all label templates; `assets/img-data.js` carries base64 image data so PNG/PDF exports work from `file://`.
 
 ## Address
 

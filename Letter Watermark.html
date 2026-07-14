@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>LPR — Letter Watermark Background</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LPR — Watermark Paper</title>
 <link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="letter.css">
 <script src="user.js"></script>
 <style>
-  body { background: var(--lpr-page); padding: 60px 20px 40px; }
-  @page { size: 8.5in 11in; margin: 0; }
-  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
   .sheet.watermark { width: 8.5in; height: 11in; background: #fff; position: relative; overflow: hidden; }
   .wm-top { position: absolute; top: 0; left: 0; right: 0; height: 0.45in; background: var(--lpr-blue); }
   .wm-bottom { position: absolute; bottom: 0; left: 0; right: 0; height: 0.18in; background: linear-gradient(to right, var(--lpr-blue) 0%, var(--lpr-blue) 30%, var(--lpr-gold) 30%, var(--lpr-gold) 36%, transparent 36%); }
@@ -35,7 +34,6 @@
   .wm-highlight { background: rgba(40,56,145,0.06); border-left: 3px solid var(--lpr-blue); padding: 10px 14px; border-radius: 3px; margin: 12px 0; font-size: 12pt; color: var(--lpr-ink); }
   .wm-signoff { margin-top: 0.45in; padding-top: 0; }
   .wm-signoff .signature { height: auto; min-height: 0; }
-  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } }
 </style>
 </head>
 <body>
@@ -43,7 +41,7 @@
   <a href="index.html" class="toolbar-back">← All templates</a>
 </div>
 <div class="stage">
-  <div class="label">LETTER BACKGROUND WATERMARK — US LETTER</div>
+  <div class="label">WATERMARK PAPER — US LETTER</div>
   <div class="sheet watermark">
     <div class="wm-top"></div>
     <div class="wm-tag">LPR Management, LLC</div>

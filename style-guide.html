@@ -263,6 +263,103 @@ body { background: #efeae0; min-height: 100vh; }
 .dim-name { font-weight: 600; color: var(--lpr-ink); }
 .dim-size { font-family: 'Courier New', monospace; font-size: 10.5px; color: var(--lpr-muted); }
 
+/* ── voice & copy rules ── */
+.voice-card {
+  background: #fff; border-radius: 12px;
+  padding: 4px 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+.voice-rule {
+  display: grid; grid-template-columns: 34px 1fr;
+  gap: 20px; align-items: start;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--lpr-rule);
+}
+.voice-rule:last-child { border-bottom: none; }
+.voice-num {
+  font-size: 22px; font-weight: 800; color: var(--lpr-blue);
+  line-height: 1; letter-spacing: -0.5px; padding-top: 2px;
+}
+.voice-name {
+  font-size: 14px; font-weight: 700; color: var(--lpr-ink);
+  margin: 0 0 6px; letter-spacing: -0.2px;
+}
+.voice-desc { font-size: 12px; color: var(--lpr-muted); line-height: 1.65; margin: 0; }
+.voice-desc .std-line { color: var(--lpr-blue); font-weight: 600; }
+.voice-replace { margin-top: 11px; font-size: 11px; line-height: 1.95; }
+.voice-replace .rep-label {
+  font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase;
+  font-weight: 700; color: var(--lpr-muted);
+  border: 1px solid var(--lpr-rule); border-radius: 4px;
+  padding: 2px 6px; margin-right: 8px; white-space: nowrap;
+}
+.voice-replace del { color: var(--lpr-muted); text-decoration: line-through; text-decoration-color: #d6a35a; }
+.voice-replace .rep-arrow { color: #d6a35a; font-weight: 700; margin: 0 3px; }
+.voice-replace .rep-good { color: var(--lpr-ink); font-weight: 600; }
+.voice-replace .rep-sep { color: var(--lpr-rule); margin: 0 5px; }
+
+/* ── notice anatomy ── */
+.anatomy-sheet {
+  background: #fff; border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  padding: 22px; display: flex; flex-direction: column; gap: 7px;
+}
+.anatomy-row {
+  display: grid; grid-template-columns: 26px 1fr auto;
+  gap: 14px; align-items: center;
+  padding: 11px 16px;
+  background: #fbf9f5;
+  border-left: 3px solid var(--lpr-rule);
+  border-radius: 0 6px 6px 0;
+}
+.anatomy-row.skim { background: rgba(214,163,90,0.10); border-left-color: #d6a35a; }
+.anatomy-num {
+  font-size: 11px; font-weight: 700; color: var(--lpr-muted);
+  font-family: 'Courier New', monospace; text-align: center;
+}
+.anatomy-row.skim .anatomy-num { color: #a9762b; }
+.anatomy-name { font-size: 12.5px; font-weight: 700; color: var(--lpr-ink); letter-spacing: -0.1px; }
+.anatomy-desc { font-size: 11px; color: var(--lpr-muted); font-weight: 400; }
+.anatomy-skim {
+  font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase;
+  font-weight: 700; color: #fff; background: #d6a35a;
+  padding: 3px 8px; border-radius: 999px; white-space: nowrap;
+}
+.anatomy-caption {
+  margin-top: 16px; font-size: 11.5px; color: var(--lpr-muted); line-height: 1.7;
+  padding: 13px 18px; border-left: 3px solid #d6a35a;
+  background: rgba(214,163,90,0.06); border-radius: 0 6px 6px 0;
+}
+.anatomy-caption strong { color: var(--lpr-ink); }
+
+/* ── badge vocabulary ── */
+.badge-chip-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+.badge-chip {
+  display: inline-flex; align-items: center;
+  padding: 8px 16px; border-radius: 999px;
+  font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 700;
+  background: var(--lpr-blue); color: #fff;
+}
+.badge-card {
+  background: #fff; border-radius: 12px;
+  padding: 6px 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+.badge-table { width: 100%; border-collapse: collapse; }
+.badge-table th {
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--lpr-muted); font-weight: 600; text-align: left;
+  padding: 14px 12px 10px; border-bottom: 1px solid var(--lpr-rule);
+}
+.badge-table td {
+  padding: 13px 12px; border-bottom: 1px solid var(--lpr-rule);
+  font-size: 11.5px; color: var(--lpr-muted); line-height: 1.55; vertical-align: top;
+}
+.badge-table tr:last-child td { border-bottom: none; }
+.bt-badge {
+  font-size: 8.5px; letter-spacing: 1.5px; text-transform: uppercase;
+  font-weight: 700; color: var(--lpr-blue); white-space: nowrap;
+}
+.bt-mean { color: var(--lpr-ink); font-weight: 600; }
+
 /* developer appendix */
 .dev-appendix { background: #f4f4f6; border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 16px 28px; margin-top: 48px; }
 .dev-appendix summary {
@@ -850,6 +947,245 @@ details[open] .dev-chevron { transform: rotate(90deg); }
 
     </div>
   </div>
+
+
+  <!-- ── Voice & Copy Rules ── -->
+  <div class="sg-section">
+    <div class="sg-label">Voice &amp; Copy Rules</div>
+
+    <div class="voice-card">
+
+      <div class="voice-rule">
+        <div class="voice-num">1</div>
+        <div>
+          <div class="voice-name">Say the news, not the letter</div>
+          <div class="voice-desc">The first sentence is the fact itself. Where “this letter serves as the required notice” carries legal value, it belongs in the legal footer — not the opener.</div>
+          <div class="voice-replace">
+            <span class="rep-label">Replaces</span>
+            <del>“This letter is to inform you that…”</del><span class="rep-sep">·</span>
+            <del>“Please be advised that…”</del><span class="rep-sep">·</span>
+            <del>“This letter serves as…”</del>
+          </div>
+        </div>
+      </div>
+
+      <div class="voice-rule">
+        <div class="voice-num">2</div>
+        <div>
+          <div class="voice-name">Name the actor</div>
+          <div class="voice-desc">Active voice, with a subject that acts. Passive reads as evasive exactly when trust matters most.</div>
+          <div class="voice-replace">
+            <span class="rep-label">Replaces</span>
+            <del>“there will be a monthly rent increase”</del> <span class="rep-arrow">→</span> <span class="rep-good">“your monthly rent will change to $X”</span><span class="rep-sep">·</span>
+            <del>“deductions have been made”</del> <span class="rep-arrow">→</span> <span class="rep-good">“we deducted…”</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="voice-rule">
+        <div class="voice-num">3</div>
+        <div>
+          <div class="voice-name">Dates, not adverbs</div>
+          <div class="voice-desc">Every deadline is a specific calendar date. Vague deadlines get filed, not acted on.</div>
+          <div class="voice-replace">
+            <span class="rep-label">Replaces</span>
+            <del>“as soon as possible”</del><span class="rep-sep">·</span>
+            <del>“once available”</del> <span class="rep-arrow">→</span> <span class="rep-good">a specific date, e.g. “by August 1, 2026”</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="voice-rule">
+        <div class="voice-num">4</div>
+        <div>
+          <div class="voice-name">Plain words</div>
+          <div class="voice-desc">Everyday language over formal or ledger jargon. Keep “premises” for the legal footer only.</div>
+          <div class="voice-replace">
+            <span class="rep-label">Replaces</span>
+            <del>“the premises”</del> <span class="rep-arrow">→</span> <span class="rep-good">“your home / the unit”</span><span class="rep-sep">·</span>
+            <del>“outstanding ledger balance”</del> <span class="rep-arrow">→</span> <span class="rep-good">“the unpaid balance on your account”</span><span class="rep-sep">·</span>
+            <del>“and/or”</del> <span class="rep-arrow">→</span> <span class="rep-good">“or”</span><span class="rep-sep">·</span>
+            <del>“authorized personnel”</del> <span class="rep-arrow">→</span> <span class="rep-good">“our staff or a contractor”</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="voice-rule">
+        <div class="voice-num">5</div>
+        <div>
+          <div class="voice-name">One contact, one line</div>
+          <div class="voice-desc">Every notice ends with the same closer — office contact, not personal. Process, not negotiation.<br><span class="std-line">“Questions? Call the office at 443.402.5641 or email office@lasalleparkrealty.com.”</span></div>
+          <div class="voice-replace">
+            <span class="rep-label">Replaces</span>
+            <del>a personal cell number, or “call me directly”</del> <span class="rep-arrow">→</span> <span class="rep-good">the standard office line</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="voice-rule">
+        <div class="voice-num">6</div>
+        <div>
+          <div class="voice-name">Two closers, used consistently</div>
+          <div class="voice-desc"><strong style="color:var(--lpr-ink); font-weight:700;">“Sincerely,”</strong> for adverse or formal notices — rent increase, non-renewal, deposit withheld. <strong style="color:var(--lpr-ink); font-weight:700;">“Thank you,”</strong> for service and good-news notices — entry notices, refunds.</div>
+          <div class="voice-replace">
+            <span class="rep-label">Replaces</span>
+            <del>ad-hoc or mismatched signoffs</del> <span class="rep-arrow">→</span> <span class="rep-good">one of the two standard closers</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="voice-rule">
+        <div class="voice-num">7</div>
+        <div>
+          <div class="voice-name">Five questions, every notice</div>
+          <div class="voice-desc">What happened&nbsp;·&nbsp;when&nbsp;·&nbsp;why&nbsp;·&nbsp;what do I do&nbsp;·&nbsp;who do I ask. If any answer is missing, the letter isn't done. Target roughly an 8th-grade reading level, one idea per paragraph.</div>
+          <div class="voice-replace">
+            <span class="rep-label">Replaces</span>
+            <del>a notice that leaves one of the five unanswered</del> <span class="rep-arrow">→</span> <span class="rep-good">all five, answered in plain language</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ── Notice Anatomy ── -->
+  <div class="sg-section">
+    <div class="sg-label">Notice Anatomy</div>
+
+    <div class="anatomy-sheet">
+
+      <div class="anatomy-row">
+        <div class="anatomy-num">1</div>
+        <div><span class="anatomy-name">Header</span> <span class="anatomy-desc">— who it's from (logo, office contact)</span></div>
+      </div>
+
+      <div class="anatomy-row skim">
+        <div class="anatomy-num">2</div>
+        <div><span class="anatomy-name">Badge + Title</span> <span class="anatomy-desc">— what kind of notice, how urgent</span></div>
+        <div class="anatomy-skim">Skim</div>
+      </div>
+
+      <div class="anatomy-row">
+        <div class="anatomy-num">3</div>
+        <div><span class="anatomy-name">Date + recipient address block</span> <span class="anatomy-desc">— proof of service</span></div>
+      </div>
+
+      <div class="anatomy-row">
+        <div class="anatomy-num">4</div>
+        <div><span class="anatomy-name">Opening line</span> <span class="anatomy-desc">— the point, in one sentence</span></div>
+      </div>
+
+      <div class="anatomy-row skim">
+        <div class="anatomy-num">5</div>
+        <div><span class="anatomy-name">Key-facts block</span> <span class="anatomy-desc">— amounts, dates, addresses (the info-grid)</span></div>
+        <div class="anatomy-skim">Skim</div>
+      </div>
+
+      <div class="anatomy-row">
+        <div class="anatomy-num">6</div>
+        <div><span class="anatomy-name">Detail paragraphs</span> <span class="anatomy-desc">— the why and the context</span></div>
+      </div>
+
+      <div class="anatomy-row skim">
+        <div class="anatomy-num">7</div>
+        <div><span class="anatomy-name">Action</span> <span class="anatomy-desc">— what to do + a specific deadline</span></div>
+        <div class="anatomy-skim">Skim</div>
+      </div>
+
+      <div class="anatomy-row">
+        <div class="anatomy-num">8</div>
+        <div><span class="anatomy-name">Signoff</span> <span class="anatomy-desc">— name, title, LLC</span></div>
+      </div>
+
+      <div class="anatomy-row">
+        <div class="anatomy-num">9</div>
+        <div><span class="anatomy-name">Legal footer</span> <span class="anatomy-desc">— statute / lease citation</span></div>
+      </div>
+
+    </div>
+
+    <div class="anatomy-caption">
+      <strong>A notice is skimmed for 5 seconds before it's read for 5 minutes.</strong> If a tenant reads only rows 2, 5, and 7 — the gold skim path — they should still know everything they need. The prose exists for completeness and tone, not for carrying the facts.
+    </div>
+  </div>
+
+
+  <!-- ── Callout Semantics ── -->
+  <div class="sg-section">
+    <div class="sg-label">Callout Semantics</div>
+
+    <div class="elements-grid">
+
+      <div class="el-card">
+        <h4>Blue Callout — Action Required</h4>
+        <div class="callout-demo">Pay the $1,240.00 balance by August 1, 2026 to avoid further action.</div>
+        <div class="el-meta" style="margin-top:14px;"><strong>Something the tenant must do</strong>An action with a deadline.</div>
+        <div style="font-family:'Courier New',monospace; font-size:10px; color:var(--lpr-muted); margin-top:8px;">bg rgba(40,56,145,0.05) · border-left 3px var(--lpr-blue)</div>
+      </div>
+
+      <div class="el-card">
+        <h4>Gold Callout — Key Figures &amp; Dates</h4>
+        <div class="callout-demo gold" style="background:rgba(214,163,90,0.10);">New monthly rent: $1,595.00 · effective October 1, 2026.</div>
+        <div class="el-meta" style="margin-top:14px;"><strong>Information to anchor on</strong>Amounts, dates, addresses.</div>
+        <div style="font-family:'Courier New',monospace; font-size:10px; color:var(--lpr-muted); margin-top:8px;">bg rgba(214,163,90,0.10) · border-left 3px #d6a35a</div>
+      </div>
+
+    </div>
+
+    <div style="background:#fff; border-radius:10px; padding:20px 24px; margin-top:16px; box-shadow:0 2px 10px rgba(0,0,0,.05); font-size:11px; color:var(--lpr-muted); line-height:1.65;">
+      <strong style="color:var(--lpr-ink); font-size:12px;">Consistency is the whole point.</strong> Semantic color only works if it never drifts. A tenant who receives several LPR letters learns the code — blue means <em>do something</em>, gold means <em>here are the numbers</em>. Tinting a paragraph gold for emphasis, or boxing routine text in blue, breaks the signal for every notice that follows.
+    </div>
+  </div>
+
+
+  <!-- ── Badge Vocabulary ── -->
+  <div class="sg-section">
+    <div class="sg-label">Badge Vocabulary</div>
+
+    <div class="badge-chip-row">
+      <span class="badge-chip">Action Required</span>
+      <span class="badge-chip">Required Notice</span>
+      <span class="badge-chip">For Your Records</span>
+      <span class="badge-chip">Lease Renewal</span>
+    </div>
+
+    <div class="badge-card">
+      <table class="badge-table">
+        <thead>
+          <tr>
+            <th style="width:150px;">Badge</th>
+            <th>When it's used</th>
+            <th>Example notices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="bt-badge">Action Required</td>
+            <td class="bt-mean">Money owed, or something enclosed that needs action.</td>
+            <td>Security Deposit — Withheld · Partial Refund</td>
+          </tr>
+          <tr>
+            <td class="bt-badge">Required Notice</td>
+            <td class="bt-mean">Procedural and legally required.</td>
+            <td>Non-Renewal · 24-Hour Entry</td>
+          </tr>
+          <tr>
+            <td class="bt-badge">For Your Records</td>
+            <td class="bt-mean">Nothing to do — informational or good news.</td>
+            <td>Security Deposit — Full Refund</td>
+          </tr>
+          <tr>
+            <td class="bt-badge">Lease Renewal</td>
+            <td class="bt-mean">Renewal-framed notices.</td>
+            <td>Rent Increase</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 
   <!-- ── Site UI Reference — Developer ── -->
   <div class="dev-appendix">

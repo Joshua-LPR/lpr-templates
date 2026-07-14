@@ -93,7 +93,7 @@ Montserrat is bundled locally in `assets/fonts/` so templates render identically
 | **Business Card — Company** | 3.5″ × 2″ | No name. Centered logo + office phone, email, address. |
 | **Letterhead** | US Letter | Clean letterhead with watermark. Recipient block uses contact fields (works for tenants or vendors). |
 | **Letterhead Clean** | US Letter | Same layout, no watermark. |
-| **Letter Watermark** | US Letter | Bulk pre-printable background with bold brand band. |
+| **Watermark Paper** | US Letter | Bulk pre-printable background with bold brand band (file: `Letter Watermark.html`). |
 | **Envelope** | 9.5″ × 4.125″ | #10 size. Minimal ivory layout. Recipient filled via Setup panel. |
 | **Envelope Premium** | 9.5″ × 4.125″ | Pre-print spec variant with refined layout. Includes print-shop spec block. |
 | **Mailing Labels** | Avery 5160 | 30 labels per sheet (return-address). |
@@ -107,9 +107,9 @@ Montserrat is bundled locally in `assets/fonts/` so templates render identically
 |----------|-------|
 | **Notice Template — Blank** | Reusable shell. Placeholders for category, title, body. Recipient via Setup. |
 | **24-Hour Notice of Entry** | MD-law required entry notice. Date/time/reason/entrants grid. Legal footer. |
-| **Rent Increase Notice** | Renewal letter with new monthly rent and effective date. |
-| **Non-Renewal Notice** | Lease will not renew. Vacate-by date and forwarding address request. |
-| **Security Deposit Notices** | Three variants in one file: Withheld, Partial Refund, Full Refund. Mode bar at top switches between them (same pattern as Certificate of Mailing). Save As / Export captures only the active variant via `cloneNode` override. |
+| **Rent Increase Notice** | Renewal letter. Key-facts info-grid (current rent, new rent, effective date, response deadline), full postal recipient block. Badge: Lease Renewal. |
+| **Non-Renewal Notice** | Lease will not renew. Gold vacate-date callout, blue-check move-out checklist, forwarding-address request. Badge: Required Notice. |
+| **Security Deposit Notices** | Three variants in one file: Withheld, Partial Refund, Full Refund. Mode bar at top switches between them (standardized mode-bar.js contract). Save As / Export captures only the active variant via mode-bar.js's central export scrub. Withheld and Partial show a 4-line account summary table (deposit / interest / deductions / total); Withheld adds a blue payment-deadline callout. Badges: Action Required (Withheld, Partial), For Your Records (Full Refund). |
 | **Utilities Addendum** | Lease addendum designating which utilities are paid by tenant (T) or owner (O). Fuel type checkboxes (Natural Gas / Bottle gas / Oil or Electric / Coal or other) for heating/cooking/water heating. Community Name and resident address via Setup panel. Blank signature lines for wet or electronic signing. |
 | **Door Hanger** | 4.25″ × 11″ with die-cut guide. Blank lines for handwriting. |
 | **Yard Sign — For Rent** | 24″ × 18″ landscape. Print-shop spec for vinyl/coroplast. Equal Housing Opportunity mark on both design variants. Export menu includes a high-res 2400×1800 PNG (via html2canvas) in addition to the standard exports. |
@@ -190,9 +190,9 @@ The archive page (`archive.html`) has its own search bar that filters the archiv
 
 **Unfilled-field warning:** clicking Export or Save As when some field types are still empty shows a modal listing which namespaces will be blank. User can go back or continue anyway.
 
-### Setup panel — Sender, Tenants, Vendors, Fields
+### Setup panel — Sender, Tenants, Vendors, Fields, Options
 
-The **Setup** button opens a tabbed panel that appears in every template. Tab order: Sender → Tenants → Vendors → Fields (Fields tab only appears on templates that have fill fields).
+The **Setup** button opens a tabbed panel that appears in every template. Tab order: Sender → Tenants → Vendors → Fields → Options. Fields appears only on templates with fill fields (or a registered manual-address module); Options appears only on templates that registered a Template Options group (see `template-options.js`) — e.g. Yard Sign's sign settings, Certificate of Mailing's print calibration.
 
 #### Sender tab (`owners.js`)
 
@@ -209,8 +209,8 @@ The **Setup** button opens a tabbed panel that appears in every template. Tab or
 - 3-layer data model: `source` (CSV import) → `overrides` (manual panel edits) → `effective` (override wins, falls back to source).
 - **Import CSV** — Buildium tenant export. Smart merge: new tenants added, existing updated, overrides preserved.
 - Overrides auto-cleared if re-import matches the override value. "Buildium: …" hint shown when override differs from source.
-- **Apply as Recipient** — fills `data-contact-field` spans (recipient address block) AND `data-tenant-field` spans (body references).
-- **Body fields only** — fills only `data-tenant-field` spans; leaves `data-contact-field` untouched for a vendor recipient.
+- **Apply as Recipient** — fills `data-contact-field` spans (the canonical recipient family: name, first_name, last_name, address, city/state/zip, email, phone). Also fills any legacy `data-tenant-field` spans (permanent alias — old saved snapshots depend on it; new templates should use contact only).
+- **Body fields only** — fills only the tenant-alias spans; leaves `data-contact-field` untouched for a vendor recipient.
 - **+ Add** — manually create a tenant entry directly in the browser without importing a CSV. Same fields as the editor. Saved to localStorage with a generated ID (`m_<timestamp>`). Manual entries show a **Delete** button in their editor header for removal.
 - **Recently used** — the last 5 applied tenants appear in a shaded section above the scrollable list. Hidden during search. Each entry has an ✕ to remove it individually. Persists across sessions.
 - **Search** matches all address fields (name, address_line1, address_line2, city, state, zip) — typing a street name or city finds matching tenants.
@@ -283,8 +283,8 @@ Templates use three independent field namespaces. Each can be filled independent
 
 | Attribute | Filled by | Purpose |
 |-----------|-----------|---------|
-| `data-contact-field` | Apply as Recipient (tenant or vendor) | Recipient address block — name, address_line1, address_line2, city, state, zip, email, phone |
-| `data-tenant-field` | Tenant Apply as Recipient or Body fields only | Tenant-specific body references — first_name, last_name, address_line1, lease dates, rent amount, etc. |
+| `data-contact-field` | Apply as Recipient (tenant or vendor) | **The canonical recipient family** — name, first_name, last_name, address_line1, address_line2, city, state, zip, email, phone. Use this for ALL recipient references in new templates, including salutations ("Dear first_name last_name"). |
+| `data-tenant-field` | LEGACY ALIAS — kept working forever for old saved snapshots | Do not use in new templates. All shipped templates were migrated to `data-contact-field` in the July 2026 consolidation. |
 | `data-vendor-field` | Vendor Apply as Recipient or Body fields only | Vendor-specific body references — name, address, email, phone, mobile |
 | `data-owner-field` | Sender → Apply to Template | LLC name in signoff |
 | `data-employee-field` | employee.js on page load (URL params or defaults) | Signer name, title, phone, email |
@@ -303,11 +303,11 @@ The address_line2 row hides when empty (`:has([data-contact-field]:empty)` CSS) 
 
 #### Fields tab (`fill-fields.js`)
 
-The **Fields** tab is registered by `fill-fields.js` via `window.LPR_FILL_TABS.push()`. It appears after Vendors but only on templates that contain at least one `data-fill-field` span.
+The **Fields** tab is registered by `fill-fields.js` via `window.LPR_FILL_TABS.push()`. It appears after Vendors but only on templates that contain at least one `data-fill-field` span. (Label templates without fill fields get their Fields tab from `manual-address.js` instead — `LPR_MANUAL_ADDRESS.register({replaceFillTab:true})`.)
 
 - Lists every fill field found on the page by its label
 - Field types: **date** (calendar picker), **time** (12-hour clock picker), **amount** ($-formatted number), **text** (plain text)
-- Calendar and clock pickers use **Flatpickr** (loaded from CDN on first open, cached for the session). The calendar is styled to match LPR brand — blue (#283891) header bar, gold (#d6a35a) today indicator, Montserrat font
+- Calendar and clock pickers use **Flatpickr** (loaded from `assets/vendor/` on first open, cached for the session). The calendar is styled to match LPR brand — blue (#283891) header bar, gold (#d6a35a) today indicator, Montserrat font
 - Values are saved to localStorage keyed by page name + field key (`lpr_fill_<pageName>_<key>`), so they persist across page reloads
 - The field display on the template updates live as values are typed or selected
 
@@ -332,7 +332,7 @@ Multiple spans with the same `data-fill-label` share a single input — useful f
 
 **Display format:** Date fields show as "May 21, 2026"; time fields show as "10:00 AM"; amount fields show as "$1,234.00"; text fields render as-is.
 
-**Flatpickr integration:** `fill-fields.js` lazy-loads Flatpickr CSS + JS from `https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/` only when the Fields tab is first opened on a template with date or time inputs. The promise is cached in `window._lpr_fp_promise` so subsequent opens are instant. Native `<input type="date/time">` elements are replaced by Flatpickr instances so the pickers are consistent across all browsers.
+**Flatpickr integration:** `fill-fields.js` lazy-loads Flatpickr CSS + JS from `assets/vendor/flatpickr.min.{js,css}` (vendored 4.6.13 — no network needed) only when the Fields tab is first opened on a template with date or time inputs. The promise is cached in `window._lpr_fp_promise` so subsequent opens are instant. Native `<input type="date/time">` elements are replaced by Flatpickr instances so the pickers are consistent across all browsers.
 
 **Global hook:** `fill-fields.js` exposes `window.LPR_FILL_APPLY = applyAll` so the Insert sidebar can re-apply all stored values after inserting a new fill-field span.
 
@@ -340,8 +340,8 @@ Multiple spans with the same `data-fill-label` share a single input — useful f
 
 While in Edit mode, the Setup panel shows an **Insert Field** sidebar with four groups:
 - **FILL FIELDS** — inserts a typed fill-field span (`data-fill-field`) at the cursor position: Date, Time, Amount, Text (2-column grid at the top of the panel)
-- **RECIPIENT** — inserts `data-contact-field` spans
-- **TENANT — body reference** — inserts `data-tenant-field` spans
+- **RECIPIENT** — inserts `data-contact-field` spans (includes First Name / Last Name for salutations)
+- **TENANT — body reference** — inserts legacy `data-tenant-field` alias spans (prefer RECIPIENT for new content)
 - **VENDOR — body reference** — inserts `data-vendor-field` spans (only shown when `vendors.js` is loaded)
 
 ---
@@ -356,14 +356,19 @@ lpr-templates/
 ├── view.html                           # Library template loader — reads id from ?id=, document.writes saved HTML
 │
 ├── brand.css                           # Shared styles + bundled Montserrat @font-face
-├── style-guide.html                    # LPR brand style guide (linked from index) — colors, typography, logo usage
-├── user.js                             # Multi-user namespacing (loads first)
+├── letter.css                          # Canonical letter-family skeleton (header/badge/title/body/grid/callouts/signoff/print + phone fit-to-width) — loaded after brand.css by the 10 letter templates
+├── style-guide.html                    # LPR brand style guide (linked from index) — colors, typography, logo usage, voice & copy rules, notice anatomy, callout semantics, badge vocabulary
+├── templates-manifest.js               # window.LPR_MANIFEST — single source of truth for template metadata (title/role/section/badge/modes/options/flags); index cards, archive registry, and Fields config derive from it
+├── user.js                             # Multi-user namespacing (loads first) + lpr_schema_version migration hook
 ├── employee.js                         # Employee-field replacement + signature injection
-├── tenants.js                          # Tenant address book, Setup panel, Insert Field sidebar
+├── tenants.js                          # Tenant address book, Setup panel, Insert Field sidebar (contact family incl. first/last name; data-tenant-field kept as permanent alias for old snapshots)
 ├── owners.js                           # Sender/owner tab in Setup panel
 ├── vendors.js                          # Vendor address book, Vendors tab in Setup panel
 ├── fill-fields.js                      # Fill Fields tab (date/time/amount/text inputs + Flatpickr integration)
-├── template-tools.js                   # Edit/Export/Save As + unsaved-changes guard + signature drag
+├── mode-bar.js                         # Standardized on-page mode selector (.mode-bar[data-mode-group] + [data-mode-when="group:mode"]) — button state, persistence, lpr:modechange event, central export/clone scrub
+├── template-options.js                 # "Options" tab in the Setup panel — templates register groups via window.LPR_TEMPLATE_OPTIONS
+├── manual-address.js                   # Shared manual-address module (one implementation; P-touch/CoM/Shipping register it; adopts each page's legacy storage key)
+├── template-tools.js                   # Edit/Export/Save As + unsaved-changes guard + signature drag; exports pull image bytes from assets/img-data.js (see below)
 │
 ├── Business Card.html
 ├── Business Card Company.html
@@ -385,12 +390,20 @@ lpr-templates/
 ├── Utilities Addendum.html             # Lease addendum — T/O utility assignments + fuel type checkboxes
 ├── Door Hanger.html
 ├── Yard Sign.html
-├── LPR Logo Concepts.html              # Logo exploration / brand reference page
+├── LPR Logo Concepts.html              # Logo exploration / brand reference page — dev tool, intentionally NOT linked from index (loads React dev builds from CDN)
 │
 │   # Dev / design-tool files (not part of the published template set)
-│   # design-canvas.jsx, logos.jsx, tweaks-panel.jsx, logo.html, uploads/
+│   # design-canvas.jsx, logos.jsx, tweaks-panel.jsx, logo.html
+│   # Note: Envelope Premium.html and Letterhead Clean.html have no index card
+│   # by design — they are retired variants surfaced via archive.html's registry.
+│
+├── archive/
+│   └── source-docs/                    # Original source PDFs/scans (moved out of site root; formerly uploads/)
 │
 └── assets/
+    ├── vendor/                         # Vendored third-party libs (jsPDF, html2canvas, flatpickr js+css, qrious, sortablejs) — no CDN dependency at runtime
+    ├── img-data.js                     # window.LPR_IMG_DATA — base64 data URIs of sheet-critical images. REQUIRED for PNG/PDF export under file:// (file:// images taint canvases; script loading is exempt). Regenerate entries if brand images change — command in the file header.
+    ├── eho-white.png                   # Equal Housing Opportunity mark (Yard Sign)
     ├── logo-cropped.png                # Full-color logo (used in letterheads, notices)
     ├── logo-white.png                  # White version for dark backgrounds
     ├── logo-email.png                  # Legacy — not currently referenced in any template
@@ -525,6 +538,20 @@ For now the system is intentionally simple — no logins, no databases, no surpr
 
 ## Conventions for New Templates
 
+### Adding a new template — the checklist
+
+Follow these steps in order; a new letter-style notice needs ~30 minutes and zero new CSS.
+
+1. **Start from the closest existing template** — for letters/notices copy `Notice Template.html` (blank shell already on the standard skeleton). Keep the standard `<head>`: `brand.css` → `letter.css` (letter family only) → `user.js` first.
+2. **Content structure** — follow the notice anatomy in the style guide (badge → title → date → recipient block → opening → key-facts → action → signoff). Body copy follows the Voice & Copy rules (style-guide.html).
+3. **Tokens** — recipients use `data-contact-field` ONLY (never `data-tenant-field` — legacy alias). Fill-ins use `data-fill-field="date|time|amount|text"` with `data-fill-label` from the canonical vocabulary (always "Notice Date", never "Date"/"Letter Date"; reuse existing labels where the concept matches — same label = one synced input). Sender/signer via `data-owner-field` / `data-employee-field` spans copied from an existing signoff block. Notice-family headers hardcode `office@lasalleparkrealty.com` (no employee email span).
+4. **Script stack** (exact order): `user.js` (in head) … then before `</body>`: `employee.js`, `tenants.js`, `owners.js`, `vendors.js`, `fill-fields.js`, [`mode-bar.js` if multi-mode], [`template-options.js` if registering options], [`manual-address.js` if a label-style template], `template-tools.js` last.
+5. **Modes** (only if the template has real document variants): on-page `.mode-bar[data-mode-group="doc"][data-mode-key="<short>"]` with `.mode-btn[data-mode]` buttons directly above the sheet; variant elements get `data-mode-when="doc:<mode>"` (+ initial `mode-hidden` on non-defaults). No custom mode JS — mode-bar.js handles state/persistence/export. See "Mode bar (standardized)" below.
+6. **Settings** (only if the template has knobs that aren't modes): register a group via `window.LPR_TEMPLATE_OPTIONS.push({id, title, render})` — appears in Setup → Options. Do NOT build on-page settings cards.
+7. **Register in the manifest** — add an entry to `templates-manifest.js` (id = filename, title, role, section, desc, badge, modes/options/flags as applicable) **and add a thumbnail** `<template data-thumb-id="<filename>">` in index.html's `#thumb-defs` block (copy a similar template's thumbnail markup as a starting point). The index card and archive registry derive automatically — do not hand-write a card.
+8. **Images on the sheet** — if the template adds a NEW image that appears on the printed sheet, add it to `assets/img-data.js` (base64 entry — regeneration command in that file's header) or PNG/PDF exports will render without it under `file://`.
+9. **Verify before calling it done**: page loads with zero console errors; the sheet never exceeds one page **with long realistic values filled in** (11in = 1056px: `sheet.scrollHeight <= sheet.clientHeight`); Export → PDF/PNG contains the logo/images; Save As → reopen from Library shows baked values; print preview is clean. Update the Template Inventory table in this file and the README table.
+
 ### CSS — always use brand tokens, never hardcode hex
 
 All color references in template `<style>` blocks must use the CSS custom properties from `brand.css`:
@@ -626,9 +653,17 @@ LPR Management, LLC · 1517 Reisterstown Road, 2nd Floor · Pikesville, MD 21208
 
 Employee-specific contact fills via `data-employee-field="phone"` and `data-employee-field="email"` spans. When the **Use office contact** toggle is active, those spans are replaced with the office line.
 
-### Mode bar CSS
+**Notice-family exception:** the notice templates (24-Hour Notice, Rent Increase, Non-Renewal, Security Deposit, Notice Template) hardcode `office@lasalleparkrealty.com` in the header instead of using the employee email span — adverse notices come from the office, not a person (same precedent as Utilities Addendum). Letterheads and personal documents (business card, email signature) keep the employee span.
 
-Multi-variant templates (Certificate of Mailing, Security Deposit) use a `.mode-bar` / `.mode-btn` pattern for the style-switcher buttons. The button styles are defined **in `brand.css`**, not duplicated in each template's `<style>` block. Do not re-define `.mode-btn`, `.mode-btn.active`, or `.mode-btn:hover` in a template — they inherit from `brand.css`.
+### Mode bar (standardized — mode-bar.js)
+
+Mode selection is **document identity** and lives ON-PAGE, directly above the sheet — never buried in a panel. All multi-mode templates (Security Deposit, Certificate of Mailing, Utilities Addendum, Envelope, Letterhead, Yard Sign) use the shared contract owned by `mode-bar.js`:
+
+- Markup: `.mode-bar[data-mode-group][data-mode-key]` containing `.mode-btn[data-mode]` buttons; mode-dependent elements carry `data-mode-when="<group>:<mode>"` (hidden via `.mode-hidden` when not matching).
+- mode-bar.js owns button state, per-page persistence (`lpr_mode_<pageKey>_<key>`), a `lpr:modechange` document event, the `body.mode-<group>-<mode>` class token, and the central export/clone scrub (strips `.mode-hidden`/`.mode-bar` from HTML snapshots — no per-template `cloneNode` overrides anymore).
+- Templates with legacy per-mode internals (CoM's print-style swaps) bridge via an `lpr:modechange` listener rather than rewriting their CSS.
+- Button LOOK still comes **from `brand.css`**; container layout + `.mode-hidden` come from `letter.css` (letter family) or a small commented local copy (non-letter pages like Yard Sign). Do not re-define `.mode-btn`, `.mode-btn.active`, or `.mode-btn:hover` in a template.
+- True *settings* (not modes) belong in the Setup panel's **Options** tab via `window.LPR_TEMPLATE_OPTIONS` (see template-options.js); exception by decision: P-touch's Font/Bold toggles stay on-page because they change printed output.
 
 ### Consolidated variant files
 

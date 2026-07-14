@@ -301,8 +301,10 @@
     const qEl = document.getElementById('lpr-vnd-q');
     if (qEl) qEl.oninput = e => {
       searchQ = e.target.value;
+      const caretStart = e.target.selectionStart;
+      const caretEnd = e.target.selectionEnd;
       const body = document.getElementById('lpr-tab-body');
-      if (body) renderVendorContent(body, { refocus: true });
+      if (body) renderVendorContent(body, { refocus: true, caretStart, caretEnd });
     };
 
     container.querySelectorAll('.lpr-tp-item').forEach(el => {
@@ -328,7 +330,12 @@
     if (addMode) wireAddForm();
     if (opts?.refocus) {
       const q = document.getElementById('lpr-vnd-q');
-      if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+      if (q) {
+        q.focus();
+        const len = q.value.length;
+        const clamp = n => Math.max(0, Math.min(n ?? len, len));
+        q.setSelectionRange(clamp(opts.caretStart), clamp(opts.caretEnd));
+      }
     }
   }
 

@@ -6,15 +6,22 @@
 <link rel="stylesheet" href="brand.css">
 <script src="user.js"></script>
 <style>
-  body { background: var(--lpr-page); padding: 60px 20px 40px; }
+  /* 96px top clears the fixed toolbar pill (wider in edit mode) */
+  body { background: var(--lpr-page); padding: 96px 20px 40px; }
   @page { size: 9.5in 4.125in; margin: 0; }
   .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
 
-  /* ── mode bar ── */
+  /* ── mode bar (Track 4 §4: standardized contract, mode-bar.js) ──
+     This page doesn't load letter.css, so the bare-chips container rule
+     is repeated locally (site standard — centered chips, no card).
+     .mode-btn base/.active/:hover look comes from brand.css (already
+     loaded above) — no local .mode-btn rule needed. No .mode-hidden rule
+     is needed either: this template has one sheet whose look is driven
+     entirely by the body.mode-doc-<mode> token below, not by toggling
+     .sheet elements via data-mode-when. */
   .mode-bar {
-    background:#fff; border:1px solid #dde; border-radius:8px;
-    padding:14px 20px; width:9.5in; max-width:calc(100vw - 40px);
-    display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+    display:flex; justify-content:center; flex-wrap:wrap; gap:8px;
+    max-width:calc(100vw - 40px); margin:0 auto;
   }
   /* ── base envelope shell ── */
   .envelope {
@@ -45,19 +52,21 @@
   .env-csl:has([data-contact-field="city"]:empty) .env-comma { display:none; }
   @media print { .env-recipient:not(.env-rec-filled) { visibility:hidden; } }
 
-  /* ══ MODE: WITH STRIPE ══ */
-  .mode-stripe .env-stripe                          { display:block; }
-  .mode-stripe .env-return                          { left:0.85in; }
-  .mode-stripe .env-return img                      { height:0.7in; }
-  .mode-stripe .env-return .vrule                   { display:none; }
-  .mode-stripe .env-return .addr                    { border-left:1px solid var(--lpr-rule); padding-left:12px; }
-  .mode-stripe .env-return .addr .name              { display:block; }
-  .mode-stripe .env-stamp                           { display:flex; }
-  .mode-stripe .env-mark                            { display:block; }
+  /* ══ MODE: WITH STRIPE ══ (Track 4 §4: mode-bar.js sets body.mode-doc-<mode>;
+     "drop setMode" — page CSS now keys on the shared body class token
+     instead of the old private .stage.mode-* class) */
+  body.mode-doc-stripe .env-stripe                          { display:block; }
+  body.mode-doc-stripe .env-return                          { left:0.85in; }
+  body.mode-doc-stripe .env-return img                      { height:0.7in; }
+  body.mode-doc-stripe .env-return .vrule                   { display:none; }
+  body.mode-doc-stripe .env-return .addr                    { border-left:1px solid var(--lpr-rule); padding-left:12px; }
+  body.mode-doc-stripe .env-return .addr .name              { display:block; }
+  body.mode-doc-stripe .env-stamp                           { display:flex; }
+  body.mode-doc-stripe .env-mark                            { display:block; }
 
   /* ══ MODE: SEND ADDRESS ONLY ══ */
-  .mode-sendonly .env-return                        { display:none; }
-  .mode-sendonly .env-stamp                         { display:flex; }
+  body.mode-doc-sendonly .env-return                        { display:none; }
+  body.mode-doc-sendonly .env-stamp                         { display:flex; }
 
   /* ── print overrides ── */
   @media print {
@@ -72,7 +81,7 @@
     width:9.5in; max-width:calc(100vw - 40px);
   }
   .specs strong { color:var(--lpr-ink); letter-spacing:1.5px; text-transform:uppercase; font-size:9px; }
-  .mode-sendonly .specs-sendonly { display:block; }
+  body.mode-doc-sendonly .specs-sendonly { display:block; }
 </style>
 </head>
 <body>
@@ -80,10 +89,9 @@
   <a href="index.html" class="toolbar-back">← All templates</a>
 </div>
 
-<div class="stage mode-standard">
+<div class="stage">
 
-  <div class="mode-bar no-print">
-    <strong>Style:</strong>
+  <div class="mode-bar no-print" data-mode-group="doc">
     <button class="mode-btn active" data-mode="standard">Standard</button>
     <button class="mode-btn" data-mode="stripe">With Stripe</button>
     <button class="mode-btn" data-mode="sendonly">Send Address Only</button>
@@ -126,41 +134,61 @@
 <script src="tenants.js"></script>
 <script src="vendors.js"></script>
 <script src="fill-fields.js"></script>
+<script>
+/* ── Track 4 P1f: legacy mode-key adoption ──
+   mode-bar.js (loaded next) persists to lpr_mode_<pageKey>_doc. Seed it
+   once from the pre-Track-4 flat key so a previously saved mode
+   preference survives the migration — same pattern used by Certificate
+   of Mailing's lpr_cof_mode adoption. Must run before mode-bar.js resolves
+   the initial mode, so it stays in this early, synchronously-run script
+   block (ahead of mode-bar.js's own <script> tag). */
+(function adoptLegacyMode() {
+  try {
+    var legacy = localStorage.getItem('lpr_env_mode');
+    if (!legacy) return;
+    var basename = (location.pathname.split('/').pop() || 'page').replace(/\.html?$/i, '');
+    var newKey = 'lpr_mode_' + basename + '_doc';
+    if (localStorage.getItem(newKey) == null) localStorage.setItem(newKey, legacy);
+  } catch (e) {}
+})();
+</script>
+<script src="mode-bar.js"></script>
 <script src="template-tools.js"></script>
 <script>
 (function () {
-  var stage = document.querySelector('.stage');
-  var btns  = document.querySelectorAll('.mode-btn[data-mode]');
-  var lbl   = document.getElementById('env-label');
+  /* ── bespoke per-mode UI (Track 4 §4.2) ──
+     mode-bar.js now owns button state, persistence, initial-mode
+     resolution, and the body.mode-doc-<mode> token the CSS above keys
+     on. The only things this template still needs to do itself — the
+     on-page size label and the recipient-filled recompute — move into a
+     single 'lpr:modechange' listener. No internal rewrite — only the
+     trigger changed from the old private setMode() to the shared event. */
+  var lbl = document.getElementById('env-label');
   var LABELS = {
     standard: '#10 ENVELOPE — 9.5″ × 4.125″',
     stripe:   '#10 ENVELOPE — WITH STRIPE',
     sendonly: '#10 ENVELOPE — SEND ADDRESS ONLY'
   };
 
-  function setMode(mode) {
-    stage.className = stage.className.replace(/\bmode-\S+/g, '').trim() + ' mode-' + mode;
-    btns.forEach(function (b) { b.classList.toggle('active', b.dataset.mode === mode); });
-    if (lbl) lbl.textContent = LABELS[mode] || LABELS.standard;
-    localStorage.setItem('lpr_env_mode', mode);
-  }
-
-  btns.forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.mode); }); });
-
-  var saved = localStorage.getItem('lpr_env_mode');
-  if (saved && LABELS[saved]) setMode(saved);
-
-  /* filled-in detection for print hiding */
   var rec = document.getElementById('env-rec');
-  if (rec) {
-    function check() {
-      var filled = Array.from(rec.querySelectorAll('[data-contact-field]'))
-        .some(function (s) { return s.textContent.trim(); });
-      rec.classList.toggle('env-rec-filled', filled);
-    }
-    new MutationObserver(check).observe(rec, { subtree: true, childList: true, characterData: true });
-    check();
+  function checkFilled() {
+    if (!rec) return;
+    var filled = Array.from(rec.querySelectorAll('[data-contact-field]'))
+      .some(function (s) { return s.textContent.trim(); });
+    rec.classList.toggle('env-rec-filled', filled);
   }
+  if (rec) {
+    /* Recipient text can change independently of mode (tenant fill / manual
+       edit) — keep the MutationObserver for that. */
+    new MutationObserver(checkFilled).observe(rec, { subtree: true, childList: true, characterData: true });
+    checkFilled();
+  }
+
+  document.addEventListener('lpr:modechange', function (e) {
+    if (!e.detail || e.detail.group !== 'doc') return;
+    if (lbl) lbl.textContent = LABELS[e.detail.mode] || LABELS.standard;
+    checkFilled();
+  });
 })();
 </script>
 </body>

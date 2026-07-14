@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="brand.css">
 <script src="user.js"></script>
 <style>
-  body { background: var(--lpr-page); padding: 60px 20px 40px; }
+  body { background: var(--lpr-page); padding: 96px 20px 40px; }
   /* Landscape: 11" × 8.5" sheet, labels are 5" wide × 3.5" tall */
   @page { size: 11in 8.5in; margin: 0; }
   .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
@@ -90,12 +90,6 @@
     letter-spacing: 4px; color: rgba(180,30,30,0.3);
     pointer-events: none;
   }
-
-  /* ── Fields tab sidebar helpers ── */
-  .lpr-ff-csz { display: flex; gap: 6px; }
-  .lpr-ff-csz .lpr-ff-inp { flex: 1; min-width: 0; }
-  .lpr-ff-csz .lpr-ff-inp.ff-st  { flex: 0 0 52px; }
-  .lpr-ff-csz .lpr-ff-inp.ff-zip { flex: 0 0 82px; }
 
   /* ── Print ── */
   @media print {
@@ -186,77 +180,8 @@ grid.addEventListener('click', function(e) {
 <script src="tenants.js"></script>
 <script src="vendors.js"></script>
 <script src="fill-fields.js"></script>
+<script src="manual-address.js"></script>
+<script>LPR_MANUAL_ADDRESS.register({ replaceFillTab: true });</script>
 <script src="template-tools.js"></script>
-
-<!-- Post-init: register Fields tab AFTER external scripts so it lands after Vendors.
-     Replace fill-fields.js's empty "Fields" tab with our address form. -->
-<script>
-(function() {
-  var tabs = window.LPR_FILL_TABS = window.LPR_FILL_TABS || [];
-
-  /* Remove the fill-fields tab — this template has no data-fill-field spans */
-  var idx = tabs.findIndex ? tabs.findIndex(function(t) { return t.id === 'fill-fields'; })
-                           : (function() { for (var i=0;i<tabs.length;i++) if (tabs[i].id==='fill-fields') return i; return -1; })();
-  if (idx !== -1) tabs.splice(idx, 1);
-
-  function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  function renderAddressTab(container) {
-    var s = loadManual();
-    container.innerHTML =
-      '<div class="lpr-ff-body">' +
-        '<div class="lpr-ff-fields">' +
-
-          '<div class="lpr-ff-field">' +
-            '<label class="lpr-ff-lbl">Name</label>' +
-            '<input class="lpr-ff-inp" type="text" data-me="name" placeholder="Full name" value="' + esc(s.name) + '">' +
-          '</div>' +
-
-          '<div class="lpr-ff-field">' +
-            '<label class="lpr-ff-lbl">Street Address</label>' +
-            '<input class="lpr-ff-inp" type="text" data-me="address_line1" placeholder="Street address" value="' + esc(s.address_line1) + '">' +
-          '</div>' +
-
-          '<div class="lpr-ff-field">' +
-            '<label class="lpr-ff-lbl">Unit / Apt <span style="font-weight:400;letter-spacing:0;text-transform:none;color:var(--lpr-muted);">(optional)</span></label>' +
-            '<input class="lpr-ff-inp" type="text" data-me="address_line2" placeholder="Unit, Apt, Suite…" value="' + esc(s.address_line2) + '">' +
-          '</div>' +
-
-          '<div class="lpr-ff-field">' +
-            '<label class="lpr-ff-lbl">City · State · Zip</label>' +
-            '<div class="lpr-ff-csz">' +
-              '<input class="lpr-ff-inp" type="text" data-me="city"  placeholder="City"  value="' + esc(s.city)  + '">' +
-              '<input class="lpr-ff-inp ff-st"  type="text" data-me="state" placeholder="ST"   value="' + esc(s.state) + '">' +
-              '<input class="lpr-ff-inp ff-zip" type="text" data-me="zip"   placeholder="Zip"  value="' + esc(s.zip)   + '">' +
-            '</div>' +
-          '</div>' +
-
-        '</div>' +
-        '<div class="lpr-ff-foot">' +
-          '<button class="lpr-ff-clear" id="lpr-5168-clear">Clear Address</button>' +
-        '</div>' +
-      '</div>';
-
-    container.querySelectorAll('[data-me]').forEach(function(inp) {
-      inp.addEventListener('input', function() {
-        var obj = loadManual();
-        obj[inp.dataset.me] = inp.value;
-        saveManual(obj);
-        applyContactField(inp.dataset.me, inp.value);
-      });
-    });
-
-    document.getElementById('lpr-5168-clear').addEventListener('click', function() {
-      container.querySelectorAll('[data-me]').forEach(function(inp) {
-        inp.value = '';
-        applyContactField(inp.dataset.me, '');
-      });
-      localStorage.removeItem(ME_KEY);
-    });
-  }
-
-  tabs.push({ id: 'address-fields', label: 'Fields', render: renderAddressTab });
-})();
-</script>
 </body>
 </html>

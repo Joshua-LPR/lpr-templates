@@ -2,38 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>LPR — Security Deposit Notice</title>
 <link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="letter.css">
 <script src="user.js"></script>
 <style>
-  body { background: var(--lpr-page); padding: 60px 20px 40px; }
-  @page { size: 8.5in 11in; margin: 0; }
-  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
-  .sheet.letter { width: 8.5in; height: 11in; padding: 0.75in 0.85in; display: flex; flex-direction: column; }
-  .sheet.letter.sd-hidden { display: none !important; }
-  .lh-header { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 18px; border-bottom: 2px solid var(--lpr-blue); }
-  .lh-header img { height: 0.95in; width: auto; }
-  .lh-header .meta { text-align: right; font-size: 8.5pt; line-height: 1.55; color: var(--lpr-ink); font-weight: 400; }
-  .doc-badge { margin-top: 0.45in; font-size: 9pt; letter-spacing: 4px; text-transform: uppercase; color: var(--lpr-blue); font-weight: 600; }
-  .doc-title { font-size: 26pt; font-weight: 700; letter-spacing: -0.4px; line-height: 1.05; margin-top: 8px; color: var(--lpr-ink); }
-  .lh-body { flex: 1; padding-top: 0.35in; font-size: 11pt; line-height: 1.65; color: var(--lpr-text); }
-  .lh-body .date { color: var(--lpr-muted); font-size: 10pt; margin-bottom: 22px; }
-  .lh-body p { margin: 0 0 12px; }
-  .lh-body .highlight { background: rgba(40,56,145,0.06); border-left: 3px solid var(--lpr-blue); padding: 10px 14px; border-radius: 3px; margin: 12px 0; font-size: 12pt; color: var(--lpr-ink); }
-  .signoff { margin-top: 0.45in; padding-top: 0; }
-  .signature { height: auto; min-height: 0; }
-
-  /* Mode bar */
-  .mode-bar {
-    display: flex; justify-content: center; flex-wrap: wrap; gap: 8px;
-    width: 8.5in;
-  }
-  @media print {
-    body { background: #fff; padding: 0; }
-    .stage { gap: 0; }
-    .label { display: none; }
-    .mode-bar { display: none; }
-  }
+  .lh-body p { margin: 0 0 10px; }
 </style>
 </head>
 <body>
@@ -42,7 +17,7 @@
 </div>
 <div class="stage">
 
-  <div class="mode-bar no-print">
+  <div class="mode-bar no-print" data-mode-group="doc" data-mode-key="sd">
     <button class="mode-btn active" data-mode="withheld">Withheld</button>
     <button class="mode-btn" data-mode="partial">Partial Refund</button>
     <button class="mode-btn" data-mode="returned">Full Refund</button>
@@ -51,22 +26,33 @@
   <div class="label">SECURITY DEPOSIT NOTICES — US LETTER</div>
 
   <!-- ── Withheld ── -->
-  <div class="sheet letter" data-sd-mode="withheld">
+  <div class="sheet letter" data-mode-when="doc:withheld">
     <div class="lh-header">
       <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
       <div class="meta">1517 Reisterstown Road, 2nd Floor<br/>
       Pikesville, MD 21208<br/>
       <span data-employee-field="phone">443.402.5641</span><br/>
-      <span data-employee-field="email">david@lasalleparkrealty.com</span></div>
+      office@lasalleparkrealty.com</div>
     </div>
-    <div class="doc-badge">Security Deposit Notice</div>
+    <div class="doc-badge">Action Required</div>
     <div class="doc-title">Security Deposit <br/>Withheld</div>
     <div class="lh-body">
       <div class="date"><span data-fill-field="date" data-fill-label="Notice Date"></span></div>
-      <p>Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</p>
-      <p>This letter is to notify you that your security deposit and accrued security deposit interest have been applied to your outstanding ledger balance for <strong><span data-tenant-field="address_line1"></span></strong>.</p>
-      <p>Attached is your account statement detailing the deductions made. After applying the security deposit and interest, a remaining balance of <strong>$<span data-fill-field="amount" data-fill-label="Outstanding Balance"></span></strong> is due. If any additional charges are incurred, you will be notified.</p>
-      <div class="highlight">Please submit payment as soon as possible.</div>
+      <div class="recipient">
+        <span data-contact-field="name"></span><br/>
+        <span data-contact-field="address_line1"></span><br/>
+        <span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span>
+      </div>
+      <p>Dear <span data-contact-field="first_name"></span> <span data-contact-field="last_name"></span>,</p>
+      <p>We have applied your security deposit for <strong><span data-contact-field="address_line1"></span></strong>, plus accrued interest, to the unpaid balance on your account. Here is the summary:</p>
+      <table class="acct-table">
+        <tr><td>Security deposit held</td><td class="amt">$<span data-fill-field="amount" data-fill-label="Deposit Held"></span></td></tr>
+        <tr><td>Accrued interest</td><td class="amt">+ $<span data-fill-field="amount" data-fill-label="Accrued Interest"></span></td></tr>
+        <tr><td>Deductions (itemized on attached statement)</td><td class="amt">− $<span data-fill-field="amount" data-fill-label="Total Deductions"></span></td></tr>
+        <tr class="acct-total"><td>Remaining balance due</td><td class="amt">$<span data-fill-field="amount" data-fill-label="Balance Due"></span></td></tr>
+      </table>
+      <div class="callout callout-blue">Payment due by <strong><span data-fill-field="date" data-fill-label="Payment Due Date"></span></strong> — by check to the office or through your resident portal.</div>
+      <p>If we add any further charges, we will send you an updated statement. If you believe any charge is incorrect, call us at 443.402.5641 within 14 days and we will review your account with you.</p>
       <div class="signoff">
         <p>Sincerely,</p>
         <div class="signature"></div>
@@ -77,25 +63,35 @@
   </div>
 
   <!-- ── Partial Refund ── -->
-  <div class="sheet letter sd-hidden" data-sd-mode="partial">
+  <div class="sheet letter mode-hidden" data-mode-when="doc:partial">
     <div class="lh-header">
       <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
       <div class="meta">1517 Reisterstown Road, 2nd Floor<br/>
       Pikesville, MD 21208<br/>
       <span data-employee-field="phone">443.402.5641</span><br/>
-      <span data-employee-field="email">david@lasalleparkrealty.com</span></div>
+      office@lasalleparkrealty.com</div>
     </div>
-    <div class="doc-badge">Security Deposit Notice</div>
+    <div class="doc-badge">Action Required</div>
     <div class="doc-title">Security Deposit <br/>Partial Refund</div>
     <div class="lh-body">
       <div class="date"><span data-fill-field="date" data-fill-label="Notice Date"></span></div>
-      <p>Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</p>
-      <p>This letter is to inform you that a portion of your security deposit has been withheld to cover the outstanding balance on your account.</p>
-      <p>Please find your account statement attached, which outlines the deductions that have been made.</p>
-      <p>Enclosed is a check for the remaining balance of your security deposit.</p>
-      <p>We appreciated having you as a tenant, and we wish you all the best in your future endeavors.</p>
+      <div class="recipient">
+        <span data-contact-field="name"></span><br/>
+        <span data-contact-field="address_line1"></span><br/>
+        <span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span>
+      </div>
+      <p>Dear <span data-contact-field="first_name"></span> <span data-contact-field="last_name"></span>,</p>
+      <p>Enclosed is a check for <strong>$<span data-fill-field="amount" data-fill-label="Refund Amount"></span></strong> — the remainder of your security deposit and interest for <strong><span data-contact-field="address_line1"></span></strong>, after the deductions summarized below.</p>
+      <table class="acct-table">
+        <tr><td>Security deposit held</td><td class="amt">$<span data-fill-field="amount" data-fill-label="Deposit Held"></span></td></tr>
+        <tr><td>Accrued interest</td><td class="amt">+ $<span data-fill-field="amount" data-fill-label="Accrued Interest"></span></td></tr>
+        <tr><td>Deductions (itemized on attached statement)</td><td class="amt">− $<span data-fill-field="amount" data-fill-label="Total Deductions"></span></td></tr>
+        <tr class="acct-total"><td>Refund enclosed</td><td class="amt">$<span data-fill-field="amount" data-fill-label="Refund Amount"></span></td></tr>
+      </table>
+      <p>If you believe any charge is incorrect, call us at 443.402.5641 within 14 days and we will review your account with you.</p>
+      <p>We appreciated having you as a tenant, and we wish you the best in your new home.</p>
       <div class="signoff">
-        <p>Sincerely,</p>
+        <p>Thank you,</p>
         <div class="signature"></div>
         <div class="signed-name" data-employee-field="name">David Mitnick</div>
         <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span></div>
@@ -104,24 +100,29 @@
   </div>
 
   <!-- ── Full Refund (Returned) ── -->
-  <div class="sheet letter sd-hidden" data-sd-mode="returned">
+  <div class="sheet letter mode-hidden" data-mode-when="doc:returned">
     <div class="lh-header">
       <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
       <div class="meta">1517 Reisterstown Road, 2nd Floor<br/>
       Pikesville, MD 21208<br/>
       <span data-employee-field="phone">443.402.5641</span><br/>
-      <span data-employee-field="email">david@lasalleparkrealty.com</span></div>
+      office@lasalleparkrealty.com</div>
     </div>
-    <div class="doc-badge">Security Deposit Notice</div>
+    <div class="doc-badge">For Your Records</div>
     <div class="doc-title">Security Deposit <br/>Returned</div>
     <div class="lh-body">
       <div class="date"><span data-fill-field="date" data-fill-label="Notice Date"></span></div>
-      <p>Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</p>
-      <p>This letter is to inform you that your security deposit and accrued interest are being returned to you in full for the property at <strong><span data-tenant-field="address_line1"></span></strong>.</p>
-      <p>Enclosed is a check in the amount of <strong>$<span data-fill-field="amount" data-fill-label="Refund Amount"></span></strong>, representing your security deposit and all applicable interest.</p>
-      <p>We appreciated having you as a tenant, and we wish you all the best in your future endeavors.</p>
+      <div class="recipient">
+        <span data-contact-field="name"></span><br/>
+        <span data-contact-field="address_line1"></span><br/>
+        <span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span>
+      </div>
+      <p>Dear <span data-contact-field="first_name"></span> <span data-contact-field="last_name"></span>,</p>
+      <p>Good news — your security deposit for <strong><span data-contact-field="address_line1"></span></strong> is being returned in full.</p>
+      <div class="callout callout-gold">Enclosed is a check for <strong>$<span data-fill-field="amount" data-fill-label="Refund Amount" data-fill-key="refund_amount_full"></span></strong>, covering your entire deposit plus accrued interest.</div>
+      <p>Thank you for taking such good care of the home. We appreciated having you as a tenant, and we wish you the best in your new place.</p>
       <div class="signoff">
-        <p>Sincerely,</p>
+        <p>Thank you,</p>
         <div class="signature"></div>
         <div class="signed-name" data-employee-field="name">David Mitnick</div>
         <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span></div>
@@ -131,37 +132,12 @@
 
 </div>
 
-<script>
-(function () {
-  function setMode(mode) {
-    document.querySelectorAll('.mode-btn').forEach(function (btn) {
-      btn.classList.toggle('active', btn.dataset.mode === mode);
-    });
-    document.querySelectorAll('[data-sd-mode]').forEach(function (el) {
-      el.classList.toggle('sd-hidden', el.dataset.sdMode !== mode);
-    });
-  }
-  document.querySelectorAll('.mode-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () { setMode(btn.dataset.mode); });
-  });
-
-  // Save As / Export: strip inactive sheets from the clone so only the
-  // selected variant is captured — not all three.
-  var _origClone = document.documentElement.cloneNode.bind(document.documentElement);
-  document.documentElement.cloneNode = function (deep) {
-    var clone = _origClone(deep);
-    clone.querySelectorAll('.sd-hidden').forEach(function (el) { el.remove(); });
-    clone.querySelectorAll('.mode-bar').forEach(function (el) { el.remove(); });
-    return clone;
-  };
-})();
-</script>
-
 <script src="employee.js"></script>
 <script src="tenants.js"></script>
 <script src="owners.js"></script>
 <script src="vendors.js"></script>
 <script src="fill-fields.js"></script>
+<script src="mode-bar.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

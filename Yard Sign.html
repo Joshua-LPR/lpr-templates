@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="brand.css">
 <script src="user.js"></script>
 <style>
-  body { background: var(--lpr-page); padding: 60px 20px 40px; }
+  body { background: var(--lpr-page); padding: 96px 20px 40px; }
   @page { size: 24in 18in; margin: 0; }
   .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
 
@@ -81,13 +81,17 @@
     text-transform: uppercase; color: var(--lpr-muted); margin-bottom: 0.1in;
   }
 
-  /* ── original contact row ── */
+  /* ── original contact row ──
+     Track 4 P1g: which side carries the QR now comes from mode-bar.js via
+     data-mode-when="qr-side:white|blue" on #sign-qr-group / #sign-qr-left
+     below — the old .sign.qr-blue class-toggle rules are gone. Whether the
+     QR shows AT ALL (a URL is set) is still driven by inline style from
+     the settings JS; the two conditions combine independently (mode-hidden
+     is !important, so it always wins when the side doesn't match). */
   .contact-row { display: flex; flex-direction: column; align-items: flex-start; gap: 0.25in; }
   #sign-qr-img { width: 4in; height: 4in; display: block; }
-  #sign-qr-left { display: none; align-self: center; line-height: 0; }
+  #sign-qr-left { align-self: center; line-height: 0; }
   #sign-qr-img-blue { width: 6.8in; height: 6.8in; display: block; }
-  .sign.qr-blue #sign-qr-group { display: none !important; }
-  .sign.qr-blue #sign-qr-left { display: block; }
 
   /* ── V2 right panel overrides ── */
   .sign-v2 .sign-right {
@@ -128,31 +132,17 @@
     text-transform: uppercase; color: var(--lpr-muted); white-space: nowrap;
   }
 
-  /* ── settings card ── */
-  .sign-settings {
-    max-width: 720px; width: 100%; box-sizing: border-box;
-    padding: 16px 20px; background: #fff;
-    border: 1px solid #dde; border-radius: 8px;
-  }
-  .sign-settings h4 { margin: 0 0 14px; font-size: 13px; font-weight: 700; color: var(--lpr-blue); }
-  .sset-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-  .sset-row:last-child { margin-bottom: 0; }
-  .sset-label { font-size: 12px; font-weight: 600; color: var(--lpr-ink); min-width: 140px; }
-  .sset-hint  { font-size: 11px; font-weight: 400; color: #999; }
-  .sset-input {
-    flex: 1; padding: 7px 10px;
-    border: 1px solid #dde; border-radius: 6px;
-    font-family: Montserrat, sans-serif; font-size: 13px; color: var(--lpr-ink);
-    outline: none;
-  }
-  .sset-input:focus { border-color: var(--lpr-blue); }
-  .sset-textarea {
-    flex: 1; padding: 7px 10px;
-    border: 1px solid #dde; border-radius: 6px;
-    font-family: Montserrat, sans-serif; font-size: 13px; color: var(--lpr-ink);
-    outline: none; resize: vertical; min-height: 58px; line-height: 1.5;
-  }
-  .sset-textarea:focus { border-color: var(--lpr-blue); }
+  /* ── standardized mode-bar (Track 4 §4) ──
+     Yard Sign does not load letter.css (the canonical home of these three
+     rules for the letter-family templates), so they're restated here
+     verbatim. Button color/hover/active state already comes from
+     brand.css's shared `.mode-btn`/`.mode-bar strong` rules (loaded above
+     on every template with mode-toggle buttons); only the container
+     layout, button flex-sizing, and the hidden-state utility are
+     page-local, since brand.css intentionally doesn't own those. */
+  .mode-bar { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; max-width: 720px; margin: 0 auto; }
+  .mode-btn { flex: 0 0 auto; }
+  .mode-hidden { display: none !important; }
 
   /* ── specs ── */
   .specs {
@@ -166,18 +156,19 @@
   @media print {
     html, body { width: 24in; height: 18in; margin: 0; padding: 0; background: #fff; }
     .stage { display: block; }
-    .label, .specs, .sign-settings, .toolbar { display: none !important; }
+    .label, .specs, .toolbar { display: none !important; }
     .sign-wrap { width: 24in; height: 18in; overflow: hidden; box-shadow: none; position: static; }
     .sheet.sign, .sheet.sign-v2 { transform: none; position: absolute; top: 0; left: 0; }
-    body.design-original .sheet.sign-v2 { display: none !important; }
-    body.design-v2 .sheet.sign { display: none !important; }
+    /* Track 4 §4: which design prints is now governed by .mode-hidden
+       (above) via data-mode-when on each .sheet — no print-specific
+       body-class rule needed any more. */
     #sign-qr-img, #sign-qr-img-blue, #sign-qr-img-v2 {
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
   }
 </style>
 </head>
-<body class="design-original">
+<body>
 
 <div class="toolbar no-print">
   <a href="index.html" class="toolbar-back">← All templates</a>
@@ -186,13 +177,30 @@
 <div class="stage">
   <div class="label">YARD SIGN · FOR RENT — 24″ × 18″ LANDSCAPE</div>
 
+  <!-- Track 4 §4: standardized mode-bar contract. mode-bar.js owns button
+       state, persistence (lpr_mode_<pageKey>_<group>), the shared
+       lpr:modechange event, and the central export/clone scrub. Two
+       independent groups on this page: "design" picks which sheet renders;
+       "qr-side" (meaningful only for the Original design) picks which side
+       of that sheet carries the QR code — see the settings script below
+       for the rule that shows/hides this second bar. -->
+  <div class="mode-bar no-print" data-mode-group="design">
+    <button class="mode-btn active" data-mode="original">Original</button>
+    <button class="mode-btn" data-mode="v2">New Design</button>
+  </div>
+
+  <div class="mode-bar no-print" data-mode-group="qr-side" id="qr-side-bar" style="display:none">
+    <button class="mode-btn active" data-mode="white">QR on white side</button>
+    <button class="mode-btn" data-mode="blue">QR on blue side</button>
+  </div>
+
   <div class="sign-wrap">
 
     <!-- ──── ORIGINAL DESIGN ──── -->
-    <div class="sheet sign">
+    <div class="sheet sign" data-mode-when="design:original">
       <div class="sign-left">
         <img class="logo" src="assets/logo-white.png" alt="LPR Management, LLC"/>
-        <div id="sign-qr-left">
+        <div id="sign-qr-left" data-mode-when="qr-side:blue">
           <img id="sign-qr-img-blue" alt="QR code">
         </div>
         <div>
@@ -211,7 +219,7 @@
             <div class="phone-label">Call to inquire</div>
             <div class="phone" id="sign-phone">443.402.5641</div>
           </div>
-          <div id="sign-qr-group" style="display:none">
+          <div id="sign-qr-group" data-mode-when="qr-side:white" style="display:none">
             <img id="sign-qr-img" alt="QR code">
           </div>
         </div>
@@ -219,7 +227,7 @@
     </div>
 
     <!-- ──── NEW DESIGN — A2 ──── -->
-    <div class="sheet sign-v2" style="display:none">
+    <div class="sheet sign-v2" data-mode-when="design:v2">
       <div class="sign-left">
         <img class="logo" src="assets/logo-white.png" alt="LPR Management, LLC"/>
         <div>
@@ -250,38 +258,10 @@
 
   </div><!-- /sign-wrap -->
 
-  <!-- ──── Settings ──── -->
-  <div class="sign-settings no-print">
-    <h4>Sign settings</h4>
-
-    <div class="sset-row">
-      <span class="sset-label">Design</span>
-      <button class="mode-btn active" id="btn-design-original">Original</button>
-      <button class="mode-btn" id="btn-design-v2">New Design</button>
-    </div>
-
-    <div class="sset-row">
-      <label class="sset-label" for="inp-phone">Phone number</label>
-      <input type="text" id="inp-phone" class="sset-input" placeholder="443.402.5641">
-    </div>
-
-    <div class="sset-row">
-      <label class="sset-label" for="inp-qr">QR code link <span class="sset-hint">— leave blank to hide</span></label>
-      <input type="text" id="inp-qr" class="sset-input" placeholder="mailto:info@lprmanagement.com?subject=Rental Inquiry">
-    </div>
-
-    <div class="sset-row" id="qr-side-row" style="display:none">
-      <span class="sset-label">QR placement</span>
-      <button class="mode-btn active" id="qr-side-white">White side</button>
-      <button class="mode-btn" id="qr-side-blue">Blue side</button>
-    </div>
-
-    <div class="sset-row" id="homes-line-row" style="display:none">
-      <label class="sset-label" for="inp-homes-line">Homes line text</label>
-      <textarea id="inp-homes-line" class="sset-textarea" placeholder="We Also Have Many Other 2, 3 &amp; 4 Bedroom Homes Available!"></textarea>
-    </div>
-
-  </div>
+  <!-- Track 4 §5.4: the on-page "Sign settings" card (phone / QR link /
+       homes-line) moved to a "Sign Settings" Template Options group in the
+       Setup panel — same lpr_yardsign_* keys, same live-update behavior,
+       registered near the bottom of this file. Only the DOM host moved. -->
 
   <div class="specs no-print">
     <p><strong>Print-shop spec</strong> · Send this file (PDF or vector) to a sign printer.</p>
@@ -299,7 +279,39 @@
   </div>
 </div>
 
+<script>
+/* ── Track 4 P1g: legacy mode-key adoption ──
+   mode-bar.js (loaded below) persists to lpr_mode_<pageKey>_design and
+   lpr_mode_<pageKey>_qr-side. Seed those once from the pre-Track-4 flat
+   keys (lpr_yardsign_design / lpr_yardsign_qr_side) so a previously chosen
+   design/QR-side survives the migration — same legacy-key-adoption pattern
+   Certificate of Mailing uses for lpr_cof_mode. Must run before mode-bar.js
+   resolves the initial modes, so it stays in this early, synchronously-run
+   script (ahead of mode-bar.js's own <script src> tag below). */
+(function adoptLegacyModes() {
+  try {
+    var basename = (location.pathname.split('/').pop() || 'page').replace(/\.html?$/i, '');
+    var legacyDesign = localStorage.getItem('lpr_yardsign_design');
+    if (legacyDesign) {
+      var designKey = 'lpr_mode_' + basename + '_design';
+      if (localStorage.getItem(designKey) == null) localStorage.setItem(designKey, legacyDesign);
+    }
+    var legacySide = localStorage.getItem('lpr_yardsign_qr_side');
+    if (legacySide) {
+      var sideKey = 'lpr_mode_' + basename + '_qr-side';
+      if (localStorage.getItem(sideKey) == null) localStorage.setItem(sideKey, legacySide);
+    }
+  } catch (e) {}
+})();
+</script>
+<!-- tenants.js owns the Setup panel/button that hosts the Options tab
+     (template-options.js only registers a tab; it doesn't build the panel).
+     vendors.js is intentionally NOT loaded — its Vendors tab registers
+     unconditionally and this page has no vendor/contact tokens. -->
+<script src="tenants.js"></script>
 <script src="fill-fields.js"></script>
+<script src="mode-bar.js"></script>
+<script src="template-options.js"></script>
 <script src="template-tools.js"></script>
 <script>
 /* ── High-res PNG override (2400×1800) ──
@@ -307,6 +319,8 @@
    handles it, temporarily strips the preview scale transform, captures
    the full 24in×18in sheet with html2canvas, then restores everything. */
 (function () {
+  var hiresBusy = false;
+
   document.addEventListener('click', function (e) {
     var item = e.target.closest && e.target.closest('.tt-menu-item[data-export="png"]');
     if (!item) return;
@@ -317,8 +331,14 @@
   }, true);
 
   function doHighResPng() {
+    if (hiresBusy) return;
+    hiresBusy = true;
+
     var sheet = [...document.querySelectorAll('.sheet')].find(function (s) { return s.offsetHeight > 0; });
-    if (!sheet) return;
+    if (!sheet) {
+      hiresBusy = false;
+      return;
+    }
     var wrap = document.querySelector('.sign-wrap');
 
     /* save state */
@@ -340,13 +360,31 @@
       if (wrap && savedWrap) { wrap.style.overflow = savedWrap.overflow; wrap.style.width = savedWrap.width; wrap.style.height = savedWrap.height; }
     }
 
-    /* inline images as data-URIs so html2canvas can draw them without CORS issues */
+    /* inline images as data-URIs so html2canvas can draw them without
+       tainting the capture. Under file:// the canvas fallback ALWAYS taints
+       (toBlob would throw SecurityError), so the LPR_IMG_DATA registry
+       (assets/img-data.js, lazy-loaded here) is the only reliable source. */
+    var loadRegistry = window.LPR_IMG_DATA
+      ? Promise.resolve()
+      : new Promise(function (res) {
+          var s = document.createElement('script');
+          s.src = 'assets/img-data.js';
+          s.onload = res; s.onerror = res; // registry-less fallback still tries
+          document.head.appendChild(s);
+        });
     var imgs = [...sheet.querySelectorAll('img')];
     var origSrcs = new Map();
-    Promise.all(imgs.map(function (img) {
+    loadRegistry.then(function () {
+      return Promise.all(imgs.map(function (img) {
       return new Promise(function (res) {
         var src = img.getAttribute('src') || '';
         if (!src || src.startsWith('data:')) { res(); return; }
+        var base = decodeURIComponent(src.split('/').pop());
+        if (window.LPR_IMG_DATA && window.LPR_IMG_DATA[base]) {
+          origSrcs.set(img, src);
+          img.src = window.LPR_IMG_DATA[base];
+          res(); return;
+        }
         origSrcs.set(img, src);
         var tmp = new Image();
         tmp.onload = function () {
@@ -359,7 +397,8 @@
         tmp.onerror = res;
         tmp.src = src;
       });
-    })).then(function () {
+      }));
+    }).then(function () {
       function restoreImgs() { origSrcs.forEach(function (src, img) { img.setAttribute('src', src); }); }
 
       /* load html2canvas */
@@ -367,7 +406,7 @@
         ? Promise.resolve()
         : new Promise(function (res, rej) {
             var s = document.createElement('script');
-            s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+            s.src = 'assets/vendor/html2canvas.min.js';
             s.onload = res; s.onerror = function () { rej(new Error('html2canvas failed to load')); };
             document.head.appendChild(s);
           });
@@ -381,7 +420,7 @@
           useCORS: false, allowTaint: true,
           backgroundColor: '#ffffff', logging: false
         }).then(function (canvas) {
-          restoreImgs(); restore(); msg.remove();
+          restoreImgs(); restore(); msg.remove(); hiresBusy = false;
           canvas.toBlob(function (blob) {
             var url = URL.createObjectURL(blob);
             var a = document.createElement('a');
@@ -389,45 +428,54 @@
             document.body.appendChild(a); a.click(); a.remove();
             setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
           }, 'image/png');
-        }).catch(function (err) { restoreImgs(); restore(); msg.remove(); console.error(err); });
-      }).catch(function (err) { restoreImgs(); restore(); msg.remove(); console.error(err); });
+        }).catch(function (err) { restoreImgs(); restore(); hiresBusy = false; msg.textContent = 'PNG export failed — check your internet connection and try again'; msg.style.background = '#b3261e'; setTimeout(function () { msg.remove(); }, 4000); console.error(err); });
+      }).catch(function (err) { restoreImgs(); restore(); hiresBusy = false; msg.textContent = 'PNG export failed — check your internet connection and try again'; msg.style.background = '#b3261e'; setTimeout(function () { msg.remove(); }, 4000); console.error(err); });
     });
   }
 })();
 </script>
 <script>
+/* ── Track 4 P1g: sign settings + QR wiring ──
+   The old on-page "Sign settings" card is gone. Its jobs are now split:
+     · Design + QR-placement buttons → the two standardized mode-bars at
+       the top of the stage (mode-bar.js owns button state, persistence,
+       the lpr:modechange event, and the export/clone scrub).
+     · Phone / QR link / homes-line  → the "Sign Settings" Template Options
+       group registered below (Setup panel → Options tab), keeping the
+       exact same lpr_yardsign_* localStorage keys and live-update-on-input
+       behavior the card had.
+   What stays here is page logic that never belonged to the card itself:
+   QR image generation (QRious) and the rule that the qr-side mode-bar only
+   shows when a QR URL is set AND the Original design is active (the V2
+   design has a fixed QR spot). */
 (function () {
   'use strict';
 
-  var PHONE_KEY  = 'lpr_yardsign_phone';
-  var QR_KEY     = 'lpr_yardsign_qr';
-  var SIDE_KEY   = 'lpr_yardsign_qr_side';
-  var DESIGN_KEY = 'lpr_yardsign_design';
-  var HOMES_KEY  = 'lpr_yardsign_homes_line';
+  var PHONE_KEY = 'lpr_yardsign_phone';
+  var QR_KEY    = 'lpr_yardsign_qr';
+  var HOMES_KEY = 'lpr_yardsign_homes_line';
 
-  var inpPhone     = document.getElementById('inp-phone');
-  var inpQr        = document.getElementById('inp-qr');
-  var inpHomes     = document.getElementById('inp-homes-line');
+  var DEFAULT_PHONE = '443.402.5641';
+  var DEFAULT_HOMES = 'We Also Have Many Other 2, 3 & 4\nBedroom Homes Available!';
 
-  var signPhone    = document.getElementById('sign-phone');
-  var signPhoneV2  = document.getElementById('sign-phone-v2');
-  var signHomes    = document.getElementById('sign-homes-line');
+  /* live targets on the sheets */
+  var signPhone   = document.getElementById('sign-phone');
+  var signPhoneV2 = document.getElementById('sign-phone-v2');
+  var signHomes   = document.getElementById('sign-homes-line');
+  var qrGroup     = document.getElementById('sign-qr-group');
+  var qrImg       = document.getElementById('sign-qr-img');
+  var qrLeft      = document.getElementById('sign-qr-left');
+  var qrImgBlue   = document.getElementById('sign-qr-img-blue');
+  var qrZoneV2    = document.getElementById('sign-qr-zone-v2');
+  var qrImgV2     = document.getElementById('sign-qr-img-v2');
+  var qrSideBar   = document.getElementById('qr-side-bar');
 
-  var qrGroup      = document.getElementById('sign-qr-group');
-  var qrImg        = document.getElementById('sign-qr-img');
-  var qrLeft       = document.getElementById('sign-qr-left');
-  var qrImgBlue    = document.getElementById('sign-qr-img-blue');
-  var qrZoneV2     = document.getElementById('sign-qr-zone-v2');
-  var qrImgV2      = document.getElementById('sign-qr-img-v2');
-
-  var qrSideRow    = document.getElementById('qr-side-row');
-  var homesRow     = document.getElementById('homes-line-row');
-  var btnWhite     = document.getElementById('qr-side-white');
-  var btnBlue      = document.getElementById('qr-side-blue');
-  var btnOriginal  = document.getElementById('btn-design-original');
-  var btnV2        = document.getElementById('btn-design-v2');
-  var sheetOrig    = document.querySelector('.sheet.sign');
-  var sheetV2      = document.querySelector('.sheet.sign-v2');
+  /* current values — same keys, same defaults-on-blank semantics as the card */
+  var vals = {
+    phone: localStorage.getItem(PHONE_KEY) || '',
+    qr:    localStorage.getItem(QR_KEY)    || '',
+    homes: localStorage.getItem(HOMES_KEY) || ''
+  };
 
   /* ── QR library loader ── */
   var _qrReady = false, _qrLoading = false, _qrQueue = [];
@@ -437,48 +485,38 @@
     if (_qrLoading) return;
     _qrLoading = true;
     var s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js';
+    s.src = 'assets/vendor/qrious.min.js';
     s.onload = function () { _qrReady = true; _qrQueue.forEach(function(fn){ fn(); }); _qrQueue = []; };
     document.head.appendChild(s);
   }
 
-  /* ── Design toggle ── */
-  var currentDesign = 'original';
-
-  function setDesign(d) {
-    currentDesign = d;
-    localStorage.setItem(DESIGN_KEY, d);
-    document.body.className = 'design-' + d;
-    sheetOrig.style.display  = d === 'original' ? '' : 'none';
-    sheetV2.style.display    = d === 'v2'       ? '' : 'none';
-    btnOriginal.classList.toggle('active', d === 'original');
-    btnV2.classList.toggle('active', d === 'v2');
-    var hasQr = inpQr.value.trim() !== '';
-    qrSideRow.style.display = (d === 'original' && hasQr) ? '' : 'none';
-    homesRow.style.display  = d === 'v2' ? '' : 'none';
-  }
-
-  btnOriginal.addEventListener('click', function () { setDesign('original'); });
-  btnV2.addEventListener('click',       function () { setDesign('v2'); });
-
   /* ── Phone ── */
-  function updatePhone() {
-    var v = inpPhone.value.trim() || '443.402.5641';
+  function applyPhone() {
+    var v = vals.phone.trim() || DEFAULT_PHONE;
     signPhone.textContent   = v;
     signPhoneV2.textContent = v;
-    localStorage.setItem(PHONE_KEY, inpPhone.value);
   }
-  inpPhone.addEventListener('input', updatePhone);
+  function setPhone(v) { vals.phone = v; localStorage.setItem(PHONE_KEY, v); applyPhone(); }
 
   /* ── QR ── */
-  function updateQr() {
-    var url = inpQr.value.trim();
-    localStorage.setItem(QR_KEY, inpQr.value);
+  function updateQrSideBar() {
+    var has    = vals.qr.trim() !== '';
+    var design = window.LPR_MODEBAR ? window.LPR_MODEBAR.get('design') : null;
+    qrSideBar.style.display = (has && design === 'original') ? '' : 'none';
+  }
+
+  function applyQr() {
+    var url = vals.qr.trim();
     var has = url !== '';
-    qrGroup.style.display    = has ? '' : 'none';
-    qrLeft.style.display     = has ? '' : 'none';
-    qrZoneV2.style.display   = has ? '' : 'none';
-    qrSideRow.style.display  = (has && currentDesign === 'original') ? '' : 'none';
+    /* WHETHER the QR shows at all (a URL is set) is inline-display driven
+       here; WHICH side of the Original sheet carries it is mode-bar.js's
+       job via the data-mode-when="qr-side:…" attributes on #sign-qr-group /
+       #sign-qr-left (.mode-hidden is !important, so the two conditions
+       AND together cleanly). */
+    qrGroup.style.display  = has ? '' : 'none';
+    qrLeft.style.display   = has ? '' : 'none';
+    qrZoneV2.style.display = has ? '' : 'none';
+    updateQrSideBar();
     if (!has) { qrImg.src = ''; qrImgBlue.src = ''; qrImgV2.src = ''; return; }
     withQR(function () {
       var dark  = new QRious({ value: url, size: 700, foreground: '#283891', background: '#ffffff', level: 'L' }).toDataURL();
@@ -488,42 +526,67 @@
       qrImgV2.src   = dark;
     });
   }
-  inpQr.addEventListener('input', updateQr);
+  function setQr(v) { vals.qr = v; localStorage.setItem(QR_KEY, v); applyQr(); }
 
-  /* ── QR side (original only) ── */
-  function setQrSide(side) {
-    localStorage.setItem(SIDE_KEY, side);
-    sheetOrig.classList.toggle('qr-blue', side === 'blue');
-    btnWhite.classList.toggle('active', side === 'white');
-    btnBlue.classList.toggle('active',  side === 'blue');
-  }
-  btnWhite.addEventListener('click', function () { setQrSide('white'); });
-  btnBlue.addEventListener('click',  function () { setQrSide('blue'); });
-
-  /* ── Homes line ── */
-  var DEFAULT_HOMES = 'We Also Have Many Other 2, 3 & 4\nBedroom Homes Available!';
-  function updateHomes() {
-    var raw = inpHomes.value.trim() || DEFAULT_HOMES;
+  /* ── Homes line (V2 design) ── */
+  function applyHomes() {
+    var raw = vals.homes.trim() || DEFAULT_HOMES;
     signHomes.innerHTML = raw
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/\n/g, '<br/>');
-    localStorage.setItem(HOMES_KEY, inpHomes.value);
   }
-  inpHomes.addEventListener('input', updateHomes);
+  function setHomes(v) { vals.homes = v; localStorage.setItem(HOMES_KEY, v); applyHomes(); }
 
-  /* ── Restore & init ── */
-  var sv = localStorage.getItem(PHONE_KEY);  if (sv !== null) inpPhone.value = sv;
-  var sq = localStorage.getItem(QR_KEY);     if (sq !== null) inpQr.value    = sq;
-  var sh = localStorage.getItem(HOMES_KEY);  if (sh !== null) inpHomes.value = sh;
+  /* the qr-side bar is only meaningful on the Original design — recompute
+     its visibility whenever the design group switches. mode-bar.js fires
+     lpr:modechange for each group once at load (DOMContentLoaded) too, so
+     this also sets the correct initial state. */
+  document.addEventListener('lpr:modechange', function (e) {
+    if (e.detail && e.detail.group === 'design') updateQrSideBar();
+  });
 
-  setDesign(localStorage.getItem(DESIGN_KEY) || 'original');
-  setQrSide(localStorage.getItem(SIDE_KEY)   || 'white');
-  updatePhone();
-  updateQr();
-  updateHomes();
+  /* ── apply persisted values at load ── */
+  applyPhone();
+  applyQr();
+  applyHomes();
 
+  /* ── Track 4 §5.4: "Sign Settings" Template Options group ── */
+  window.LPR_TEMPLATE_OPTIONS = window.LPR_TEMPLATE_OPTIONS || [];
+  window.LPR_TEMPLATE_OPTIONS.push({
+    id: 'yard-settings',
+    title: 'Sign Settings',
+    render: function (el) {
+      /* appendChild, not el.innerHTML — template-options.js has already
+         placed the .lpr-opt-title heading inside `el`. */
+      var wrap = document.createElement('div');
+      wrap.innerHTML =
+        '<div class="lpr-ff-field">' +
+          '<label class="lpr-ff-lbl">Phone Number</label>' +
+          '<input type="text" class="lpr-ff-inp" data-ys="phone" placeholder="443.402.5641" />' +
+        '</div>' +
+        '<div class="lpr-ff-field" style="margin-top:10px;">' +
+          '<label class="lpr-ff-lbl">QR Code Link — leave blank to hide</label>' +
+          '<input type="text" class="lpr-ff-inp" data-ys="qr" placeholder="mailto:info@lprmanagement.com?subject=Rental Inquiry" />' +
+        '</div>' +
+        '<div class="lpr-ff-field" style="margin-top:10px;">' +
+          '<label class="lpr-ff-lbl">Homes Line Text (New Design only)</label>' +
+          '<textarea class="lpr-ff-inp" data-ys="homes" rows="3" style="resize:vertical;line-height:1.5;" placeholder="We Also Have Many Other 2, 3 &amp; 4 Bedroom Homes Available!"></textarea>' +
+        '</div>';
+      el.appendChild(wrap);
+
+      var inPhone = wrap.querySelector('[data-ys="phone"]');
+      var inQr    = wrap.querySelector('[data-ys="qr"]');
+      var inHomes = wrap.querySelector('[data-ys="homes"]');
+      inPhone.value = vals.phone;
+      inQr.value    = vals.qr;
+      inHomes.value = vals.homes;
+      inPhone.addEventListener('input', function () { setPhone(inPhone.value); });
+      inQr.addEventListener('input',    function () { setQr(inQr.value); });
+      inHomes.addEventListener('input', function () { setHomes(inHomes.value); });
+    }
+  });
 })();
 </script>
 </body>

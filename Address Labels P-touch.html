@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="brand.css">
 <script src="user.js"></script>
 <style>
-  body { background: var(--lpr-page); padding: 60px 20px 40px; }
+  body { background: var(--lpr-page); padding: 96px 20px 40px; }
   @page { size: 90mm 29mm; margin: 0; }
   .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
 
@@ -22,18 +22,22 @@
     position: relative;
   }
 
-  /* font matches the .lbt — Century Gothic 24pt at 96dpi = 32px, all lines uniform */
+  /* font matches the .lbt — Century Gothic 24pt at 96dpi = 32px, all lines uniform
+     Sizing is owned by the fit-to-label JS (see #label-card MutationObserver,
+     below in the page script): it measures actual overflow — caused by a long
+     wrapped name, an addr2 line, or both — and writes --fit-scale on
+     #label-card. This rule (and the @media print rule below) just derive
+     font-size proportionally from that one scale, so JS is the single source
+     of truth and there is nothing left here to fight it / oscillate with. */
   .label-text {
     font-family: 'Century Gothic', 'AppleGothic', 'ITC Century', Century, sans-serif;
-    font-size: 24px; line-height: 1.22; color: #111;
+    font-size: calc(24px * var(--fit-scale, 1)); line-height: 1.22; color: #111;
     text-align: center; width: 100%; font-weight: 700;
   }
   body.bold-off .label-text { font-weight: 400; }
   body.font-arial .label-text {
     font-family: Arial, Helvetica, sans-serif;
   }
-  /* 4-line address (addr2 present) — shrink to fit */
-  .sheet.label-card:has(.lbl-addr2 [data-contact-field]:not(:empty)) .label-text { font-size: 18px; }
   .label-text .lbl-name { display: block; }
   .label-text .lbl-addr2 { display: block; }
   .label-text .lbl-addr2:has([data-contact-field]:empty) { display: none; }
@@ -49,15 +53,12 @@
       border-radius: 0; padding: 2mm 4mm;
       box-shadow: none;
     }
-    .label-text { font-size: 10pt; line-height: 1.3; }
-    .label-text .lbl-name { font-size: 10pt; }
+    /* Same --fit-scale the on-screen fitter computed (proportional, not a
+       separate fixed size) — so a long/wrapped name or an addr2 line shrinks
+       the directly-printed label exactly as much as the on-screen preview. */
+    .label-text { font-size: calc(10pt * var(--fit-scale, 1)); line-height: 1.3; }
+    .label-text .lbl-name { font-size: calc(10pt * var(--fit-scale, 1)); }
   }
-
-  /* ── Fields tab helpers ── */
-  .lpr-ff-csz { display: flex; gap: 6px; }
-  .lpr-ff-csz .lpr-ff-inp { flex: 1; min-width: 0; }
-  .lpr-ff-csz .lpr-ff-inp.ff-st  { flex: 0 0 52px; }
-  .lpr-ff-csz .lpr-ff-inp.ff-zip { flex: 0 0 82px; }
 
   /* ---- Info box ---- */
   .print-info {
@@ -75,14 +76,17 @@
 
 <div class="toolbar no-print">
   <a href="index.html" class="toolbar-back">← All templates</a>
-  <button id="lpr-font-btn" onclick="toggleFont()">Font: Century Gothic</button>
-  <button id="lpr-bold-btn" onclick="toggleBold()">Bold: On</button>
   <button id="lpr-lbt-btn" onclick="downloadLbt()">Download .lbt</button>
 </div>
 
 <div class="stage">
 
   <div class="label">ADDRESS LABEL — DK-1201 · 29MM × 90MM · BROTHER QL-810W</div>
+
+  <div class="label-options no-print" style="display:flex; gap:12px; padding:12px 16px; background:#fff; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,.08); width:100%; max-width:680px; box-sizing:border-box; justify-content:center;">
+    <button id="lpr-font-btn" onclick="toggleFont()" style="padding:8px 12px; font-size:14px; border:1px solid var(--lpr-border); border-radius:4px; background:#fff; cursor:pointer; transition:all 0.15s;">Font: Century Gothic</button>
+    <button id="lpr-bold-btn" onclick="toggleBold()" style="padding:8px 12px; font-size:14px; border:1px solid var(--lpr-border); border-radius:4px; background:#fff; cursor:pointer; transition:all 0.15s;">Bold: On</button>
+  </div>
 
   <div class="sheet label-card" id="label-card">
     <div class="label-text">
@@ -142,6 +146,59 @@ function utf16leReplace(bytes, key, newValue) {
   return result;
 }
 
+/* ---- Fit-to-label: shrink .label-text so long names / addr2 never clip ----
+   The label card is a fixed physical size (DK-1201, 29×90mm = 110×340px on
+   screen). A long recipient name that wraps to 2+ lines, and/or the extra
+   addr2 line, can overflow that box vertically (top+bottom, since the text
+   block is vertically centered). The old CSS only handled the addr2 case
+   with a single hard-coded 18px rule — it did nothing for long names.
+   Instead, we measure actual rendered overflow and step font-size down a
+   ladder (via a --fit-scale custom property so screen AND print share one
+   source of truth — see the .label-text rules above / in @media print)
+   until the card's content fits, then re-check from the top on every change
+   so it can also grow back when content gets shorter. */
+var LPR_FIT_BASE_PX = 24;                          // matches base .label-text size
+var LPR_FIT_LADDER  = [24, 22, 20, 18, 16, 14, 12]; // px steps, 12px floor
+var lprFitting = false; // Re-entrancy guard. Not strictly required — fitLabelText()
+                         // only ever touches the --fit-scale *style property* on
+                         // #label-card, and the MutationObserver below is configured
+                         // to watch childList/characterData only (no "attributes"),
+                         // so it structurally cannot see its own mutation and loop.
+                         // Kept anyway as defensive belt-and-suspenders.
+function fitLabelText() {
+  if (lprFitting) return;
+  lprFitting = true;
+  try {
+    var card = document.getElementById('label-card');
+    if (!card) return;
+    // Always reset to full size first: content may have gotten *shorter*
+    // since the last fit (e.g. a long name replaced by a short one), so we
+    // must recompute from scratch rather than only ever shrinking further.
+    card.style.setProperty('--fit-scale', '1');
+    for (var i = 0; i < LPR_FIT_LADDER.length; i++) {
+      card.style.setProperty('--fit-scale', String(LPR_FIT_LADDER[i] / LPR_FIT_BASE_PX));
+      // scrollHeight vs clientHeight on the (flex, centered) card is exactly
+      // how the 24px overflow in the bug report was measured; when content
+      // fits, they're equal and we stop shrinking further.
+      if (card.scrollHeight <= card.clientHeight) break;
+    }
+  } finally {
+    lprFitting = false;
+  }
+}
+(function () {
+  var card = document.getElementById('label-card');
+  if (!card) return;
+  var mo = new MutationObserver(fitLabelText);
+  // childList + characterData (+ subtree) only — deliberately NOT attributes,
+  // so this never observes the --fit-scale mutations fitLabelText() itself
+  // makes. It only reacts to real content changes: tenant/vendor pick,
+  // manual "Fields" tab typing, template-tools edits — every fill path sets
+  // textContent on a [data-contact-field] span inside this subtree.
+  mo.observe(card, { childList: true, characterData: true, subtree: true });
+  fitLabelText(); // initial pass for whatever is already filled in on load
+})();
+
 /* ---- Download .lbt ---- */
 function downloadLbt() {
   function get(k) {
@@ -163,7 +220,32 @@ function downloadLbt() {
   var bytes  = new Uint8Array(binStr.length);
   for (var i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
 
-  var fourLine = !!addr2;
+  /* ---- .lbt size tier ----
+     The binary template only carries two baked-in font/size blocks (normal
+     24pt vs a smaller "four-line" 18pt) — we cannot run P-touch Editor's own
+     text-layout/wrapping engine from here, so we cannot know exactly how it
+     will wrap a given name on real 29×90mm tape. This stays a conservative
+     heuristic, not an exact match: use the smaller tier whenever ANY of
+     these hold —
+       1. addr2 is present (original rule — always a 4-line label), or
+       2. the on-screen fitter (see fitLabelText above) already had to shrink
+          .label-text to <=18px to avoid overflow — it reacts to this exact
+          same content, so if the browser needed to shrink, the physical
+          label most likely needs to as well, or
+       3. the name is long enough that it would plausibly wrap to a 2nd line
+          at 24pt on ~90mm of tape (rough chars-per-line estimate for Century
+          Gothic Bold 24pt) — a fallback for the rare case the on-screen
+          fitter hasn't (re)run yet before this is called. */
+  var fitScale = 1;
+  var fitCard  = document.getElementById('label-card');
+  if (fitCard) {
+    var fitVal = parseFloat(getComputedStyle(fitCard).getPropertyValue('--fit-scale'));
+    if (!isNaN(fitVal)) fitScale = fitVal;
+  }
+  var screenFontPx     = fitScale * LPR_FIT_BASE_PX;
+  var NAME_WRAP_CHARS  = 24; // conservative estimate, see comment above
+  var nameLikelyWraps  = name.length > NAME_WRAP_CHARS;
+  var fourLine = !!addr2 || screenFontPx <= 18 || nameLikelyWraps;
   var fontName = (localStorage.getItem('lpr_ptouch_font') === 'arial') ? 'Arial' : 'Century Gothic';
   var weight   = (localStorage.getItem('lpr_ptouch_bold') === 'off') ? '400' : '700';
   bytes = utf16leReplace(bytes, 'TextCount=', String(charValue.length));
@@ -179,11 +261,13 @@ function downloadLbt() {
 
   var blob = new Blob([bytes], { type: 'application/octet-stream' });
   var a    = document.createElement('a');
-  a.href   = URL.createObjectURL(blob);
+  var url  = URL.createObjectURL(blob);
+  a.href   = url;
   a.download = (name.replace(/[^\w]/g, '_') || 'Label') + '.lbt';
   document.body.appendChild(a);
   a.click();
   a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
 /* ---- Font toggle (Arial vs Century Gothic) ---- */
@@ -218,99 +302,8 @@ applyBoldChoice();
 <script src="tenants.js"></script>
 <script src="vendors.js"></script>
 <script src="fill-fields.js"></script>
+<script src="manual-address.js"></script>
+<script>LPR_MANUAL_ADDRESS.register({ replaceFillTab: true });</script>
 <script src="template-tools.js"></script>
-
-<script>
-/* ---- Manual address "Fields" tab ---- */
-(function () {
-  var STORAGE_KEY = 'lpr_ptouch_manual';
-  var FIELDS = [
-    { key: 'name',          label: 'Name' },
-    { key: 'address_line1', label: 'Street Address' },
-    { key: 'address_line2', label: 'Unit / Apt (optional)' }
-  ];
-
-  function esc(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-  function loadValues() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
-    catch (e) { return {}; }
-  }
-  function saveValue(key, val) {
-    var v = loadValues();
-    v[key] = val;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(v));
-  }
-  function applyField(key, value) {
-    document.querySelectorAll('[data-contact-field="' + key + '"]').forEach(function (el) {
-      el.textContent = value || '';
-    });
-  }
-  function applyAll() {
-    var v = loadValues();
-    ['name', 'address_line1', 'address_line2', 'city', 'state', 'zip'].forEach(function (k) {
-      applyField(k, v[k] || '');
-    });
-  }
-
-  function render(container) {
-    var v = loadValues();
-    container.innerHTML =
-      '<div class="lpr-ff-body">' +
-        '<div class="lpr-ff-fields">' +
-          FIELDS.map(function (f) {
-            return '<div class="lpr-ff-field">' +
-              '<label class="lpr-ff-lbl">' + esc(f.label) + '</label>' +
-              '<input type="text" class="lpr-ff-inp" data-mf-key="' + f.key + '" ' +
-                'value="' + esc(v[f.key] || '') + '" placeholder="' + esc(f.label) + '" />' +
-            '</div>';
-          }).join('') +
-          '<div class="lpr-ff-field">' +
-            '<label class="lpr-ff-lbl">City / State / Zip</label>' +
-            '<div class="lpr-ff-csz">' +
-              '<input type="text" class="lpr-ff-inp" data-mf-key="city" value="' + esc(v.city || '') + '" placeholder="City" />' +
-              '<input type="text" class="lpr-ff-inp ff-st" data-mf-key="state" value="' + esc(v.state || '') + '" placeholder="ST" />' +
-              '<input type="text" class="lpr-ff-inp ff-zip" data-mf-key="zip" value="' + esc(v.zip || '') + '" placeholder="Zip" />' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="lpr-ff-foot">' +
-          '<button class="lpr-ff-clear" id="lpr-mf-clear-btn">Clear All</button>' +
-        '</div>' +
-      '</div>';
-
-    container.querySelectorAll('[data-mf-key]').forEach(function (inp) {
-      inp.addEventListener('input', function () {
-        var key = inp.getAttribute('data-mf-key');
-        saveValue(key, inp.value);
-        applyField(key, inp.value);
-      });
-    });
-
-    container.querySelector('#lpr-mf-clear-btn').onclick = function () {
-      localStorage.removeItem(STORAGE_KEY);
-      ['name', 'address_line1', 'address_line2', 'city', 'state', 'zip'].forEach(function (k) {
-        applyField(k, '');
-      });
-      render(container);
-    };
-  }
-
-  function init() {
-    window.LPR_FILL_TABS = window.LPR_FILL_TABS || [];
-    window.LPR_FILL_TABS.push({ id: 'address-fields', label: 'Fields', render: render });
-    applyAll(); // restore saved values on page load
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
-</script>
 </body>
 </html>

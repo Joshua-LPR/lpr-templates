@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="brand.css">
 <script src="user.js"></script>
 <style>
-  body { background: var(--lpr-page); padding: 60px 20px 40px; min-height: 100vh; }
+  body { background: var(--lpr-page); padding: 96px 20px 40px; min-height: 100vh; }
   .wrap { max-width: 720px; margin: 0 auto; }
   h1 { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #5a5f72; font-weight: 500; margin: 0 0 8px; }
   h2 { font-family: Montserrat, sans-serif; font-weight: 700; font-size: 24px; color: var(--lpr-ink); margin: 0 0 20px; }
@@ -184,7 +184,7 @@
       imgEl.setAttribute('src', EMBED_SRC);
       hint.innerHTML = '<strong>Embed:</strong> logo is built into the signature HTML — no hosting needed, just paste and go. ~14&nbsp;KB. Works in Gmail, Outlook, Apple Mail.';
     } else {
-      const url = urlInput.value.trim() || 'https://YOUR-DOMAIN.com/email-logo.png';
+      const url = urlInput.value.trim() || 'https://lasalleparkrealty.com/email-logo.png';
       imgEl.setAttribute('src', url);
       hint.innerHTML = '<strong>Hosted URL:</strong> the signature references the logo image at the URL above. Replace it with your real hosted image. Smaller HTML; recipients’ mail clients fetch the image from your server.';
     }
@@ -195,7 +195,7 @@
   document.getElementById('mode-host').addEventListener('click', () => setMode('host'));
   urlInput.addEventListener('input', () => {
     if (modeBox.classList.contains('host')) {
-      imgEl.setAttribute('src', urlInput.value.trim() || 'https://YOUR-DOMAIN.com/email-logo.png');
+      imgEl.setAttribute('src', urlInput.value.trim() || 'https://lasalleparkrealty.com/email-logo.png');
       refreshSource();
     }
     localStorage.setItem('lpr_sig_url', urlInput.value);

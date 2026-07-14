@@ -18,13 +18,13 @@
 body { background: var(--lpr-page); }
 
 /* ── page chrome ── */
-.cof-page { max-width:900px; margin:0 auto; padding:24px; font-family:Montserrat,sans-serif; }
+/* 96px top clears the fixed toolbar pill (wider in edit mode) */
+.cof-page { max-width:900px; margin:0 auto; padding:96px 24px 24px; font-family:Montserrat,sans-serif; }
 
 /* ── mode toggle bar ── */
 .mode-bar {
-  background:#fff; border:1px solid #dde; border-radius:8px;
-  padding:14px 20px; margin-bottom:14px;
-  display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+  display:flex; justify-content:center; flex-wrap:wrap; gap:8px;
+  margin-bottom:14px;
 }
 /* ── calibration card ── */
 .cal-card {
@@ -153,29 +153,34 @@ body { background: var(--lpr-page); }
     position:absolute !important; top:0 !important; left:0 !important;
     width:8.5in !important; height:11in !important;
   }
-  /* all 5 sheets in multi mode print the full form image */
-  .mode-multi .multi-print-page .sheet {
-    background-image:url('assets/ps3817-form.png') !important;
-    background-size:83% 83% !important;
-    background-position:center center !important;
-    background-repeat:no-repeat !important;
-    background-color:white !important;
-    -webkit-print-color-adjust:exact;
-    print-color-adjust:exact;
-    box-shadow:none !important;
-    overflow:visible !important;
-  }
-  /* upright sheets: fill their absolute wrapper */
-  .mode-multi .multi-print-page .multi-upright-wrap .sheet {
-    position:relative !important;
-    top:auto !important; left:auto !important;
-    transform:none !important;
-  }
-  /* cut lines: show in multi mode */
-  .mode-multi .multi-cut { display:block !important; }
-  /* empty slots: hide the form entirely — only filled slots print */
-  .mode-multi .multi-print-page .multi-thumb-wrap[data-empty] .sheet { visibility:hidden !important; }
 }
+
+/* ── multi print-layout rules ──
+   Scoped to the container (not @media print) so they apply identically in
+   real printing AND when Export → PNG/PDF temporarily reveals the container
+   for screen capture. The container is display:none in every other context,
+   so these never affect the on-screen editor. */
+#multi-print-container .multi-print-page .sheet {
+  background-image:url('assets/ps3817-form.png') !important;
+  background-size:83% 83% !important;
+  background-position:center center !important;
+  background-repeat:no-repeat !important;
+  background-color:white !important;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+  box-shadow:none !important;
+  overflow:visible !important;
+}
+/* upright sheets: fill their absolute wrapper */
+#multi-print-container .multi-upright-wrap .sheet {
+  position:relative !important;
+  top:auto !important; left:auto !important;
+  transform:none !important;
+}
+/* cut lines: show in the print layout */
+#multi-print-container .multi-cut { display:block !important; }
+/* empty slots: hide the form entirely — only filled slots print/export */
+#multi-print-container .multi-thumb-wrap[data-empty] .sheet { visibility:hidden !important; }
 
 /* hide address line 2 row when span is empty */
 .cof-line2:has([data-contact-field]:empty) { display: none; }
@@ -183,14 +188,10 @@ body { background: var(--lpr-page); }
 .sheet.tt-editing .cof-line2:has([data-contact-field]:empty) { display: block; }
 
 /* suppress placeholder border lines — the form image has its own lines */
-.sheet [data-tenant-field]:empty::before { border-bottom:none !important; }
 .sheet [data-contact-field]:empty::before { border-bottom:none !important; }
 
-/* ── Fields tab helpers ── */
-.lpr-ff-csz { display: flex; gap: 6px; }
-.lpr-ff-csz .lpr-ff-inp { flex: 1; min-width: 0; }
-.lpr-ff-csz .lpr-ff-inp.ff-st  { flex: 0 0 52px; }
-.lpr-ff-csz .lpr-ff-inp.ff-zip { flex: 0 0 82px; }
+/* Fields-tab .lpr-ff-csz helpers now injected globally by manual-address.js
+   (style#lpr-addr-css) — the local duplicate that used to live here is gone. */
 
 /* ── multi-mode layout ── */
 .multi-ui { display:flex; gap:18px; align-items:flex-start; margin-top:10px; }
@@ -239,8 +240,8 @@ body { background: var(--lpr-page); }
   box-shadow: inset 0 0 0 4px var(--lpr-gold) !important;
 }
 /* suppress placeholder text in wysiwyg & print sheets */
-#multi-wysiwyg-page [data-tenant-field]:empty::before,
-#multi-print-container [data-tenant-field]:empty::before { display:none !important; }
+#multi-wysiwyg-page [data-contact-field]:empty::before,
+#multi-print-container [data-contact-field]:empty::before { display:none !important; }
 
 /* ── slot list (right pane, top) ── */
 .multi-sidebar { flex:1; display:flex; flex-direction:column; gap:10px; min-width:0; }
@@ -343,38 +344,21 @@ body { background: var(--lpr-page); }
 
 <div class="cof-page">
 
-  <!-- mode toggle -->
-  <div class="mode-bar no-print">
-    <strong>Print mode:</strong>
-    <button class="mode-btn active" data-mode="overlay">Overlay — feed blank USPS form</button>
-    <button class="mode-btn" data-mode="card">Full form — 3×5 card</button>
+  <!-- mode toggle (Track 4 §4: standardized mode-bar contract — mode-bar.js
+       owns button state, persistence, and the shared lpr:modechange event;
+       this page's own CSS/JS still key off the legacy body classes, kept in
+       sync via a bridge listener below) -->
+  <div class="mode-bar no-print" data-mode-group="doc">
+    <button class="mode-btn" data-mode="overlay">Overlay — feed blank USPS form</button>
+    <button class="mode-btn active" data-mode="card">Full form — 3×5 card</button>
     <button class="mode-btn" data-mode="letter">Full form — Letter paper (cut corner)</button>
     <button class="mode-btn" data-mode="multi">Multi — Letter paper (up to 5)</button>
   </div>
 
-  <!-- calibration (overlay mode only) -->
-  <div class="cal-card no-print" id="cal-panel">
-    <h3>Printer Alignment Calibration</h3>
-    <p>Calibrate once: print a test on plain paper, hold it behind a blank form, nudge until text lands on the lines. Settings save automatically.</p>
-    <div class="cal-row">
-      <div class="cal-ctrl">
-        <label for="cal-y">Up / Down</label>
-        <input type="range" id="cal-y" min="-18" max="18" value="0" step="1">
-        <span class="v" id="val-y">0pt</span>
-      </div>
-      <div class="cal-ctrl">
-        <label for="cal-x">Left / Right</label>
-        <input type="range" id="cal-x" min="-18" max="18" value="0" step="1">
-        <span class="v" id="val-x">0pt</span>
-      </div>
-      <div class="cal-ctrl">
-        <label for="cal-fs">Font size</label>
-        <input type="range" id="cal-fs" min="5.5" max="10" value="8" step="0.5">
-        <span class="v" id="val-fs">8pt</span>
-      </div>
-      <button class="cal-btn" id="btn-reset">Reset</button>
-    </div>
-  </div>
+  <!-- Track 4 §5.3: the printer-alignment calibration card moved to a
+       "Printer Alignment (overlay mode)" Template Options group (registered
+       near the bottom of this file, id "com-calibration") — same
+       localStorage keys and --cof-* CSS vars, only the DOM host moved. -->
 
   <!-- multi-mode panel -->
   <div id="multi-panel" class="no-print" style="display:none">
@@ -515,98 +499,102 @@ body { background: var(--lpr-page); }
   </div>
 
   <!-- print container for multi mode — hidden on screen -->
-  <div id="multi-print-container" class="no-print" aria-hidden="true"></div>
+  <div id="multi-print-container" class="no-print" aria-hidden="true" data-tt-export-root="mode-multi"></div>
 
 </div><!-- .cof-page -->
 
 <script>
 (function () {
-  var root     = document.documentElement;
-  var body     = document.body;
-  var calPanel = document.getElementById('cal-panel');
+  var body      = document.body;
   var pageStyle = document.getElementById('page-style');
 
-  /* ── calibration ── */
-  var elY  = document.getElementById('cal-y');
-  var elX  = document.getElementById('cal-x');
-  var elFs = document.getElementById('cal-fs');
-  var vY   = document.getElementById('val-y');
-  var vX   = document.getElementById('val-x');
-  var vFs  = document.getElementById('val-fs');
+  /* ── Track 4 P1e: legacy mode-key adoption ──
+     mode-bar.js (loaded below) persists to lpr_mode_<pageKey>_doc. Seed it
+     once from the pre-Track-4 flat key so a previously saved mode
+     preference survives the migration — same legacy-key-adoption pattern
+     manual-address.js uses for lpr_cof_manual. Must run before mode-bar.js
+     resolves the initial mode, so it stays in this early, synchronously-run
+     script block (ahead of mode-bar.js's own <script> tag). */
+  (function adoptLegacyMode() {
+    try {
+      var legacy = localStorage.getItem('lpr_cof_mode');
+      if (!legacy) return;
+      var basename = (location.pathname.split('/').pop() || 'page').replace(/\.html?$/i, '');
+      var newKey = 'lpr_mode_' + basename + '_doc';
+      if (localStorage.getItem(newKey) == null) localStorage.setItem(newKey, legacy);
+    } catch (e) {}
+  })();
 
-  function fmt(n) { return (n > 0 ? '+' : '') + n; }
-
-  function applyCal() {
-    var y = +elY.value, x = +elX.value, fs = +elFs.value;
-    root.style.setProperty('--cof-dy', y + 'pt');
-    root.style.setProperty('--cof-dx', x + 'pt');
-    root.style.setProperty('--cof-fs', fs + 'pt');
-    vY.textContent  = fmt(y)  + 'pt';
-    vX.textContent  = fmt(x)  + 'pt';
-    vFs.textContent = fs + 'pt';
-    localStorage.setItem('lpr_cof_dy', y);
-    localStorage.setItem('lpr_cof_dx', x);
-    localStorage.setItem('lpr_cof_fs', fs);
+  /* ── calibration (overlay mode) — CSS-var application only. The slider
+     UI itself now lives in the "Printer Alignment (overlay mode)" Template
+     Options group (registered near the bottom of this file, id
+     "com-calibration"); this stays here so the offset is applied at load
+     even before the Setup panel has ever been opened. Same localStorage
+     keys and --cof-* vars as before — only the sliders' DOM host moved. ── */
+  function applyCalFromStorage() {
+    var y  = parseFloat(localStorage.getItem('lpr_cof_dy'));  if (isNaN(y))  y  = 0;
+    var x  = parseFloat(localStorage.getItem('lpr_cof_dx'));  if (isNaN(x))  x  = 0;
+    var fs = parseFloat(localStorage.getItem('lpr_cof_fs'));  if (isNaN(fs)) fs = 8;
+    document.documentElement.style.setProperty('--cof-dy', y + 'pt');
+    document.documentElement.style.setProperty('--cof-dx', x + 'pt');
+    document.documentElement.style.setProperty('--cof-fs', fs + 'pt');
   }
+  applyCalFromStorage();
 
-  document.getElementById('btn-reset').addEventListener('click', function () {
-    elY.value = 0; elX.value = 0; elFs.value = 8;
-    applyCal();
-  });
-
-  var sy  = localStorage.getItem('lpr_cof_dy');
-  var sx  = localStorage.getItem('lpr_cof_dx');
-  var sfs = localStorage.getItem('lpr_cof_fs');
-  if (sy  !== null) elY.value  = sy;
-  if (sx  !== null) elX.value  = sx;
-  if (sfs !== null) elFs.value = sfs;
-  applyCal();
-
-  elY.addEventListener('input', applyCal);
-  elX.addEventListener('input', applyCal);
-  elFs.addEventListener('input', applyCal);
-
-  /* ── mode switching ── */
+  /* ── mode bridge (Track 4 §4) ──
+     mode-bar.js now owns the mode buttons' active state, persistence, and
+     initial-mode resolution, firing 'lpr:modechange' on every switch
+     (including the very first one at load). This template's CSS still
+     keys off the legacy body classes .mode-overlay/.mode-card/.mode-letter/
+     .mode-multi (the @media print rules above, plus the
+     data-tt-export-root="mode-multi" check template-tools.js does against
+     document.body.classList) — so rather than rewrite that CSS, this
+     listener keeps those classes in sync, and also runs the @page size
+     swap, panel/instruction visibility, and the multi-mode boot that used
+     to live in the private setMode(). No internal rewrite — only the
+     trigger changed from a button click handler to the shared event. ── */
   var PAGE_SIZES = {
     overlay: '@media print { @page { size:5in 3in; margin:0; } }',
     card:    '@media print { @page { size:5in 3in; margin:0; } }',
     letter:  '@media print { @page { size:8.5in 11in; margin:0.2in 0 0 0.2in; } }',
     multi:   '@media print { @page { size:8.5in 11in; margin:0.2in; } }'
   };
+  var MODES = ['overlay', 'card', 'letter', 'multi'];
 
-  function setMode(mode) {
-    body.className = 'mode-' + mode;
-    pageStyle.textContent = PAGE_SIZES[mode];
+  function applyModeUI(mode) {
+    // classList (not body.className =) so this coexists with mode-bar.js's
+    // own "mode-doc-<mode>" body-class token instead of clobbering it.
+    MODES.forEach(function (m) { body.classList.toggle('mode-' + m, m === mode); });
+
+    pageStyle.textContent = PAGE_SIZES[mode] || '';
     var isMulti = (mode === 'multi');
-    calPanel.style.display = (mode === 'overlay') ? '' : 'none';
+
     document.getElementById('instr-overlay').style.display = (mode === 'overlay') ? '' : 'none';
     document.getElementById('instr-card').style.display    = (mode === 'card')    ? '' : 'none';
     document.getElementById('instr-letter').style.display  = (mode === 'letter')  ? '' : 'none';
     document.getElementById('instr-multi').style.display   = isMulti             ? '' : 'none';
-    var multiPanel  = document.getElementById('multi-panel');
-    var cofPreview  = document.querySelector('.cof-preview');
-    if (multiPanel)  multiPanel.style.display  = isMulti ? '' : 'none';
-    if (cofPreview)  cofPreview.style.display   = isMulti ? 'none' : '';
-    document.querySelectorAll('.mode-btn').forEach(function (btn) {
-      btn.classList.toggle('active', btn.dataset.mode === mode);
-    });
-    localStorage.setItem('lpr_cof_mode', mode);
+
+    var multiPanel = document.getElementById('multi-panel');
+    var cofPreview = document.querySelector('.cof-preview');
+    if (multiPanel) multiPanel.style.display = isMulti ? '' : 'none';
+    if (cofPreview) cofPreview.style.display  = isMulti ? 'none' : '';
+
     if (isMulti && window.LPR_COF_MULTI) window.LPR_COF_MULTI.init();
   }
 
-  document.querySelectorAll('.mode-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () { setMode(btn.dataset.mode); });
+  document.addEventListener('lpr:modechange', function (e) {
+    if (!e.detail || e.detail.group !== 'doc') return;
+    applyModeUI(e.detail.mode);
   });
-
-  var saved = localStorage.getItem('lpr_cof_mode');
-  if (saved && ['overlay','card','letter','multi'].indexOf(saved) !== -1) setMode(saved);
-  else setMode('card');
 })();
 </script>
 
 <script src="tenants.js"></script>
 <script src="vendors.js"></script>
 <script src="fill-fields.js"></script>
+<script src="mode-bar.js"></script>
+<script src="template-options.js"></script>
+<script src="manual-address.js"></script>
 <script src="template-tools.js"></script>
 
 <script>
@@ -641,10 +629,10 @@ body { background: var(--lpr-page); }
         '<div>Pikesville, MD 21208</div>' +
       '</div>' +
       '<div class="overlay-to">' +
-        '<div><span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span></div>' +
-        '<div><span data-tenant-field="address_line1"></span></div>' +
-        '<div class="cof-line2"><span data-tenant-field="address_line2"></span></div>' +
-        '<div><span data-tenant-field="city"></span>, <span data-tenant-field="state"></span> <span data-tenant-field="zip"></span></div>' +
+        '<div><span data-contact-field="first_name"></span> <span data-contact-field="last_name"></span></div>' +
+        '<div><span data-contact-field="address_line1"></span></div>' +
+        '<div class="cof-line2"><span data-contact-field="address_line2"></span></div>' +
+        '<div><span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span></div>' +
       '</div>' +
     '</div>';
   }
@@ -737,7 +725,7 @@ body { background: var(--lpr-page); }
   /* ── fill one sheet element ── */
   function fillSheet(sheetEl, data) {
     ['first_name','last_name','address_line1','address_line2','city','state','zip'].forEach(function(f) {
-      var sp = sheetEl.querySelector('[data-tenant-field="' + f + '"]');
+      var sp = sheetEl.querySelector('[data-contact-field="' + f + '"]');
       if (sp) sp.textContent = data ? (data[f] || '') : '';
     });
   }
@@ -960,80 +948,97 @@ body { background: var(--lpr-page); }
 
   window.LPR_COF_MULTI = { init: init };
 
-  // If the page was reloaded with multi mode already saved, init runs before
-  // LPR_COF_MULTI was defined. Re-run it now that it exists.
-  if (document.body.classList.contains('mode-multi')) init();
+  // Track 4 P1e: the old "re-run init if body already has mode-multi"
+  // safety net that used to live here is gone — it existed because the
+  // previous private setMode() ran synchronously, ahead of this script, and
+  // could call window.LPR_COF_MULTI.init() before it was defined. Now
+  // mode-bar.js's initial mode resolution (and this file's 'lpr:modechange'
+  // bridge listener above, which calls window.LPR_COF_MULTI.init() when the
+  // resolved mode is "multi") both run on DOMContentLoaded, which fires
+  // only after this whole script — including the assignment right above —
+  // has already executed. No re-entry path needed.
 })();
 </script>
 
 <script>
+/* ── Track 4 §5: Template Options registrations ──
+   Replaces the old copy-pasted "Fields" tab (calibration sliders + manual
+   address inputs) with the two shared modules. Must run after
+   template-options.js / manual-address.js have loaded (see the <script src>
+   order above). */
 (function () {
-  var ME_KEY = 'lpr_cof_manual';
-  function loadManual()    { try { return JSON.parse(localStorage.getItem(ME_KEY)) || {}; } catch(e) { return {}; } }
-  function saveManual(obj) { localStorage.setItem(ME_KEY, JSON.stringify(obj)); }
-  function applyField(field, value) {
-    document.querySelectorAll('[data-contact-field="' + field + '"]').forEach(function(el) {
-      el.textContent = value;
-    });
-  }
+  'use strict';
 
-  function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  /* Printer-alignment calibration (overlay mode) — same lpr_cof_dy/dx/fs
+     keys and --cof-* CSS vars as the old on-page #cal-panel card; only the
+     DOM host moved (Track 4 §5.3). applyCalFromStorage() in the script
+     above already applied the persisted offset at load, independent of
+     whether this Options group has ever been opened. */
+  window.LPR_TEMPLATE_OPTIONS = window.LPR_TEMPLATE_OPTIONS || [];
+  window.LPR_TEMPLATE_OPTIONS.push({
+    id: 'com-calibration',
+    title: 'Printer Alignment (overlay mode)',
+    render: function (el) {
+      var y  = parseFloat(localStorage.getItem('lpr_cof_dy'));  if (isNaN(y))  y  = 0;
+      var x  = parseFloat(localStorage.getItem('lpr_cof_dx'));  if (isNaN(x))  x  = 0;
+      var fs = parseFloat(localStorage.getItem('lpr_cof_fs'));  if (isNaN(fs)) fs = 8;
 
-  function renderFieldsTab(container) {
-    var s = loadManual();
-    container.innerHTML =
-      '<div class="lpr-ff-body">' +
-        '<div class="lpr-ff-fields">' +
-          '<div class="lpr-ff-field">' +
-            '<label class="lpr-ff-lbl">Name</label>' +
-            '<input class="lpr-ff-inp" type="text" data-me="name" placeholder="Full name" value="' + esc(s.name) + '">' +
+      el.innerHTML =
+        '<p style="margin:0 0 12px;font-size:12px;color:#666;">Calibrate once: print a test on plain paper, hold it behind a blank form, nudge until text lands on the lines. Settings save automatically.</p>' +
+        '<div class="cal-row">' +
+          '<div class="cal-ctrl">' +
+            '<label for="cal-y">Up / Down</label>' +
+            '<input type="range" id="cal-y" min="-18" max="18" step="1" value="' + y + '">' +
+            '<span class="v" id="val-y"></span>' +
           '</div>' +
-          '<div class="lpr-ff-field">' +
-            '<label class="lpr-ff-lbl">Street Address</label>' +
-            '<input class="lpr-ff-inp" type="text" data-me="address_line1" placeholder="Street address" value="' + esc(s.address_line1) + '">' +
+          '<div class="cal-ctrl">' +
+            '<label for="cal-x">Left / Right</label>' +
+            '<input type="range" id="cal-x" min="-18" max="18" step="1" value="' + x + '">' +
+            '<span class="v" id="val-x"></span>' +
           '</div>' +
-          '<div class="lpr-ff-field">' +
-            '<label class="lpr-ff-lbl">Unit / Apt <span style="font-weight:400;letter-spacing:0;text-transform:none;color:var(--lpr-muted);">(optional)</span></label>' +
-            '<input class="lpr-ff-inp" type="text" data-me="address_line2" placeholder="Unit, Apt, Suite…" value="' + esc(s.address_line2) + '">' +
+          '<div class="cal-ctrl">' +
+            '<label for="cal-fs">Font size</label>' +
+            '<input type="range" id="cal-fs" min="5.5" max="10" step="0.5" value="' + fs + '">' +
+            '<span class="v" id="val-fs"></span>' +
           '</div>' +
-          '<div class="lpr-ff-field">' +
-            '<label class="lpr-ff-lbl">City · State · Zip</label>' +
-            '<div class="lpr-ff-csz">' +
-              '<input class="lpr-ff-inp" type="text" data-me="city"  placeholder="City"  value="' + esc(s.city)  + '">' +
-              '<input class="lpr-ff-inp ff-st"  type="text" data-me="state" placeholder="ST"   value="' + esc(s.state) + '">' +
-              '<input class="lpr-ff-inp ff-zip" type="text" data-me="zip"   placeholder="Zip"  value="' + esc(s.zip)   + '">' +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="lpr-ff-foot">' +
-          '<button class="lpr-ff-clear" id="lpr-cof-clear">Clear Address</button>' +
-        '</div>' +
-      '</div>';
+          '<button class="cal-btn" type="button" id="btn-reset">Reset</button>' +
+        '</div>';
 
-    container.querySelectorAll('[data-me]').forEach(function(inp) {
-      inp.addEventListener('input', function() {
-        var obj = loadManual();
-        obj[inp.dataset.me] = inp.value;
-        saveManual(obj);
-        applyField(inp.dataset.me, inp.value);
+      var elY = el.querySelector('#cal-y'), elX = el.querySelector('#cal-x'), elFs = el.querySelector('#cal-fs');
+      var vY  = el.querySelector('#val-y'), vX  = el.querySelector('#val-x'), vFs  = el.querySelector('#val-fs');
+
+      function fmt(n) { return (n > 0 ? '+' : '') + n; }
+      function apply() {
+        var yy = +elY.value, xx = +elX.value, ffs = +elFs.value;
+        document.documentElement.style.setProperty('--cof-dy', yy + 'pt');
+        document.documentElement.style.setProperty('--cof-dx', xx + 'pt');
+        document.documentElement.style.setProperty('--cof-fs', ffs + 'pt');
+        vY.textContent  = fmt(yy)  + 'pt';
+        vX.textContent  = fmt(xx)  + 'pt';
+        vFs.textContent = ffs + 'pt';
+        localStorage.setItem('lpr_cof_dy', yy);
+        localStorage.setItem('lpr_cof_dx', xx);
+        localStorage.setItem('lpr_cof_fs', ffs);
+      }
+      apply(); // sync displayed value text immediately
+
+      elY.addEventListener('input', apply);
+      elX.addEventListener('input', apply);
+      elFs.addEventListener('input', apply);
+      el.querySelector('#btn-reset').addEventListener('click', function () {
+        elY.value = 0; elX.value = 0; elFs.value = 8;
+        apply();
       });
-    });
+    }
+  });
 
-    document.getElementById('lpr-cof-clear').addEventListener('click', function() {
-      container.querySelectorAll('[data-me]').forEach(function(inp) {
-        inp.value = '';
-        applyField(inp.dataset.me, '');
-      });
-      localStorage.removeItem(ME_KEY);
-    });
-  }
-
-  /* Push Fields tab (sorted to position 3 by tenants.js renderFillPanel) */
-  (window.LPR_FILL_TABS = window.LPR_FILL_TABS || []).push({ id: 'address-fields', label: 'Fields', render: renderFieldsTab });
-
-  /* Restore saved values on load */
-  var saved = loadManual();
-  Object.keys(saved).forEach(function(f) { if (saved[f]) applyField(f, saved[f]); });
+  /* Recipient address (manual entry) — shared module replaces the
+     copy-pasted renderFieldsTab()/lpr_cof_manual code. Registers as a
+     Template Options group (CoM has no data-fill-field spans, so there is
+     no fill-fields.js "Fields" tab to keep alongside it). The module's
+     built-in legacy-key map already knows this page's old lpr_cof_manual
+     key, so previously typed addresses are adopted automatically. */
+  window.LPR_MANUAL_ADDRESS.register({ asOptions: true });
 })();
 </script>
 </body>

@@ -16,6 +16,23 @@
     // Normalize title: replace em/en dash with plain hyphen so Print → PDF filenames are clean
     document.title = document.title.replace(/\s*[—–]\s*/g, ' - ');
 
+    // --- Track 4 §8 (D5/M3c): canonical .toolbar contract -------------------
+    // Buttons this file appends below always land in this fixed relative
+    // order, never reordered per-template:
+    //   Edit · Export ▾ · Save As · Save Edits (view.html only) ·
+    //   format bar (edit-mode only, appended last, hidden until editing)
+    // The back link (class="toolbar-back") is authored in template markup,
+    // ahead of all of these. Other shared-script UI (e.g. tenants.js's Setup
+    // button) may also land in .toolbar via its own earlier-registered
+    // DOMContentLoaded listener — that's outside this file's ownership.
+    // What IS owned here: template-specific controls (mode-bar, P-touch
+    // Font/Bold, Yard Sign design/QR toggles, calibration sliders, etc.)
+    // must never be hand-added to .toolbar — they belong in .stage, above
+    // the sheet. (Existing violations found during the P0e audit: Address
+    // Labels P-touch.html's Font/Bold buttons — flagged for the template's
+    // own migration package, not fixed here since this file only builds
+    // the toolbar, it doesn't own individual template markup.)
+
     // EDIT toggle
     const editBtn = mkBtn("Edit", toggleEdit);
     editBtn.id = "tt-edit-btn";
@@ -45,10 +62,10 @@
       expMenu.hidden = !expMenu.hidden;
     });
     wrap.querySelectorAll(".tt-menu-item").forEach(b => {
-      b.addEventListener("click", () => {
+      b.addEventListener("click", async () => {
         expMenu.hidden = true;
-        if (b.dataset.export === "print-blank") { if (editing) toggleEdit(); printBlank(); return; }
-        if (editing) toggleEdit(); // exit edit mode before exporting
+        await exitEditModeForAction(); // exit edit mode (with lost-field safety check) before exporting
+        if (b.dataset.export === "print-blank") { printBlank(); return; }
         doExport(b.dataset.export);
       });
     });
@@ -78,6 +95,9 @@
     fmtBar.id = "tt-fmt-bar";
     fmtBar.style.display = "none";
     fmtBar.innerHTML = `
+      <span class="tt-fmt-sep"></span>
+      <button class="tt-btn tt-fmt-btn" data-cmd="undo" title="Undo (Ctrl+Z)">↺ Undo</button>
+      <button class="tt-btn tt-fmt-btn" data-cmd="redo" title="Redo (Ctrl+Y)">↻</button>
       <span class="tt-fmt-sep"></span>
       <button class="tt-btn tt-fmt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
       <button class="tt-btn tt-fmt-btn" data-cmd="italic" title="Italic"><i>I</i></button>
@@ -118,7 +138,10 @@
     fmtBar.querySelectorAll(".tt-fmt-btn").forEach(btn => {
       btn.addEventListener("mousedown", e => {
         e.preventDefault(); // preserve the text selection
-        document.execCommand(btn.dataset.cmd, false, null);
+        const cmd = btn.dataset.cmd;
+        if (cmd === "undo") undoOnce();
+        else if (cmd === "redo") redoOnce();
+        else document.execCommand(cmd, false, null);
       });
     });
 
@@ -210,6 +233,21 @@
     // Close edit mode if user triggers browser print shortcut (Ctrl+P) while editing
     window.addEventListener("beforeprint", () => { if (editing) toggleEdit(); });
 
+    // In edit mode, clicking a token span selects the whole token so a
+    // single Backspace/Delete removes it atomically (a native, undoable
+    // edit). A drag that produced a real text selection is left alone.
+    document.addEventListener("click", e => {
+      if (!editing) return;
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0 && !sel.getRangeAt(0).collapsed) return;
+      const tok = e.target.closest(TOKEN_ATTRS.map(a => "[" + a + "]").join(","));
+      if (!tok || !tok.closest(".sheet.tt-editing")) return;
+      const range = document.createRange();
+      range.selectNode(tok);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    });
+
     setupEditTracking();
     injectModalStyles();
   }
@@ -224,13 +262,222 @@
 
   /* --------- EDIT MODE --------- */
   let editing = false;
+
+  // Per-sheet snapshot (full HTML + token-span census) captured when edit
+  // mode turns on, so we can detect fill-in spans that got unwrapped by
+  // in-place typing and, if the user chooses, undo back to it.
+  let editSnapshots = [];
+
+  const TOKEN_ATTRS = [
+    'data-fill-field', 'data-tenant-field', 'data-contact-field',
+    'data-employee-field', 'data-owner-field', 'data-vendor-field'
+  ];
+  const TOKEN_ATTR_LABELS = {
+    'data-fill-field': 'Fill', 'data-tenant-field': 'Tenant', 'data-contact-field': 'Contact',
+    'data-employee-field': 'Employee', 'data-owner-field': 'Owner', 'data-vendor-field': 'Vendor'
+  };
+
+  function censusTokenSpans(sheet) {
+    const list = [];
+    TOKEN_ATTRS.forEach(attr => {
+      sheet.querySelectorAll('[' + attr + ']').forEach(el => {
+        const value = el.getAttribute(attr) || '';
+        list.push({
+          attr: attr,
+          value: value,
+          label: (TOKEN_ATTR_LABELS[attr] || attr) + ' — ' + value.replace(/_/g, ' ')
+        });
+      });
+    });
+    return list;
+  }
+
+  // Multiset diff — returns the label of every token span present in
+  // `before` that has no surviving counterpart in `after`.
+  function diffLostSpans(before, after) {
+    const beforeCounts = new Map(), afterCounts = new Map();
+    before.forEach(item => { const k = item.attr + '|' + item.value; beforeCounts.set(k, (beforeCounts.get(k) || 0) + 1); });
+    after.forEach(item => { const k = item.attr + '|' + item.value; afterCounts.set(k, (afterCounts.get(k) || 0) + 1); });
+    const lost = [];
+    beforeCounts.forEach((count, key) => {
+      const remaining = afterCounts.get(key) || 0;
+      if (remaining < count) {
+        const sample = before.find(b => (b.attr + '|' + b.value) === key);
+        for (let i = 0; i < count - remaining; i++) lost.push(sample.label);
+      }
+    });
+    return lost;
+  }
+
+  /* --------- TOKEN-AWARE UNDO ---------
+     Insert-Field tokens are placed with range.insertNode(), which the
+     browser's native undo stack cannot see. We keep a parallel action log:
+     token inserts are recorded here, plain typing is recorded as 'native'
+     markers (coalesced per typing run, mirroring how the browser groups
+     keystrokes). Ctrl+Z / the Undo button walk the log — a token on top is
+     removed directly, anything else falls through to execCommand('undo'). */
+  let editLog = [];   // { type:'token', el } | { type:'native', it }
+  let editRedo = [];  // { type:'token', el, parent, next } | { type:'native' }
+  let _sawHistory = false;
+
+  function noteTokenInsert(el) {
+    if (!editing) return;
+    editLog.push({ type: "token", el: el });
+    editRedo = [];
+  }
+  window.LPR_EDIT_UNDO = { noteTokenInsert: noteTokenInsert };
+
+  document.addEventListener("input", e => {
+    if (!editing) return;
+    const host = e.target;
+    if (!(host instanceof Element) || !host.closest(".sheet")) return;
+    const it = e.inputType || "";
+    if (it === "historyUndo") {
+      _sawHistory = true;
+      for (let i = editLog.length - 1; i >= 0; i--) {
+        if (editLog[i].type === "native") { editLog.splice(i, 1); break; }
+      }
+      editRedo.push({ type: "native" });
+    } else if (it === "historyRedo") {
+      _sawHistory = true;
+      editLog.push({ type: "native", it: "" });
+    } else {
+      // Coalesce a typing run into one entry, like the native stack does
+      const prev = editLog[editLog.length - 1];
+      const runs = it === "insertText" || it === "deleteContentBackward" || it === "deleteContentForward";
+      if (!(runs && prev && prev.type === "native" && prev.it === it)) {
+        editLog.push({ type: "native", it: it });
+      }
+      editRedo = [];
+    }
+  }, true);
+
+  function _dropDetachedTokens() {
+    while (editLog.length) {
+      const top = editLog[editLog.length - 1];
+      if (top.type === "token" && !document.contains(top.el)) editLog.pop();
+      else break;
+    }
+  }
+
+  function undoOnce() {
+    _dropDetachedTokens();
+    const top = editLog[editLog.length - 1];
+    if (top && top.type === "token") {
+      editLog.pop();
+      editRedo.push({ type: "token", el: top.el, parent: top.el.parentNode, next: top.el.nextSibling });
+      top.el.remove();
+      return;
+    }
+    _sawHistory = false;
+    document.execCommand("undo"); // input handler pops the matching entry
+    if (!_sawHistory) {
+      // Native stack had nothing (or our count drifted) — clear stale
+      // native markers and try the newest surviving token instead.
+      while (editLog.length && editLog[editLog.length - 1].type === "native") editLog.pop();
+      _dropDetachedTokens();
+      const tok = editLog[editLog.length - 1];
+      if (tok && tok.type === "token") {
+        editLog.pop();
+        editRedo.push({ type: "token", el: tok.el, parent: tok.el.parentNode, next: tok.el.nextSibling });
+        tok.el.remove();
+      }
+    }
+  }
+
+  function redoOnce() {
+    const top = editRedo[editRedo.length - 1];
+    if (top && top.type === "token") {
+      editRedo.pop();
+      if (top.parent && document.contains(top.parent)) {
+        top.parent.insertBefore(top.el, top.next && top.next.parentNode === top.parent ? top.next : null);
+        editLog.push({ type: "token", el: top.el });
+      }
+      return;
+    }
+    if (top) editRedo.pop();
+    document.execCommand("redo"); // input handler re-logs it
+  }
+
+  // Ctrl+Z / Ctrl+Y (and Ctrl+Shift+Z) inside the sheet route through the
+  // token-aware log. Inputs elsewhere (setup panels) keep default behavior.
+  document.addEventListener("keydown", e => {
+    if (!editing || !(e.ctrlKey || e.metaKey) || e.altKey) return;
+    const ae = document.activeElement;
+    if (!ae || !ae.closest || !ae.closest(".sheet")) return;
+    const k = (e.key || "").toLowerCase();
+    if (k === "z" && !e.shiftKey) { e.preventDefault(); undoOnce(); }
+    else if (k === "y" || (k === "z" && e.shiftKey)) { e.preventDefault(); redoOnce(); }
+  }, true);
+
+  function showEditLossDialog(labels) {
+    return new Promise(resolve => {
+      const back = document.createElement('div');
+      back.className = 'tt-backdrop';
+      back.innerHTML = `
+        <div class="tt-dialog">
+          <h2>⚠ Some fields may have been unlinked</h2>
+          <p>Editing may have detached these auto-fill fields from their data — they'll no longer update automatically:<br/>
+            <ul style="margin:8px 0 0 16px;padding:0;font-size:13px;color:var(--lpr-muted);line-height:1.8">
+              ${labels.map(l => `<li>${l}</li>`).join('')}
+            </ul>
+          </p>
+          <div class="actions">
+            <button data-act="undo" class="muted">Undo my edits</button>
+            <button data-act="keep" class="primary">Keep my edits</button>
+          </div>
+        </div>`;
+      document.body.appendChild(back);
+      const close = keep => { back.remove(); resolve(keep); };
+      back.addEventListener('click', e => { if (e.target === back) close(true); });
+      back.querySelector('[data-act="undo"]').addEventListener('click', () => close(false));
+      back.querySelector('[data-act="keep"]').addEventListener('click', () => close(true));
+    });
+  }
+
+  // Turn edit mode on/off. Returns a promise that resolves once any
+  // lost-field warning dialog raised while turning OFF has been resolved
+  // (and any chosen undo has been applied). Callers that don't need to
+  // wait (the Edit button itself, the beforeprint safety net) can ignore
+  // the returned promise; callers that must not proceed until the user
+  // has chosen Keep/Undo (export, save) should await it.
   function toggleEdit() {
     editing = !editing;
-    const sheets = document.querySelectorAll(".sheet");
+    editLog = [];
+    editRedo = [];
+    const sheets = [...document.querySelectorAll(".sheet")];
+    let pending = Promise.resolve();
+
+    if (editing) {
+      editSnapshots = sheets.map(sheet => ({
+        sheet: sheet,
+        html: sheet.innerHTML,
+        census: censusTokenSpans(sheet)
+      }));
+    } else if (editSnapshots.length) {
+      const affected = editSnapshots
+        .map(snap => ({ snap: snap, lost: diffLostSpans(snap.census, censusTokenSpans(snap.sheet)) }))
+        .filter(x => x.lost.length);
+      editSnapshots = [];
+      if (affected.length) {
+        const allLabels = [...new Set(affected.reduce((a, x) => a.concat(x.lost), []))];
+        pending = showEditLossDialog(allLabels).then(keep => {
+          if (!keep) affected.forEach(x => { x.snap.sheet.innerHTML = x.snap.html; });
+        });
+      }
+    }
+
     sheets.forEach(s => {
       s.setAttribute("contenteditable", editing);
       s.setAttribute("spellcheck", editing);
       s.classList.toggle("tt-editing", editing);
+      // While editing, tokens are atomic chips (non-editable): the caret
+      // can't wander inside them, a click selects the whole span, and one
+      // Backspace removes it as a single native (undoable) edit.
+      s.querySelectorAll(TOKEN_ATTRS.map(a => "[" + a + "]").join(",")).forEach(t => {
+        if (editing) t.setAttribute("contenteditable", "false");
+        else t.removeAttribute("contenteditable");
+      });
     });
     const btn = document.getElementById("tt-edit-btn");
     btn.textContent = editing ? "✓ Done editing" : "Edit";
@@ -239,6 +486,14 @@
     if (fmtBar) fmtBar.style.display = editing ? "contents" : "none";
     if (editing) setupSignatureDrag();
     else teardownSignatureDrag();
+
+    return pending;
+  }
+
+  // Exit edit mode (if active) before an export/save action proceeds,
+  // awaiting the same lost-field check + dialog that toggleEdit() runs.
+  function exitEditModeForAction() {
+    return editing ? toggleEdit() : Promise.resolve();
   }
 
   /* Apply a pt font size to the current selection */
@@ -493,6 +748,9 @@
       }
       .tt-modal-input:focus { border-color: var(--lpr-blue); box-shadow: 0 0 0 3px rgba(40,56,145,0.12); }
 
+      /* Export button — disabled while an export is in flight */
+      .tt-btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
       /* Format bar separator */
       .tt-fmt-sep {
         display: inline-block; width: 1px; background: rgba(40,56,145,0.18);
@@ -619,7 +877,14 @@
   }
 
   /* --------- PRINT BLANK --------- */
+  let printBlankActive = false;
   function printBlank() {
+    // Re-entrancy guard: a second call before the first call's afterprint
+    // restore has fired would snapshot the already-blanked DOM and then
+    // re-blank it on its own restore. Ignore calls while one is in flight.
+    if (printBlankActive) return;
+    printBlankActive = true;
+
     // Only clear recipient/fill-in fields — not employee or owner (company info stays)
     const FIELD_SEL = [
       '[data-fill-field]',
@@ -653,11 +918,15 @@
     const savedSepText = sepNodes.map(n => n.textContent);
     sepNodes.forEach(n => { n.textContent = ''; });
 
+    let restored = false;
     function restore() {
+      if (restored) return; // idempotent — safe if called twice
+      restored = true;
       els.forEach((el, i) => { el.innerHTML = savedHtml[i]; });
       sigEls.forEach(el => { el.style.display = ''; });
       gridNoPrint.forEach(el => { el.style.removeProperty('display'); el.style.visibility = ''; el.style.height = ''; el.style.minHeight = ''; el.style.padding = ''; el.style.overflow = ''; });
       sepNodes.forEach((n, i) => { n.textContent = savedSepText[i]; });
+      printBlankActive = false;
     }
     window.addEventListener('afterprint', restore, { once: true });
     window.print();
@@ -705,7 +974,24 @@
     await doExportNow(kind);
   }
 
+  // Module-level re-entrancy guard: a double-click (or a menu-item click
+  // while a slow CDN load is still in flight) must not start a second
+  // concurrent export — that races inlineImgSrcs()'s save/restore of <img>
+  // srcs and can bake a broken image into the export and fire two downloads.
+  let exporting = false;
+
+  function setExportButtonDisabled(disabled) {
+    const btn = document.getElementById("tt-export-btn");
+    if (!btn) return;
+    btn.disabled = disabled;
+    if (disabled) btn.setAttribute("aria-disabled", "true");
+    else btn.removeAttribute("aria-disabled");
+  }
+
   async function doExportNow(kind) {
+    if (exporting) return;
+    exporting = true;
+    setExportButtonDisabled(true);
     const name = baseFilename();
     try {
       if (kind === "print") return window.print();
@@ -719,6 +1005,9 @@
       back.innerHTML = `<div class="tt-dialog"><h2>Export failed</h2><p style="color:var(--lpr-muted);font-size:13px">${e.message || e}</p><div class="actions"><button data-act="ok" class="primary">OK</button></div></div>`;
       document.body.appendChild(back);
       back.querySelector('[data-act="ok"]').addEventListener('click', () => back.remove());
+    } finally {
+      exporting = false;
+      setExportButtonDisabled(false);
     }
   }
 
@@ -729,6 +1018,17 @@
   }
 
   async function exportHtml(name) {
+    // Track 4 §4: this is the mode-bar central export-scrub hook point. If
+    // mode-bar.js is loaded on this page, it overrides
+    // document.documentElement.cloneNode (or a legacy per-template override
+    // does, e.g. Security Deposit.html's inline script until P1d migrates
+    // it) to strip .mode-hidden/.mode-bar nodes from the returned clone
+    // *before* we ever see it — so only the active variant is captured with
+    // no code here. Templates with no mode-bar/legacy override get a plain
+    // native deep clone, unchanged from today. Do not change this call to a
+    // shallow clone or clone a sub-node instead of documentElement — either
+    // would bypass the hook. Call cloneNode exactly once per export (no
+    // double-clone).
     const clone = document.documentElement.cloneNode(true);
     clone.dataset.lprSnapshot = '1';
 
@@ -753,18 +1053,24 @@
     const baseUrl = location.href.substring(0, location.href.lastIndexOf("/") + 1);
 
     // Inline local stylesheets so exported file is fully self-contained
-    // (CSS custom properties resolve correctly without needing brand.css)
-    for (const link of [...clone.querySelectorAll('link[rel~="stylesheet"]')]) {
-      const raw = link.getAttribute('href');
-      if (!raw || /^https?:/.test(raw)) continue;
-      try {
-        const resp = await fetch(baseUrl + raw);
-        if (resp.ok) {
-          const style = document.createElement('style');
-          style.textContent = await resp.text();
-          link.parentNode.replaceChild(style, link);
-        }
-      } catch (e) {}
+    // (CSS custom properties resolve correctly without needing brand.css).
+    // Skipped on file:// pages: fetch() is CORS-blocked for file: URLs by
+    // browser policy (real users have no special flags set), so attempting
+    // it here only logs a console error before falling through to the same
+    // absolutized <link href> fallback below — better to go straight there.
+    if (location.protocol !== 'file:') {
+      for (const link of [...clone.querySelectorAll('link[rel~="stylesheet"]')]) {
+        const raw = link.getAttribute('href');
+        if (!raw || /^https?:/.test(raw)) continue;
+        try {
+          const resp = await fetch(baseUrl + raw);
+          if (resp.ok) {
+            const style = document.createElement('style');
+            style.textContent = await resp.text();
+            link.parentNode.replaceChild(style, link);
+          }
+        } catch (e) {}
+      }
     }
 
     // Make relative asset paths absolute
@@ -784,12 +1090,42 @@
   // Pre-convert <img> elements to data URLs so html2canvas never fetches them.
   // On file:// pages, loading images without crossOrigin is same-origin and safe;
   // adding crossOrigin="anonymous" (what useCORS does) breaks CORS and taints the canvas.
+  // Registry of pre-encoded data URIs for sheet-critical images
+  // (assets/img-data.js → window.LPR_IMG_DATA). On file:// pages the canvas
+  // route below ALWAYS taints (drawing a file:// image marks the canvas
+  // unexportable), which used to silently strip the logo/form image out of
+  // every PNG/PDF export. Script loading is not subject to that restriction,
+  // so the registry is the only reliable file://-compatible source of image
+  // bytes. Lazy-loaded at export time; resolves (never rejects) so exports
+  // still proceed registry-less on pages/setups where it can't load.
+  let imgDataPromise = null;
+  function loadImgData() {
+    if (window.LPR_IMG_DATA) return Promise.resolve();
+    if (imgDataPromise) return imgDataPromise;
+    imgDataPromise = new Promise(resolve => {
+      const s = document.createElement('script');
+      s.src = 'assets/img-data.js';
+      s.onload = resolve;
+      s.onerror = () => { imgDataPromise = null; resolve(); };
+      document.head.appendChild(s);
+    });
+    return imgDataPromise;
+  }
+  function imgDataFor(url) {
+    if (!window.LPR_IMG_DATA || !url || url.startsWith('data:')) return null;
+    const base = decodeURIComponent(url.split('/').pop().split('?')[0].split('#')[0]);
+    return window.LPR_IMG_DATA[base] || null;
+  }
+
   async function inlineImgSrcs(el) {
+    await loadImgData();
     const imgs = [...el.querySelectorAll('img')];
     const origSrcs = new Map();
     await Promise.all(imgs.map(img => new Promise(resolve => {
       const src = img.getAttribute('src') || '';
       if (!src || src.startsWith('data:')) { resolve(); return; }
+      const data = imgDataFor(src);
+      if (data) { origSrcs.set(img, src); img.src = data; resolve(); return; }
       origSrcs.set(img, src);
       const tmp = new Image();
       // crossOrigin only on https — file:// has no CORS server so it causes onerror
@@ -804,77 +1140,189 @@
       tmp.onerror = resolve;
       tmp.src = src;
     })));
-    return () => origSrcs.forEach((src, img) => img.setAttribute('src', src));
+    // CSS background images (e.g. Certificate of Mailing's form scan) taint
+    // the capture the same way — swap any registry-known background to its
+    // data URI for the duration. setProperty('important') so the inline
+    // override beats the !important stylesheet rules that set these.
+    const bgRestores = [];
+    if (window.LPR_IMG_DATA) {
+      [el, ...el.querySelectorAll('*')].forEach(node => {
+        const bg = getComputedStyle(node).backgroundImage;
+        if (!bg || bg === 'none' || bg.includes('data:')) return;
+        const m = bg.match(/url\(["']?([^"')]+)["']?\)/);
+        const data = m && imgDataFor(m[1]);
+        if (!data) return;
+        bgRestores.push({ node,
+          prev: node.style.getPropertyValue('background-image'),
+          prevPri: node.style.getPropertyPriority('background-image') });
+        node.style.setProperty('background-image', 'url("' + data + '")', 'important');
+      });
+    }
+    return () => {
+      origSrcs.forEach((src, img) => img.setAttribute('src', src));
+      bgRestores.forEach(r => {
+        if (r.prev) r.node.style.setProperty('background-image', r.prev, r.prevPri);
+        else r.node.style.removeProperty('background-image');
+      });
+    };
+  }
+
+  /* --------- EXPORT-ROOT RESOLUTION --------- */
+  // A template can mark a hidden "true" printable layout with
+  // data-tt-export-root so PNG/PDF export captures it instead of whatever
+  // `.sheet` elements happen to be visible on screen (e.g. a scaled preview
+  // thumbnail). The attribute value, if non-empty, names a body class that
+  // must be active for the root to be used — this lets a template scope the
+  // override to one of several view/print modes without any per-template
+  // logic living here.
+  function findExportRoot() {
+    const root = document.querySelector('[data-tt-export-root]');
+    if (!root) return null;
+    const modeClass = root.getAttribute('data-tt-export-root');
+    if (modeClass && !document.body.classList.contains(modeClass)) return null;
+    return root;
+  }
+
+  // Reveal a hidden export root for the duration of a capture. Only ever
+  // touches the inline `display` so restoring puts it back exactly as found.
+  function revealExportRoot(root) {
+    const prevDisplay = root.style.display;
+    root.style.display = "block";
+    return function restoreExportRoot() { root.style.display = prevDisplay; };
+  }
+
+  // Resolve what to hand to html2canvas: prefer a mode-appropriate export
+  // root when present, else fall back to the normal on-screen `.sheet`
+  // elements (unchanged behavior for every template that doesn't opt in).
+  // Always call the returned restore() when done, finally-style.
+  //
+  // Coexistence with the mode-bar export scrub (Track 4 §4): this operates
+  // on the LIVE document (real elements, filtered to what's on-screen —
+  // e.g. `.filter(s => s.offsetHeight > 0)` below), used only by PNG/PDF.
+  // It never touches document.documentElement.cloneNode, so it can't
+  // double-apply with the clone-based scrub used by exportHtml()/
+  // buildSaveHtml() (HTML export, Save As, Save Edits) — the two mechanisms
+  // run on different DOM references for different export kinds and don't
+  // call each other.
+  function resolveExportSheets() {
+    const root = findExportRoot();
+    if (!root) {
+      const sheets = [...document.querySelectorAll(".sheet")].filter(s => s.offsetHeight > 0);
+      return { sheets: sheets, restore: () => {} };
+    }
+    const restore = revealExportRoot(root);
+    let sheets;
+    if (root.classList.contains("sheet")) {
+      sheets = [root];
+    } else if (root.children.length) {
+      // Each direct child is treated as one full printable page/unit. This
+      // covers a root that wraps several standalone .sheet elements *and* a
+      // root that wraps one assembled page which itself contains nested
+      // .sheet fragments — either way we don't need to know which shape a
+      // given template uses.
+      sheets = [...root.children];
+    } else {
+      sheets = [...root.querySelectorAll(".sheet")];
+    }
+    return { sheets: sheets, restore: restore };
   }
 
   async function exportPng(name) {
-    await ensureLib("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js", "html2canvas");
-    const sheets = [...document.querySelectorAll(".sheet")].filter(s => s.offsetHeight > 0);
-    if (sheets.length === 0) return;
-    for (let i = 0; i < sheets.length; i++) {
-      const restore = await inlineImgSrcs(sheets[i]);
-      const isFile = location.protocol === 'file:';
-      const canvas = await window.html2canvas(sheets[i], {
-        scale: 2,
-        useCORS: !isFile,
-        allowTaint: isFile,
-        foreignObjectRendering: isFile,
-        backgroundColor: "#ffffff",
-        logging: false
-      });
+    await ensureLib("assets/vendor/html2canvas.min.js", "html2canvas");
+    const { sheets, restore } = resolveExportSheets();
+    try {
+      if (sheets.length === 0) return;
+      for (let i = 0; i < sheets.length; i++) {
+        const restoreImgs = await inlineImgSrcs(sheets[i]);
+        const isFile = location.protocol === 'file:';
+        // No foreignObjectRendering: that mode drops all external resources
+        // under file:// (the historical blank-logo exports). inlineImgSrcs()
+        // has already converted registry-known images + backgrounds to data
+        // URIs, so the standard renderer draws them and the canvas stays
+        // untainted. allowTaint stays false: an unregistered file:// image
+        // renders blank instead of hard-failing the whole export at toBlob.
+        const canvas = await window.html2canvas(sheets[i], {
+          scale: 2,
+          useCORS: !isFile,
+          allowTaint: false,
+          foreignObjectRendering: false,
+          backgroundColor: "#ffffff",
+          logging: false
+        });
+        restoreImgs();
+        const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
+        const suffix = sheets.length > 1 ? "-" + (i + 1) : "";
+        triggerDownload(blob, name + suffix + ".png");
+        await new Promise(r => setTimeout(r, 300));
+      }
+    } finally {
       restore();
-      const blob = await new Promise(res => canvas.toBlob(res, "image/png"));
-      const suffix = sheets.length > 1 ? "-" + (i + 1) : "";
-      triggerDownload(blob, name + suffix + ".png");
-      await new Promise(r => setTimeout(r, 300));
     }
   }
 
   async function exportPdf(name) {
-    await ensureLib("https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js", "html2canvas");
-    await ensureLib("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js", "jspdf");
-    const sheets = [...document.querySelectorAll(".sheet")].filter(s => s.offsetHeight > 0);
-    if (sheets.length === 0) return;
-    const r0 = sheets[0].getBoundingClientRect();
-    const widthIn  = r0.width  / 96;
-    const heightIn = r0.height / 96;
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-      unit: "in",
-      format: [widthIn, heightIn],
-      orientation: widthIn > heightIn ? "landscape" : "portrait"
-    });
-    for (let i = 0; i < sheets.length; i++) {
-      const restore = await inlineImgSrcs(sheets[i]);
-      const isFile = location.protocol === 'file:';
-      const canvas = await window.html2canvas(sheets[i], {
-        scale: 2,
-        useCORS: !isFile,
-        allowTaint: isFile,
-        foreignObjectRendering: isFile,
-        backgroundColor: "#ffffff",
-        logging: false
+    await ensureLib("assets/vendor/html2canvas.min.js", "html2canvas");
+    await ensureLib("assets/vendor/jspdf.umd.min.js", "jspdf");
+    const { sheets, restore } = resolveExportSheets();
+    try {
+      if (sheets.length === 0) return;
+      const r0 = sheets[0].getBoundingClientRect();
+      const widthIn  = r0.width  / 96;
+      const heightIn = r0.height / 96;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        unit: "in",
+        format: [widthIn, heightIn],
+        orientation: widthIn > heightIn ? "landscape" : "portrait"
       });
+      for (let i = 0; i < sheets.length; i++) {
+        const restoreImgs = await inlineImgSrcs(sheets[i]);
+        const isFile = location.protocol === 'file:';
+        // No foreignObjectRendering: that mode drops all external resources
+        // under file:// (the historical blank-logo exports). inlineImgSrcs()
+        // has already converted registry-known images + backgrounds to data
+        // URIs, so the standard renderer draws them and the canvas stays
+        // untainted. allowTaint stays false: an unregistered file:// image
+        // renders blank instead of hard-failing the whole export at toBlob.
+        const canvas = await window.html2canvas(sheets[i], {
+          scale: 2,
+          useCORS: !isFile,
+          allowTaint: false,
+          foreignObjectRendering: false,
+          backgroundColor: "#ffffff",
+          logging: false
+        });
+        restoreImgs();
+        const r = sheets[i].getBoundingClientRect();
+        const wIn = r.width  / 96;
+        const hIn = r.height / 96;
+        const imgData = canvas.toDataURL("image/jpeg", 0.97);
+        if (i > 0) doc.addPage([wIn, hIn], wIn > hIn ? "landscape" : "portrait");
+        doc.addImage(imgData, "JPEG", 0, 0, wIn, hIn);
+      }
+      doc.save(name + ".pdf");
+    } finally {
       restore();
-      const r = sheets[i].getBoundingClientRect();
-      const wIn = r.width  / 96;
-      const hIn = r.height / 96;
-      const imgData = canvas.toDataURL("image/jpeg", 0.97);
-      if (i > 0) doc.addPage([wIn, hIn], wIn > hIn ? "landscape" : "portrait");
-      doc.addImage(imgData, "JPEG", 0, 0, wIn, hIn);
     }
-    doc.save(name + ".pdf");
   }
 
+  // Per-URL cached load promise (same pattern as fill-fields.js's
+  // window._lpr_fp_promise flatpickr loader) so concurrent/subsequent calls
+  // for the same script await the one in-flight load instead of injecting
+  // a second <script> tag.
+  const libPromises = {};
   function ensureLib(url, globalName) {
-    return new Promise((res, rej) => {
-      if (window[globalName]) return res();
+    if (window[globalName]) return Promise.resolve();
+    if (libPromises[url]) return libPromises[url];
+    const p = new Promise((res, rej) => {
       const s = document.createElement("script");
       s.src = url;
       s.onload = () => res();
-      s.onerror = () => rej(new Error("Failed to load " + url));
+      s.onerror = () => { delete libPromises[url]; rej(new Error("Failed to load " + url)); };
       document.head.appendChild(s);
     });
+    libPromises[url] = p;
+    return p;
   }
 
   function triggerDownload(blob, filename) {
@@ -890,6 +1338,10 @@
 
   /* --------- SHARED: build a clean HTML snapshot for saving --------- */
   async function buildSaveHtml() {
+    // Same mode-bar export-scrub hook as exportHtml() above (Track 4 §4) —
+    // Save As and Save Edits both route through this one function, so they
+    // inherit the same single cloneNode(true) call and the same "active
+    // variant only" guarantee with no separate scrub logic here.
     const clone = document.documentElement.cloneNode(true);
     clone.dataset.lprSnapshot = '1'; // tells employee.js not to overwrite baked-in values
 
@@ -911,20 +1363,27 @@
     clone.querySelectorAll("[contenteditable]").forEach(el => el.removeAttribute("contenteditable"));
     clone.querySelectorAll(".tt-editing").forEach(el => el.classList.remove("tt-editing"));
 
-    // Inline local stylesheets so they survive the view.html document.write context
+    // Inline local stylesheets so they survive the view.html document.write
+    // context. Skipped on file:// pages for the same reason as exportHtml()
+    // above — fetch() is CORS-blocked for file: URLs, and the <base> tag
+    // added below already makes the un-inlined, absolutized <link href>
+    // resolve correctly, so there's no functional loss, only one fewer
+    // guaranteed-to-fail network attempt (and its console error).
     const baseUrl = location.href.replace(/[?#].*$/, "").replace(/\/[^/]*$/, "/");
-    for (const link of [...clone.querySelectorAll('link[rel~="stylesheet"]')]) {
-      const raw = link.getAttribute('href');
-      if (!raw || /^https?:/.test(raw)) continue;
-      try {
-        const abs = /^(?:file:|data:|blob:)/.test(raw) ? raw : baseUrl + raw;
-        const resp = await fetch(abs);
-        if (resp.ok) {
-          const style = document.createElement('style');
-          style.textContent = await resp.text();
-          link.parentNode.replaceChild(style, link);
-        }
-      } catch (e) {}
+    if (location.protocol !== 'file:') {
+      for (const link of [...clone.querySelectorAll('link[rel~="stylesheet"]')]) {
+        const raw = link.getAttribute('href');
+        if (!raw || /^https?:/.test(raw)) continue;
+        try {
+          const abs = /^(?:file:|data:|blob:)/.test(raw) ? raw : baseUrl + raw;
+          const resp = await fetch(abs);
+          if (resp.ok) {
+            const style = document.createElement('style');
+            style.textContent = await resp.text();
+            link.parentNode.replaceChild(style, link);
+          }
+        } catch (e) {}
+      }
     }
 
     // <base> tag so scripts/images resolve relative paths from the right directory
@@ -951,7 +1410,8 @@
   }
 
   /* --------- SAVE AS — create a new library entry --------- */
-  function saveAs() {
+  async function saveAs() {
+    await exitEditModeForAction(); // exit edit mode (with lost-field safety check) before saving
     const warnings = checkUnfilledFields();
     if (warnings.length) { showUnfilledWarning(warnings, () => doSaveAs()); return; }
     doSaveAs();
@@ -1015,7 +1475,13 @@
   }
 
   /* --------- SAVE EDITS — overwrite an existing library entry --------- */
-  async function doSaveEdits(id) {
+  function doSaveEdits(id) {
+    const warnings = checkUnfilledFields();
+    if (warnings.length) { showUnfilledWarning(warnings, () => doSaveEditsNow(id)); return; }
+    doSaveEditsNow(id);
+  }
+
+  async function doSaveEditsNow(id) {
     const saved = JSON.parse(localStorage.getItem("lpr_custom_templates") || "{}");
     if (!saved[id]) { showAlert("This library entry no longer exists."); return; }
     const confirmed = await showConfirm(

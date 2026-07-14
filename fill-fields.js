@@ -23,8 +23,29 @@
 (function () {
   'use strict';
 
-  const PAGE_KEY    = (location.pathname.split('/').pop() || 'page').replace(/\.html?$/i, '');
+  const PAGE_KEY    = (function() {
+    var basename = (location.pathname.split('/').pop() || 'page').replace(/\.html?$/i, '');
+
+    // Special handling for view.html with id parameter to avoid field value bleed
+    if (basename === 'view') {
+      var id = new URLSearchParams(location.search).get('id');
+      if (id) {
+        // Sanitize id using same pattern as slugify()
+        var sanitized = String(id).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+        if (sanitized) {
+          return basename + '_' + sanitized;
+        }
+      }
+    }
+
+    return basename;
+  })();
   const STORAGE_KEY = 'lpr_fill_' + PAGE_KEY;
+
+  /* Tracks flatpickr instances created by the current render() so they can
+     be destroyed before the next render rebuilds the panel — otherwise
+     discarded instances leak calendar nodes appended to document.body. */
+  var flatpickrInstances = [];
 
   /* ================================================================
      FIELD DISCOVERY
@@ -105,6 +126,13 @@
      TAB RENDER
      ================================================================ */
   function render(container) {
+    // Destroy any flatpickr instances left over from a previous render
+    // before the panel gets rebuilt below.
+    flatpickrInstances.forEach(function (fp) {
+      if (fp && typeof fp.destroy === 'function') fp.destroy();
+    });
+    flatpickrInstances = [];
+
     var defs = getFieldDefs();
     var vals = loadValues();
 
@@ -184,7 +212,7 @@
             opts.altFormat    = 'h:i K';
             opts.altInputClass = 'lpr-ff-inp lpr-ff-has-icon';
           }
-          flatpickr(inp, opts);
+          flatpickrInstances.push(flatpickr(inp, opts));
         });
       }).catch(function () {}); // silently fall back to native picker on network error
     }
@@ -200,12 +228,12 @@
       var link = document.createElement('link');
       link.id = 'lpr-fp-css';
       link.rel = 'stylesheet';
-      link.href = 'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css';
+      link.href = 'assets/vendor/flatpickr.min.css';
       document.head.appendChild(link);
     }
     window._lpr_fp_promise = new Promise(function (resolve, reject) {
       var s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js';
+      s.src = 'assets/vendor/flatpickr.min.js';
       s.onload = function () { injectFlatpickrTheme(); resolve(); };
       s.onerror = reject;
       document.head.appendChild(s);

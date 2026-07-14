@@ -2,28 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>LPR — Non-Renewal Notice</title>
 <link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="letter.css">
 <script src="user.js"></script>
-<style>
-  body { background: var(--lpr-page); padding: 60px 20px 40px; }
-  @page { size: 8.5in 11in; margin: 0; }
-  .stage { display: flex; flex-direction: column; align-items: center; gap: 24px; }
-  .sheet.letter { width: 8.5in; height: 11in; padding: 0.75in 0.85in; display: flex; flex-direction: column; }
-  .lh-header { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 18px; border-bottom: 2px solid var(--lpr-blue); }
-  .lh-header img { height: 0.95in; width: auto; }
-  .lh-header .meta { text-align: right; font-size: 8.5pt; line-height: 1.55; color: var(--lpr-ink); font-weight: 400; }
-  .doc-badge { margin-top: 0.45in; font-size: 9pt; letter-spacing: 4px; text-transform: uppercase; color: var(--lpr-blue); font-weight: 600; }
-  .doc-title { font-size: 26pt; font-weight: 700; letter-spacing: -0.4px; line-height: 1.05; margin-top: 8px; color: var(--lpr-ink); }
-  .lh-body { flex: 1; padding-top: 0.35in; font-size: 11pt; line-height: 1.65; color: var(--lpr-text); }
-  .lh-body .date { color: var(--lpr-muted); font-size: 10pt; margin-bottom: 22px; }
-  .lh-body .recipient { margin-bottom: 18px; line-height: 1.45; }
-  .lh-body .subject { font-weight: 700; color: var(--lpr-ink); margin: 18px 0 14px; }
-  .lh-body p { margin: 0 0 12px; }
-  .signoff { margin-top: 0.45in; padding-top: 0; }
-  .signature { height: auto; min-height: 0; }
-  @media print { body { background: #fff; padding: 0; } .stage { gap: 0; } .label { display: none; } }
-</style>
 </head>
 <body>
 <div class="toolbar no-print">
@@ -37,9 +20,9 @@
       <div class="meta">1517 Reisterstown Road, 2nd Floor<br/>
       Pikesville, MD 21208<br/>
       <span data-employee-field="phone">443.402.5641</span><br/>
-      <span data-employee-field="email">david@lasalleparkrealty.com</span></div>
+      office@lasalleparkrealty.com</div>
     </div>
-    <div class="doc-badge">Lease Notice</div>
+    <div class="doc-badge">Required Notice</div>
     <div class="doc-title">Notice of Non-Renewal</div>
     <div class="lh-body">
       <div class="date"><span data-fill-field="date" data-fill-label="Notice Date"></span></div>
@@ -49,11 +32,17 @@
         <span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span>
       </div>
       <div class="subject">Re: Notice of Non-Renewal of Lease Agreement</div>
-      <p>Dear <span data-tenant-field="first_name"></span> <span data-tenant-field="last_name"></span>,</p>
-      <p>Please be advised that your lease agreement will not be renewed for the property located at <strong><span data-tenant-field="address_line1"></span></strong>. This letter serves as the required notice of non-renewal.</p>
-      <p>Accordingly, we request that you vacate the premises and return the keys to the property on or before <strong><span data-fill-field="date" data-fill-label="Move-Out Date"></span></strong>.</p>
-      <p>Please provide us with your forwarding address once available so we can send any future correspondence, including the return of your security deposit if applicable.</p>
-      <p>If you have any questions or concerns, please do not hesitate to contact us at <strong>443.402.5641</strong> or <strong>office@lasalleparkrealty.com</strong>.</p>
+      <p>Dear <span data-contact-field="first_name"></span> <span data-contact-field="last_name"></span>,</p>
+      <p>This is your required notice that LPR Management will not renew your lease at <strong><span data-contact-field="address_line1"></span></strong> when it ends on <span data-fill-field="date" data-fill-label="Lease End Date"></span>.</p>
+      <div class="callout callout-gold">Vacate and return keys by: <strong><span data-fill-field="date" data-fill-label="Move-Out Date"></span></strong></div>
+      <p><strong>Before you move out:</strong></p>
+      <ul class="checklist">
+        <li>Remove all belongings and leave the unit in broom-clean condition</li>
+        <li>Return all keys to the LPR office at 1517 Reisterstown Road, 2nd Floor</li>
+        <li>Provide your forwarding address for your security deposit and final correspondence</li>
+      </ul>
+      <p>We will process your security deposit and mail it, with an itemized statement, to your forwarding address within the timeline required by Maryland law.</p>
+      <p>Questions? Call the office at <strong>443.402.5641</strong> or email <strong>office@lasalleparkrealty.com</strong>.</p>
       <div class="signoff">
         <p>Sincerely,</p>
         <div class="signature"></div>
