@@ -15,8 +15,7 @@ Use the **Customize for an employee** panel on the index to set name, title, pho
 |---|---|---|
 | Business Card | 3.5″ × 2″ · Personal | Employee name and contact, blue back |
 | Business Card — Company | 3.5″ × 2″ · Company | No name, office line + address |
-| Letterhead | 8.5″ × 11″ | Header, body, signature; optional watermark |
-| Letterhead Clean | 8.5″ × 11″ | Simplified header, no watermark |
+| Letterhead | 8.5″ × 11″ | Header, body, signature; optional watermark; long letters flow onto more pages automatically (page numbers); optional signature line + tenant signature lines (Setup → Sender) |
 | Watermark Paper | 8.5″ × 11″ | Pre-printable background page (file: `Letter Watermark.html`) |
 | Envelopes | 9.5″ × 4.125″ · #10 | Standard, stripe, and send-address-only modes |
 | Envelope Premium | 9.5″ × 4.125″ | Ivory stock spec for print shop |
@@ -32,6 +31,8 @@ Use the **Customize for an employee** panel on the index to set name, title, pho
 | 24-Hour Notice of Entry | 8.5″ × 11″ | Required-by-MD-law entry notice |
 | Rent Increase Notice | 8.5″ × 11″ | Renewal letter; key-facts grid with current/new rent, effective date, response deadline |
 | Non-Renewal Notice | 8.5″ × 11″ | Gold vacate-date callout + move-out checklist |
+| Tenancy Confirmation | 8.5″ × 11″ | Confirms current tenancy at an address. Removable rent block: contract rent + HAP / tenant portion |
+| Occupant Update | 8.5″ × 11″ | Occupants moved in / moved out. Up to four name + date-of-birth rows |
 | Security Deposit Notices | 8.5″ × 11″ | Three variants: Withheld, Partial Refund, Full Refund; account summary tables |
 | Utilities Addendum | 8.5″ × 11″ | Lease addendum: T/O utility assignments. Full mode includes fuel type checkboxes; Simplified mode hides that column. Hardcoded office contact in header. |
 | Door Hanger | 4.25″ × 11″ | Die-cut notice card for door knob |
@@ -45,6 +46,7 @@ Use the **Customize for an employee** panel on the index to set name, title, pho
 ## Setup Panel
 
 Every letter and notice has a **Setup** button in the toolbar that opens a side panel with:
+- **Sender tab** — Pick the owner LLC; include/hide signer name, title, office contact. On Letterhead also: **Your signature** (gallery / leave blank / signature line to sign later) and **Tenant signature lines** (0–2). Click **Apply to Template**.
 
 - **Tenants tab** — Import a Buildium tenant CSV, pick a tenant, and all `data-tenant-field` spans fill automatically. Manual overrides preserved across CSV re-imports.
 - **Vendors tab** — Import a Buildium vendor CSV, pick a vendor, fill `data-vendor-field` spans.
@@ -88,6 +90,14 @@ lpr-templates/
 ├── vendors.js            — vendor address book tab
 ├── fill-fields.js        — date/time/amount/text field pickers tab
 ├── template-tools.js     — Edit, Export, Save As toolbar
+├── letter.css            — shared letter/notice layout (incl. page flow, signature rows, optional rows)
+├── mode-bar.js           — on-page mode selector (watermark, variants)
+├── page-flow.js          — automatic multi-page letters (Letterhead)
+├── paste-clean.js        — clean paste in edit mode (keeps bold/lists, drops foreign fonts/colours)
+├── signature-block.js    — signature line + tenant signature options (Sender tab)
+├── optional-rows.js      — dismiss / restore optional rows on notices
+├── templates-manifest.js — template registry (index + archive derive from it)
+├── tests/                — automated browser tests: node tests/run-all.mjs (see tests/README.md)
 ├── assets/               — fonts, logo files, form images
 └── *.html                — individual template pages
 ```

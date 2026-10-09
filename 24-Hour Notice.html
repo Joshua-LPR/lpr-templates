@@ -18,28 +18,7 @@
   .info-grid { grid-template-columns: 1.3in 1fr auto; gap: 4px 18px; }
   .info-grid .val .placeholder { color: var(--lpr-muted); font-style: italic; }
 
-  /* optional row dismiss / restore */
-  .opt-row-cell.opt-removed { display: none !important; }
-  .opt-dismiss {
-    align-self: center; background: none; border: none; cursor: pointer;
-    color: var(--lpr-muted); font-size: 15px; line-height: 1;
-    width: 22px; height: 22px; border-radius: 50%; margin-left: 2px;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0.4; transition: opacity 0.15s, color 0.15s, background 0.15s;
-    padding: 0;
-  }
-  .opt-dismiss:hover { opacity: 1; color: #c00; background: rgba(200,0,0,0.08); }
-  .opt-dismiss.opt-removed { display: none !important; }
-  .opt-restore-bar {
-    display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; min-height: 0;
-  }
-  .opt-restore-btn {
-    font-family: inherit; font-size: 8.5pt; color: var(--lpr-muted);
-    background: none; border: 1px dashed var(--lpr-rule); border-radius: 4px;
-    padding: 2px 9px; cursor: pointer; display: flex; align-items: center; gap: 4px;
-    transition: color 0.15s, border-color 0.15s;
-  }
-  .opt-restore-btn:hover { color: var(--lpr-blue); border-color: var(--lpr-blue); }
+  /* optional row dismiss / restore: shared styles in letter.css, behaviour in optional-rows.js */
 
   /* The legal disclaimer shares the signoff's wrapper here (unlike the other
      letters), so the wrap — not .signoff itself — carries the top margin;
@@ -100,11 +79,11 @@
 
         <div class="key opt-row-cell" data-opt-row="reason">Reason</div>
         <div class="val opt-row-cell" data-opt-row="reason"><span data-fill-field="text" data-fill-label="Reason for Entry"></span></div>
-        <button class="opt-dismiss no-print" data-opt-row="reason" title="Remove this row">×</button>
+        <button class="opt-dismiss no-print" data-opt-row="reason" data-opt-label="Reason" title="Remove this row">×</button>
 
         <div class="key opt-row-cell" data-opt-row="persons">Persons Entering</div>
         <div class="val opt-row-cell" data-opt-row="persons"><span data-fill-field="text" data-fill-label="Persons Entering"></span></div>
-        <button class="opt-dismiss no-print" data-opt-row="persons" title="Remove this row">×</button>
+        <button class="opt-dismiss no-print" data-opt-row="persons" data-opt-label="Persons Entering" title="Remove this row">×</button>
       </div>
       <div class="opt-restore-bar no-print" id="opt-restore"></div>
 
@@ -133,36 +112,6 @@
 <script src="vendors.js"></script>
 <script src="fill-fields.js"></script>
 <script src="template-tools.js"></script>
-<script>
-(function () {
-  var LABELS = { reason: 'Reason', persons: 'Persons Entering' };
-
-  function setRemoved(rowId, removed) {
-    document.querySelectorAll('[data-opt-row="' + rowId + '"]').forEach(function (el) {
-      el.classList.toggle('opt-removed', removed);
-    });
-    updateRestoreBar();
-  }
-
-  function updateRestoreBar() {
-    var bar = document.getElementById('opt-restore');
-    var hidden = Object.keys(LABELS).filter(function (id) {
-      return !!document.querySelector('.opt-row-cell[data-opt-row="' + id + '"].opt-removed');
-    });
-    bar.innerHTML = '';
-    hidden.forEach(function (id) {
-      var btn = document.createElement('button');
-      btn.className = 'opt-restore-btn';
-      btn.innerHTML = '<span style="font-size:11px">＋</span> ' + LABELS[id];
-      btn.addEventListener('click', function () { setRemoved(id, false); });
-      bar.appendChild(btn);
-    });
-  }
-
-  document.querySelectorAll('.opt-dismiss').forEach(function (btn) {
-    btn.addEventListener('click', function () { setRemoved(this.dataset.optRow, true); });
-  });
-})();
-</script>
+<script src="optional-rows.js"></script>
 </body>
 </html>

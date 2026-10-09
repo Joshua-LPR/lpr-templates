@@ -258,9 +258,7 @@
     }
   });
 
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
-  }
+  function escapeHtml(s) { return window.LPR_UTIL.esc(s); } // shared helper in user.js
 
   render();
 })();

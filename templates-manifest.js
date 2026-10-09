@@ -29,8 +29,8 @@
  *   flags      object   { exportRoot, noExport, hasEho, zeroTokens, manualAddress }
  *
  * Deviations from the literal §1.1 schema (documented, see P0c report):
- *   - Two retired-but-on-disk templates (Envelope Premium.html, Letterhead
- *     Clean.html) are included with section:null and an extra top-level
+ *   - One retired-but-on-disk template (Envelope Premium.html) is
+ *     included with section:null and an extra top-level
  *     `retired: true` field (not part of the §1.1 flags enum) so
  *     archive.html's TEMPLATES lookup and the P0c gate's "unmapped file"
  *     scan both resolve cleanly without polluting index.html's rendered
@@ -75,7 +75,7 @@
       title: "Letterhead",
       role: "8.5″ × 11″ · US Letter",
       section: "stationery",
-      desc: "Header, body block, signature. Toggle watermark on or off.",
+      desc: "Header, body block, signature. Long letters flow onto further pages automatically (continuation heading, page numbers). Toggle watermark on or off; optional signature line and tenant signature lines.",
       badge: null,
       modes: [
         { id: "on",  label: "With watermark" },
@@ -216,10 +216,36 @@
       title: "Non-Renewal Notice",
       role: "8.5″ × 11″ · US Letter",
       section: "property-management",
-      desc: "Lease will not renew. Vacate-by date and forwarding-address request.",
+      desc: "Lease will not renew. Single vacate-by date and forwarding-address line.",
       badge: null,
       options: [],
-      fillLabels: ["Notice Date", "Lease End Date", "Move-Out Date"],
+      fillLabels: ["Notice Date", "Lease End Date"],
+      flags: { exportRoot: false, noExport: false, hasEho: false, zeroTokens: false, manualAddress: false }
+    },
+    {
+      id: "Tenancy Confirmation.html",
+      title: "Tenancy Confirmation",
+      role: "8.5″ × 11″ · US Letter · Verification",
+      section: "property-management",
+      desc: "Confirms a tenant currently resides at an address. Optional rent block with contract rent, HAP portion, and tenant portion — dismiss it for a plain confirmation.",
+      badge: null,
+      options: [],
+      fillLabels: ["Notice Date", "Contract Rent", "HAP Portion", "Tenant Portion"],
+      flags: { exportRoot: false, noExport: false, hasEho: false, zeroTokens: false, manualAddress: false }
+    },
+    {
+      id: "Occupant Update.html",
+      title: "Occupant Update",
+      role: "8.5″ × 11″ · US Letter · Verification",
+      section: "property-management",
+      desc: "Records that occupants moved in or out of a unit. Mode bar toggles direction; up to four name and date-of-birth rows.",
+      badge: null,
+      modes: [
+        { id: "in",  label: "Moved In" },
+        { id: "out", label: "Moved Out" }
+      ],
+      options: [],
+      fillLabels: ["Notice Date", "Effective Date", "Occupant 1 Name", "Occupant 1 Date of Birth", "Occupant 2 Name", "Occupant 2 Date of Birth", "Occupant 3 Name", "Occupant 3 Date of Birth", "Occupant 4 Name", "Occupant 4 Date of Birth"],
       flags: { exportRoot: false, noExport: false, hasEho: false, zeroTokens: false, manualAddress: false }
     },
     {
@@ -322,18 +348,6 @@
       role: "9.5″ × 4.125″ · #10",
       section: null,
       desc: "Retired stand-alone envelope style; superseded by the multi-mode Envelope.html (Standard / With Stripe / Send Address Only).",
-      badge: null,
-      options: [],
-      fillLabels: [],
-      flags: { exportRoot: false, noExport: false, hasEho: false, zeroTokens: false, manualAddress: false },
-      retired: true
-    },
-    {
-      id: "Letterhead Clean.html",
-      title: "Letterhead",
-      role: "8.5″ × 11″ · US Letter",
-      section: null,
-      desc: "Retired stand-alone plain letterhead (no watermark); superseded by Letterhead.html's watermark on/off toggle.",
       badge: null,
       options: [],
       fillLabels: [],

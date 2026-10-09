@@ -58,23 +58,27 @@
     });
 
     // Drop the active user's signature image into any .signature placeholder.
-    const sig = localStorage.getItem("lpr_signature");
-    if (sig) {
-      const file = (location.pathname.split("/").pop() || "default").toLowerCase();
-      let off = null;
-      try { off = JSON.parse(localStorage.getItem("lpr_sig_offset_" + file) || "null"); } catch (e) {}
-      const tform = off ? "transform: translate(" + (off.x || 0) + "px, " + (off.y || 0) + "px); " : "";
-      const widthCss = off && off.w
-        ? "width: " + off.w + "px; max-width: " + off.w + "px; height: auto; max-height: none;"
-        : "max-width: 2.4in;";
-      document.querySelectorAll(".signature, .signature-slot").forEach(el => {
-        if (el.querySelector("img.lpr-sig-img")) return;
-        const h = el.offsetHeight || null;
-        const heightCss = off && off.w ? "" : "max-height: " + (h ? (h + 8) + "px" : "0.7in") + ";";
-        el.innerHTML = '<img class="lpr-sig-img" src="' + sig + '" alt="signature" style="' + widthCss + ' ' + heightCss + ' mix-blend-mode: multiply; display: block; ' + tform + '"/>';
-      });
-    }
+    document.querySelectorAll(".signature, .signature-slot").forEach(injectSignature);
   }
+
+  // Put the active user's gallery signature (if any) into one placeholder.
+  // Also called by signature-block.js when a document switches back to
+  // "Gallery default" after "Leave blank" / "Signature line".
+  function injectSignature(el) {
+    const sig = localStorage.getItem("lpr_signature");
+    if (!sig || el.querySelector("img.lpr-sig-img")) return;
+    const file = window.LPR_UTIL.fileKey();
+    let off = null;
+    try { off = JSON.parse(localStorage.getItem("lpr_sig_offset_" + file) || "null"); } catch (e) {}
+    const tform = off ? "transform: translate(" + (off.x || 0) + "px, " + (off.y || 0) + "px); " : "";
+    const widthCss = off && off.w
+      ? "width: " + off.w + "px; max-width: " + off.w + "px; height: auto; max-height: none;"
+      : "max-width: 2.4in;";
+    const h = el.offsetHeight || null;
+    const heightCss = off && off.w ? "" : "max-height: " + (h ? (h + 8) + "px" : "0.7in") + ";";
+    el.innerHTML = '<img class="lpr-sig-img" src="' + sig + '" alt="signature" style="' + widthCss + ' ' + heightCss + ' mix-blend-mode: multiply; display: block; ' + tform + '"/>';
+  }
+  window.LPR_SIGNATURE = { inject: injectSignature };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", apply);

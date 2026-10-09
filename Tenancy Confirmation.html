@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LPR — Tenancy Confirmation</title>
+<link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="letter.css">
+<script src="user.js"></script>
+<style>
+  /* Verification letter: no postal recipient block (goes to whoever asks —
+     bank, employer, agency), so the body opens on the salutation. The rent
+     figures are an optional block: a plain tenancy confirmation often must
+     NOT disclose the subsidy split, so the whole grid dismisses as one unit. */
+  .info-grid { grid-template-columns: 1.6in 1fr auto; gap: 4px 18px; align-items: end; }
+
+  /* The address runs inline inside a sentence here (not as a stacked postal
+     block), so the ", unit" fragment collapses with its comma when empty. */
+  .addr2-inline:has([data-contact-field]:empty) { display: none; }
+  .sheet.tt-editing .addr2-inline:has([data-contact-field]:empty) { display: inline; }
+
+  /* optional row dismiss / restore: shared styles in letter.css, behaviour in optional-rows.js */
+
+  /* Amount rows here are optional (unlike Rent Increase, where both are always
+     filled), so an unfilled one would read as "$ Tenant Portion per month" —
+     the "$" and " per month" framing a placeholder. Collapse that framing
+     while the amount is empty, leaving just the italic placeholder; both come
+     back the moment a figure is entered. Edit mode keeps them visible so the
+     row can be seen and filled in place. */
+  .amt:has([data-fill-field]:empty) > .amt-sign,
+  .amt:has([data-fill-field]:empty) > .amt-suffix { display: none; }
+  .sheet.tt-editing .amt:has([data-fill-field]:empty) > .amt-sign,
+  .sheet.tt-editing .amt:has([data-fill-field]:empty) > .amt-suffix { display: inline; }
+
+  /* The whole rent block (heading + grid + restore bar) hides together. */
+  .rent-block.opt-removed { display: none !important; }
+  .rent-block-title { font-weight: 700; color: var(--lpr-ink); margin: 0 0 6px; }
+
+  /* The 3rd column exists only to hold the dismiss buttons on screen. Once
+     those are hidden the column must go away too, otherwise cells keep
+     flowing into it: "HAP Portion" lands in column 3 and its amount wraps
+     to the next line. Redefine the grid as 2 columns wherever the buttons
+     are not shown — print, PNG/PDF raster capture, and exported HTML.
+     (24-Hour Notice keeps its 3rd column in flow instead, because it mixes
+     required rows with optional ones and needs the alignment; every row
+     here is optional, so collapsing is both simpler and correct.) */
+  @media print {
+    .info-grid { grid-template-columns: 1.6in 1fr; }
+    .info-grid .opt-dismiss, .opt-restore-bar { display: none !important; }
+  }
+  /* PNG/PDF export rasterizes the SCREEN rendering, so @media print never
+     applies there. template-tools.js adds .tt-rastering to <body> for the
+     duration of the capture; match on it so the column collapses too. */
+  body.tt-rastering .info-grid { grid-template-columns: 1.6in 1fr; }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+</div>
+
+<div class="stage">
+  <div class="label">TENANCY CONFIRMATION — US LETTER</div>
+  <div class="sheet letter">
+
+    <div class="lh-header">
+      <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
+      <div class="meta">1517 Reisterstown Road, 2nd Floor<br/>
+      Pikesville, MD 21208<br/>
+      <span data-employee-field="phone">443.402.5641</span><br/>
+      office@lasalleparkrealty.com</div>
+    </div>
+
+    <div class="doc-badge">Verification</div>
+    <div class="doc-title">Tenancy Confirmation</div>
+
+    <div class="lh-body">
+
+      <div class="date"><span data-fill-field="date" data-fill-label="Notice Date"></span></div>
+
+      <p>To Whom It May Concern,</p>
+
+      <p><span data-contact-field="name"></span> is a current tenant at <strong><span data-contact-field="address_line1"></span><span class="addr2-inline">, <span data-contact-field="address_line2"></span></span>, <span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span></strong>, managed by LPR Management, LLC.</p>
+
+      <div class="rent-block" data-opt-row="rent">
+        <p class="rent-block-title">Rent</p>
+        <div class="info-grid">
+          <div class="key">Contract Rent</div>
+          <div class="val"><span class="amt"><span class="amt-sign">$</span><span data-fill-field="amount" data-fill-label="Contract Rent"></span><span class="amt-suffix"> per month</span></span></div>
+          <button class="opt-dismiss no-print" data-opt-row="rent" data-opt-label="Rent details" title="Remove the rent details">×</button>
+
+          <div class="key opt-row-cell" data-opt-row="hap">HAP Portion</div>
+          <div class="val opt-row-cell" data-opt-row="hap"><span class="amt"><span class="amt-sign">$</span><span data-fill-field="amount" data-fill-label="HAP Portion"></span><span class="amt-suffix"> per month</span></span></div>
+          <button class="opt-dismiss no-print" data-opt-row="hap" data-opt-label="HAP Portion" title="Remove this row">×</button>
+
+          <div class="key opt-row-cell" data-opt-row="tenant-portion">Tenant Portion</div>
+          <div class="val opt-row-cell" data-opt-row="tenant-portion"><span class="amt"><span class="amt-sign">$</span><span data-fill-field="amount" data-fill-label="Tenant Portion"></span><span class="amt-suffix"> per month</span></span></div>
+          <button class="opt-dismiss no-print" data-opt-row="tenant-portion" data-opt-label="Tenant Portion" title="Remove this row">×</button>
+        </div>
+      </div>
+      <div class="opt-restore-bar no-print" id="opt-restore"></div>
+
+      <p>Questions? Call the office at <strong>443.402.5641</strong> or email <strong>office@lasalleparkrealty.com</strong>.</p>
+
+      <div class="signoff">
+        <p>Sincerely,</p>
+        <div class="signature"></div>
+        <div class="signed-name" data-employee-field="name">David Mitnick</div>
+        <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span></div>
+      </div>
+    </div><!-- /lh-body -->
+
+  </div><!-- /sheet -->
+</div><!-- /stage -->
+
+<script src="employee.js"></script>
+<script src="tenants.js"></script>
+<script src="owners.js"></script>
+<script src="vendors.js"></script>
+<script src="fill-fields.js"></script>
+<script src="template-tools.js"></script>
+<script src="optional-rows.js"></script>
+</body>
+</html>

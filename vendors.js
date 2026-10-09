@@ -503,6 +503,10 @@
         pointer-events: none;
       }
       @media print { [data-vendor-field]:empty::before { display: none; } }
+      /* Same reason as the contact-field rule in tenants.js: PNG/PDF export
+         rasterizes screen styles, so @media print alone leaves the
+         placeholder visible in the exported file. */
+      body.tt-rastering [data-vendor-field]:empty::before { display: none; }
 
       .sheet.tt-editing [data-vendor-field] {
         background: rgba(40,56,145,.08);
@@ -543,9 +547,7 @@
   /* ================================================================
      HELPERS
      ================================================================ */
-  function esc(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
+  function esc(s) { return window.LPR_UTIL.esc(s); } // shared helper in user.js
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

@@ -79,18 +79,8 @@
 (function () {
   'use strict';
 
-  /* ---- page identity (must match fill-fields.js's PAGE_KEY scheme) ---- */
-  var PAGE_KEY = (function () {
-    var basename = (location.pathname.split('/').pop() || 'page').replace(/\.html?$/i, '');
-    if (basename === 'view') {
-      var id = new URLSearchParams(location.search).get('id');
-      if (id) {
-        var sanitized = String(id).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-        if (sanitized) return basename + '_' + sanitized;
-      }
-    }
-    return basename;
-  })();
+  /* ---- page identity (same key as fill-fields.js / manual-address.js) ---- */
+  var PAGE_KEY = window.LPR_UTIL.pageKey(); // shared helper in user.js
 
   var state = {}; // group -> current mode
 

@@ -13,6 +13,10 @@
     const toolbar = document.querySelector(".toolbar");
     if (!toolbar) return;
 
+    // Clean paste while editing (paste-clean.js). Deferred a tick: init() can
+    // run before this file's later declarations (libPromises) are evaluated.
+    Promise.resolve().then(() => ensureLib("paste-clean.js", "LPR_PASTE")).catch(e => console.error(e));
+
     // Normalize title: replace em/en dash with plain hyphen so Print → PDF filenames are clean
     document.title = document.title.replace(/\s*[—–]\s*/g, ' - ');
 
@@ -80,7 +84,7 @@
     toolbar.appendChild(saveBtn);
 
     // SAVE EDITS — only when viewing an existing library entry via view.html
-    const libId = (location.pathname.split('/').pop() === 'view.html')
+    const libId = (window.LPR_UTIL.pageFile() === 'view.html')
       ? new URLSearchParams(location.search).get('id') || null
       : null;
     if (libId) {
@@ -101,6 +105,7 @@
       <span class="tt-fmt-sep"></span>
       <button class="tt-btn tt-fmt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
       <button class="tt-btn tt-fmt-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+      <button class="tt-btn tt-fmt-btn" data-cmd="underline" title="Underline"><u>U</u></button>
       <button class="tt-btn tt-fmt-btn" data-cmd="removeFormat" title="Plain — remove all formatting">Plain</button>
       <span class="tt-fmt-sep"></span>
       <select id="tt-font-size" class="tt-size-select" title="Change font size of selected text">
@@ -134,6 +139,14 @@
         </div>
       </div>
     `;
+    // Multi-page flow templates (page-flow.js) get a forced page-break button
+    if (window.LPR_FLOW && document.querySelector(".sheet[data-flow]")) {
+      fmtBar.insertAdjacentHTML("beforeend",
+        '<span class="tt-fmt-sep"></span>' +
+        '<button class="tt-btn tt-fmt-btn" data-cmd="flowbreak" title="Start a new page before this paragraph">⤓ New page</button>' +
+        '<button class="tt-btn tt-fmt-btn" data-cmd="clearbody" title="Empty the letter, keeping the date and recipient (Ctrl+Z undoes)">Clear body</button>' +
+        '<button class="tt-btn tt-fmt-btn" data-cmd="clearall" title="Empty the letter including the date and recipient (Ctrl+Z undoes)">Clear all</button>');
+    }
     toolbar.appendChild(fmtBar);
     fmtBar.querySelectorAll(".tt-fmt-btn").forEach(btn => {
       btn.addEventListener("mousedown", e => {
@@ -141,54 +154,44 @@
         const cmd = btn.dataset.cmd;
         if (cmd === "undo") undoOnce();
         else if (cmd === "redo") redoOnce();
+        else if (cmd === "flowbreak") window.LPR_FLOW.insertBreak();
+        else if (cmd === "clearbody" || cmd === "clearall") { if (window.LPR_PASTE) window.LPR_PASTE.clear(cmd === "clearall"); }
+        else if (CHIP_STYLE[cmd] || cmd === "removeFormat") formatWithChips(cmd);
         else document.execCommand(cmd, false, null);
       });
     });
 
-    // Font size — track last non-collapsed selection while editing so the
-    // dropdown open doesn't lose it, then restore + apply on change.
-    let _savedSizeRange = null;
-    document.addEventListener("selectionchange", () => {
-      if (!editing) return;
+    // Font size + colour: remember the last non-collapsed selection inside
+    // any sheet while editing, so opening the Size dropdown or Color menu
+    // (which takes focus) doesn't lose it. One tracker for both controls —
+    // it used to be two copies that only looked at the FIRST .sheet, so
+    // e.g. Security Deposit's 2nd/3rd variants ignored mouse selections.
+    let _savedRange = null;
+    function saveSelectionInSheet() {
       const sel = window.getSelection();
       if (!sel || sel.rangeCount === 0 || sel.getRangeAt(0).collapsed) return;
       const range = sel.getRangeAt(0);
-      const sheet = document.querySelector(".sheet");
-      if (sheet && sheet.contains(range.commonAncestorContainer)) {
-        _savedSizeRange = range.cloneRange();
-      }
-    });
-    const sizeSelect = document.getElementById("tt-font-size");
-    sizeSelect.addEventListener("mousedown", () => {
+      const node = range.commonAncestorContainer;
+      const el = node.nodeType === 1 ? node : node.parentElement;
+      if (el && el.closest(".sheet")) _savedRange = range.cloneRange();
+    }
+    function restoreSavedSelection() {
+      if (!_savedRange) return false;
       const sel = window.getSelection();
-      if (sel && sel.rangeCount > 0 && !sel.getRangeAt(0).collapsed) {
-        _savedSizeRange = sel.getRangeAt(0).cloneRange();
-      }
-    });
+      sel.removeAllRanges();
+      sel.addRange(_savedRange.cloneRange());
+      return true;
+    }
+    document.addEventListener("selectionchange", () => { if (editing) saveSelectionInSheet(); });
+
+    const sizeSelect = document.getElementById("tt-font-size");
+    sizeSelect.addEventListener("mousedown", saveSelectionInSheet);
     sizeSelect.addEventListener("change", function () {
       const pt = this.value;
       this.value = ""; // reset immediately so it reads "Size" again
-      if (!pt || !_savedSizeRange) return;
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(_savedSizeRange.cloneRange());
-      applyFontSize(pt);
-      _savedSizeRange = null;
-    });
-
-    // Color picker — same saved-selection pattern as font size
-    let _savedColorRange = null;
-    document.addEventListener("selectionchange", () => {
-      if (!editing) return;
-      const sel = window.getSelection();
-      if (!sel || sel.rangeCount === 0 || sel.getRangeAt(0).collapsed) return;
-      const range = sel.getRangeAt(0);
-      const sheet = document.querySelector(".sheet");
-      if (sheet && sheet.contains(range.commonAncestorContainer)) {
-        _savedColorRange = range.cloneRange();
-        // Keep both in sync — one selectionchange listener, two consumers
-        _savedSizeRange = _savedColorRange;
-      }
+      if (!pt || !restoreSavedSelection()) return;
+      wrapSelection("fontSize", pt + "pt");
+      _savedRange = null;
     });
 
     const colorWrap = document.getElementById("tt-color-wrap");
@@ -198,10 +201,7 @@
     colorWrap.addEventListener("mousedown", e => {
       if (e.target.closest(".tt-color-menu")) return;
       e.preventDefault();
-      const sel = window.getSelection();
-      if (sel && sel.rangeCount > 0 && !sel.getRangeAt(0).collapsed) {
-        _savedColorRange = sel.getRangeAt(0).cloneRange();
-      }
+      saveSelectionInSheet();
       colorMenu.hidden = !colorMenu.hidden;
     });
 
@@ -211,19 +211,16 @@
         e.stopPropagation();
         const color = chip.dataset.color;
         colorMenu.hidden = true;
-        if (!_savedColorRange) return;
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(_savedColorRange.cloneRange());
+        if (!restoreSavedSelection()) return;
         if (color) {
-          applyTextColor(color);
+          wrapSelection("color", color);
           colorPreview.style.background = color;
           colorPreview.style.display = "inline-block";
         } else {
           document.execCommand("removeFormat", false, null);
           colorPreview.style.display = "none";
         }
-        _savedColorRange = null;
+        _savedRange = null;
       });
     });
 
@@ -268,10 +265,7 @@
   // in-place typing and, if the user chooses, undo back to it.
   let editSnapshots = [];
 
-  const TOKEN_ATTRS = [
-    'data-fill-field', 'data-tenant-field', 'data-contact-field',
-    'data-employee-field', 'data-owner-field', 'data-vendor-field'
-  ];
+  const TOKEN_ATTRS = window.LPR_UTIL.TOKEN_ATTRS; // shared helper in user.js
   const TOKEN_ATTR_LABELS = {
     'data-fill-field': 'Fill', 'data-tenant-field': 'Tenant', 'data-contact-field': 'Contact',
     'data-employee-field': 'Employee', 'data-owner-field': 'Owner', 'data-vendor-field': 'Vendor'
@@ -293,14 +287,21 @@
   }
 
   // Multiset diff — returns the label of every token span present in
-  // `before` that has no surviving counterpart in `after`.
-  function diffLostSpans(before, after) {
+  // `before` that has no surviving counterpart in `after`. `forgiven`
+  // (attr|value → count) holds fields the user deleted on purpose; they're
+  // consumed from the map so one deliberate deletion forgives one field.
+  function diffLostSpans(before, after, forgiven) {
     const beforeCounts = new Map(), afterCounts = new Map();
     before.forEach(item => { const k = item.attr + '|' + item.value; beforeCounts.set(k, (beforeCounts.get(k) || 0) + 1); });
     after.forEach(item => { const k = item.attr + '|' + item.value; afterCounts.set(k, (afterCounts.get(k) || 0) + 1); });
     const lost = [];
     beforeCounts.forEach((count, key) => {
-      const remaining = afterCounts.get(key) || 0;
+      let remaining = afterCounts.get(key) || 0;
+      if (forgiven && remaining < count) {
+        const f = Math.min(forgiven.get(key) || 0, count - remaining);
+        remaining += f;
+        forgiven.set(key, (forgiven.get(key) || 0) - f);
+      }
       if (remaining < count) {
         const sample = before.find(b => (b.attr + '|' + b.value) === key);
         for (let i = 0; i < count - remaining; i++) lost.push(sample.label);
@@ -316,16 +317,122 @@
      markers (coalesced per typing run, mirroring how the browser groups
      keystrokes). Ctrl+Z / the Undo button walk the log — a token on top is
      removed directly, anything else falls through to execCommand('undo'). */
-  let editLog = [];   // { type:'token', el } | { type:'native', it }
-  let editRedo = [];  // { type:'token', el, parent, next } | { type:'native' }
+  let editLog = [];   // { type:'token', el, extra } | { type:'native', it }
+  let editRedo = [];  // { type:'token', el, extra, places } | { type:'native' }
   let _sawHistory = false;
 
-  function noteTokenInsert(el) {
+  // `extra`: nodes inserted along with the token (the auto-spaces from
+  // LPR_UTIL.spaceToken) — undone and redone together with it.
+  function noteTokenInsert(el, extra) {
     if (!editing) return;
-    editLog.push({ type: "token", el: el });
+    editLog.push({ type: "token", el: el, extra: extra || [] });
     editRedo = [];
   }
-  window.LPR_EDIT_UNDO = { noteTokenInsert: noteTokenInsert };
+  function takeOutToken(entry) {
+    // Each place is taken just before that node goes; putting them back in
+    // reverse order means every `next` is in place again when it's needed.
+    const places = [entry.el].concat(entry.extra || []).map(n => {
+      const p = { n: n, parent: n.parentNode, next: n.nextSibling };
+      n.remove();
+      return p;
+    });
+    editRedo.push({ type: "token", el: entry.el, extra: entry.extra, places: places });
+  }
+  function putBackToken(rec) {
+    rec.places.slice().reverse().forEach(p => {
+      if (p.parent && document.contains(p.parent)) p.parent.insertBefore(p.n, p.next && p.next.parentNode === p.parent ? p.next : null);
+    });
+    if (document.contains(rec.el)) editLog.push({ type: "token", el: rec.el, extra: rec.extra });
+  }
+
+  /* --------- B / I / U / Plain on field chips ---------
+     execCommand can't style a locked (contenteditable=false) chip, so the
+     style goes on the token span itself; fill-fields only sets textContent,
+     so it survives filling, Save As and export. A chip highlighted on its
+     own toggles; chips inside a wider highlight follow what the text
+     became. One button press = one undo step: a 'style' entry records the
+     chips' old style attributes and whether a native format ran with it. */
+  const CHIP_STYLE = {
+    bold:      { prop: "fontWeight",     on: "700",       off: "400",    isOn: cs => parseInt(cs.fontWeight, 10) >= 600 },
+    italic:    { prop: "fontStyle",      on: "italic",    off: "normal", isOn: cs => cs.fontStyle === "italic" },
+    underline: { prop: "textDecoration", on: "underline", off: "none",   isOn: cs => /underline/.test(cs.textDecorationLine) }
+  };
+  const CHIP_PLAIN = ["fontWeight", "fontStyle", "textDecoration", "fontSize", "color"];
+  function chipsIn(range) {
+    return [...document.querySelectorAll(".sheet.tt-editing " + window.LPR_UTIL.TOKEN_SEL.split(",").join(", .sheet.tt-editing "))]
+      .filter(el => range.intersectsNode(el) && !el.parentElement.closest(window.LPR_UTIL.TOKEN_SEL));
+  }
+  function formatWithChips(cmd) {
+    const sel = window.getSelection();
+    const range = sel && sel.rangeCount ? sel.getRangeAt(0) : null;
+    const chips = range && !range.collapsed ? chipsIn(range) : [];
+    const chipText = chips.reduce((a, c) => a + c.textContent, "");
+    const onlyChips = chips.length && !range.toString().replace(chipText, "").trim();
+    let native = false;
+    if (!onlyChips) {
+      const n = editLog.length;
+      document.execCommand(cmd, false, null);
+      native = editLog.length > n;
+    }
+    if (!chips.length) return;
+    const changes = chips.map(el => ({ el: el, before: el.getAttribute("style") }));
+    const spec = CHIP_STYLE[cmd];
+    if (!spec) chips.forEach(el => CHIP_PLAIN.forEach(p => { el.style[p] = ""; }));
+    else {
+      const on = onlyChips ? !spec.isOn(getComputedStyle(chips[0])) : document.queryCommandState(cmd);
+      chips.forEach(el => { el.style[spec.prop] = on ? spec.on : spec.off; });
+    }
+    chips.forEach(el => { if (el.getAttribute("style") === "") el.removeAttribute("style"); });
+    editLog.push({ type: "style", changes: changes, native: native });
+    editRedo = [];
+  }
+  // Swap each chip's style attribute with the recorded one (undo ⇄ redo).
+  function swapChipStyles(changes) {
+    return changes.map(c => {
+      const now = c.el.getAttribute("style");
+      if (c.before == null) c.el.removeAttribute("style"); else c.el.setAttribute("style", c.before);
+      return { el: c.el, before: now };
+    });
+  }
+
+  /* Fields the user removed ON PURPOSE this edit session: inside a highlight
+     that was typed over / deleted / cut / pasted over, the chip next to the
+     caret on Backspace / Delete, or Clear body / Clear all. The "fields were
+     removed" warning on Done skips these and only reports fields that
+     vanished any other way — the accidental losses it exists to catch. */
+  let deliberateLoss = new Map();     // attr|value → count
+  function noteDeliberateRemoval(range) {
+    if (!editing || !range) return;
+    document.querySelectorAll(".sheet.tt-editing").forEach(sheet => {
+      sheet.querySelectorAll(TOKEN_ATTRS.map(a => "[" + a + "]").join(",")).forEach(el => {
+        if (!range.intersectsNode(el)) return;
+        TOKEN_ATTRS.forEach(attr => {
+          if (!el.hasAttribute(attr)) return;
+          const k = attr + "|" + (el.getAttribute(attr) || "");
+          deliberateLoss.set(k, (deliberateLoss.get(k) || 0) + 1);
+        });
+      });
+    });
+  }
+  window.LPR_EDIT_UNDO = { noteTokenInsert: noteTokenInsert, noteDeliberateRemoval: noteDeliberateRemoval };
+
+  document.addEventListener("beforeinput", e => {
+    if (!editing) return;
+    const host = e.target;
+    if (!(host instanceof Element) || !host.closest(".sheet")) return;
+    const it = e.inputType || "";
+    const sel = window.getSelection();
+    const highlighted = sel && sel.rangeCount && !sel.getRangeAt(0).collapsed;
+    if (!(it.startsWith("delete") || (highlighted && it.startsWith("insert")))) return;
+    const targets = e.getTargetRanges ? e.getTargetRanges() : [];
+    targets.forEach(sr => {
+      const r = document.createRange();
+      r.setStart(sr.startContainer, sr.startOffset);
+      r.setEnd(sr.endContainer, sr.endOffset);
+      noteDeliberateRemoval(r);
+    });
+    if (!targets.length && highlighted) noteDeliberateRemoval(sel.getRangeAt(0));
+  }, true);
 
   document.addEventListener("input", e => {
     if (!editing) return;
@@ -365,8 +472,14 @@
     const top = editLog[editLog.length - 1];
     if (top && top.type === "token") {
       editLog.pop();
-      editRedo.push({ type: "token", el: top.el, parent: top.el.parentNode, next: top.el.nextSibling });
-      top.el.remove();
+      takeOutToken(top);
+      return;
+    }
+    if (top && top.type === "style") {
+      editLog.pop();
+      const back = swapChipStyles(top.changes);
+      if (top.native) document.execCommand("undo");   // its native marker moves to editRedo
+      editRedo.push({ type: "style", changes: back, native: top.native });
       return;
     }
     _sawHistory = false;
@@ -379,8 +492,7 @@
       const tok = editLog[editLog.length - 1];
       if (tok && tok.type === "token") {
         editLog.pop();
-        editRedo.push({ type: "token", el: tok.el, parent: tok.el.parentNode, next: tok.el.nextSibling });
-        tok.el.remove();
+        takeOutToken(tok);
       }
     }
   }
@@ -389,10 +501,16 @@
     const top = editRedo[editRedo.length - 1];
     if (top && top.type === "token") {
       editRedo.pop();
-      if (top.parent && document.contains(top.parent)) {
-        top.parent.insertBefore(top.el, top.next && top.next.parentNode === top.parent ? top.next : null);
-        editLog.push({ type: "token", el: top.el });
+      putBackToken(top);
+      return;
+    }
+    if (top && top.type === "style") {
+      editRedo.pop();
+      if (top.native) {
+        if (editRedo.length && editRedo[editRedo.length - 1].type === "native") editRedo.pop();
+        document.execCommand("redo");                  // input handler re-logs the native part
       }
+      editLog.push({ type: "style", changes: swapChipStyles(top.changes), native: top.native });
       return;
     }
     if (top) editRedo.pop();
@@ -445,22 +563,31 @@
     editing = !editing;
     editLog = [];
     editRedo = [];
+    // Multi-page flow: merge generated pages back into their one source
+    // sheet BEFORE snapshotting, so editing (and the census) sees one sheet.
+    if (editing && window.LPR_FLOW) window.LPR_FLOW.setEditing(true);
     const sheets = [...document.querySelectorAll(".sheet")];
     let pending = Promise.resolve();
+    let dialogShown = false;
 
     if (editing) {
+      deliberateLoss = new Map();
       editSnapshots = sheets.map(sheet => ({
         sheet: sheet,
         html: sheet.innerHTML,
         census: censusTokenSpans(sheet)
       }));
     } else if (editSnapshots.length) {
+      // Fields typed/pasted/dragged against a word or another field get
+      // their space ("JaneDoe" → "Jane Doe"); Insert Field does it live.
+      sheets.forEach(s => window.LPR_UTIL.spaceAllTokens(s));
       const affected = editSnapshots
-        .map(snap => ({ snap: snap, lost: diffLostSpans(snap.census, censusTokenSpans(snap.sheet)) }))
+        .map(snap => ({ snap: snap, lost: diffLostSpans(snap.census, censusTokenSpans(snap.sheet), deliberateLoss) }))
         .filter(x => x.lost.length);
       editSnapshots = [];
       if (affected.length) {
         const allLabels = [...new Set(affected.reduce((a, x) => a.concat(x.lost), []))];
+        dialogShown = true;
         pending = showEditLossDialog(allLabels).then(keep => {
           if (!keep) affected.forEach(x => { x.snap.sheet.innerHTML = x.snap.html; });
         });
@@ -487,6 +614,14 @@
     if (editing) setupSignatureDrag();
     else teardownSignatureDrag();
 
+    // Re-paginate on Done — synchronously when there's no lost-field dialog
+    // (so a beforeprint-triggered exit prints the paginated layout), else
+    // after the Keep/Undo choice has been applied.
+    if (!editing && window.LPR_FLOW) {
+      if (dialogShown) pending = pending.then(() => window.LPR_FLOW.setEditing(false));
+      else window.LPR_FLOW.setEditing(false);
+    }
+
     return pending;
   }
 
@@ -497,13 +632,15 @@
   }
 
   /* Apply a pt font size to the current selection */
-  function applyFontSize(pt) {
+  /* Wrap the current selection in a <span> carrying one inline style
+     (fontSize "16pt", color "#283891"), then re-select the wrapped text. */
+  function wrapSelection(prop, value) {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
     const range = sel.getRangeAt(0);
     if (range.collapsed) return;
     const span = document.createElement("span");
-    span.style.fontSize = pt + "pt";
+    span.style[prop] = value;
     try {
       range.surroundContents(span);
     } catch (e) {
@@ -512,7 +649,6 @@
       span.appendChild(frag);
       range.insertNode(span);
     }
-    // Re-select the wrapped content
     const newRange = document.createRange();
     newRange.selectNodeContents(span);
     sel.removeAllRanges();
@@ -520,30 +656,11 @@
   }
 
   /* Apply a hex color to the current selection */
-  function applyTextColor(hex) {
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) return;
-    const range = sel.getRangeAt(0);
-    if (range.collapsed) return;
-    const span = document.createElement("span");
-    span.style.color = hex;
-    try {
-      range.surroundContents(span);
-    } catch (e) {
-      const frag = range.extractContents();
-      span.appendChild(frag);
-      range.insertNode(span);
-    }
-    const newRange = document.createRange();
-    newRange.selectNodeContents(span);
-    sel.removeAllRanges();
-    sel.addRange(newRange);
-  }
 
   /* Signature drag-to-nudge + resize (in edit mode only) */
   const sigDragHandlers = new Map();
   function offsetKey() {
-    const file = (location.pathname.split("/").pop() || "default").toLowerCase();
+    const file = window.LPR_UTIL.fileKey();
     return "lpr_sig_offset_" + file;
   }
   function parseTranslate(t) {
@@ -758,7 +875,7 @@
       }
       /* Format buttons — slightly narrower than regular tt-btn */
       .tt-fmt-btn { min-width: 32px; padding-left: 8px; padding-right: 8px; }
-      .tt-fmt-btn b, .tt-fmt-btn i { pointer-events: none; font-style: normal; }
+      .tt-fmt-btn b, .tt-fmt-btn i, .tt-fmt-btn u { pointer-events: none; font-style: normal; }
       .tt-fmt-btn[data-cmd="italic"] i { font-style: italic; }
       /* Font size picker */
       .tt-size-select {
@@ -844,8 +961,20 @@
   /* --------- UNFILLED FIELDS CHECK --------- */
   function checkUnfilledFields() {
     const warnings = [];
+    // A field only counts as "unfilled" if it will actually render blank.
+    // Two things can take it out of the running:
+    //   - its sheet is hidden (inactive mode-bar variant), or
+    //   - the span itself is hidden, which is how the optional address_line2
+    //     row collapses when empty (.lh-addr2 / .addr2-inline / .env-line2 …).
+    // Without the second test every template with a hideable addr2 warns
+    // "No recipient selected" even with a recipient fully applied.
+    const isRendered = el => {
+      const sheet = el.closest('.sheet');
+      if (sheet && sheet.offsetHeight <= 0) return false;
+      return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+    };
     const hasEmpty = sel => [...document.querySelectorAll(sel)]
-      .filter(el => { const sheet = el.closest('.sheet'); return !sheet || sheet.offsetHeight > 0; })
+      .filter(isRendered)
       .some(el => !el.textContent.trim());
     if (hasEmpty('[data-contact-field]'))  warnings.push('No recipient selected — recipient fields will be blank');
     if (hasEmpty('[data-tenant-field]'))   warnings.push('No tenant selected — tenant fields will be blank');
@@ -886,12 +1015,7 @@
     printBlankActive = true;
 
     // Only clear recipient/fill-in fields — not employee or owner (company info stays)
-    const FIELD_SEL = [
-      '[data-fill-field]',
-      '[data-contact-field]',
-      '[data-tenant-field]',
-      '[data-vendor-field]',
-    ].join(',');
+    const FIELD_SEL = window.LPR_UTIL.FILL_TOKEN_SEL;
 
     // 1. Clear fill-in field spans
     const els = [...document.querySelectorAll(FIELD_SEL)];
@@ -918,6 +1042,9 @@
     const savedSepText = sepNodes.map(n => n.textContent);
     sepNodes.forEach(n => { n.textContent = ''; });
 
+    // Blanked content is shorter — re-paginate for this print, and again on restore
+    if (window.LPR_FLOW) window.LPR_FLOW.paginate();
+
     let restored = false;
     function restore() {
       if (restored) return; // idempotent — safe if called twice
@@ -926,6 +1053,7 @@
       sigEls.forEach(el => { el.style.display = ''; });
       gridNoPrint.forEach(el => { el.style.removeProperty('display'); el.style.visibility = ''; el.style.height = ''; el.style.minHeight = ''; el.style.padding = ''; el.style.overflow = ''; });
       sepNodes.forEach((n, i) => { n.textContent = savedSepText[i]; });
+      if (window.LPR_FLOW) window.LPR_FLOW.paginate();
       printBlankActive = false;
     }
     window.addEventListener('afterprint', restore, { once: true });
@@ -933,12 +1061,9 @@
   }
 
   function gatherBlankSeparators() {
-    const FIELD_ATTRS = ['data-fill-field','data-contact-field','data-tenant-field',
-                         'data-employee-field','data-owner-field','data-vendor-field'];
-
     function isEmptyFieldEl(el) {
       return el && el.nodeType === 1 &&
-        FIELD_ATTRS.some(a => el.hasAttribute(a)) && !el.textContent.trim();
+        TOKEN_ATTRS.some(a => el.hasAttribute(a)) && !el.textContent.trim();
     }
     function prevMeaningfulSibling(node) {
       let n = node.previousSibling;
@@ -992,6 +1117,8 @@
     if (exporting) return;
     exporting = true;
     setExportButtonDisabled(true);
+    // Multi-page flow: export the current layout, and freeze it during capture
+    const releaseFlow = window.LPR_FLOW ? window.LPR_FLOW.hold() : () => {};
     const name = baseFilename();
     try {
       if (kind === "print") return window.print();
@@ -1006,15 +1133,38 @@
       document.body.appendChild(back);
       back.querySelector('[data-act="ok"]').addEventListener('click', () => back.remove());
     } finally {
+      releaseFlow();
       exporting = false;
       setExportButtonDisabled(false);
     }
   }
 
+  // Leading house number of the filled recipient address, for filename
+  // disambiguation — without it every export of a given template lands on the
+  // same name and silently overwrites the previous one in Downloads.
+  // Deliberately number-only: no tenant name, so a misdirected attachment
+  // does not disclose one in the filename. Returns "" whenever the address is
+  // absent or does not start with a digit (PO boxes, blank templates), which
+  // keeps the old title-only name as the fallback.
+  function addressNumber() {
+    const el = document.querySelector('[data-contact-field="address_line1"]');
+    if (!el) return "";
+    const raw = (el.textContent || "").trim();
+    if (!raw) return "";
+    // First whitespace-delimited token, if it begins with a digit. Keeps
+    // "1234", "12A", and "120-22"; rejects "PO Box 9" and placeholder text.
+    const tok = raw.split(/\s+/)[0];
+    if (!/^\d/.test(tok)) return "";
+    const clean = tok.replace(/[^a-z0-9\-]/gi, "");
+    return clean.length > 12 ? "" : clean;
+  }
+
   function baseFilename() {
     let t = document.title || "document";
     t = t.replace(/^LPR\s*[—–-]\s*/, "");
-    return t.replace(/[^a-z0-9\- ]/gi, "").trim() || "document";
+    t = t.replace(/[^a-z0-9\- ]/gi, "").trim() || "document";
+    const num = addressNumber();
+    return num ? t + " - " + num : t;
   }
 
   async function exportHtml(name) {
@@ -1032,56 +1182,18 @@
     const clone = document.documentElement.cloneNode(true);
     clone.dataset.lprSnapshot = '1';
 
-    // Strip editing UI, panels, browser-extension injections
+    // Export-only stripping: a static, script-free file (keeps the pages).
     clone.querySelectorAll(".toolbar, .no-print, .label, #lpr-fill-panel").forEach(el => el.remove());
-    clone.querySelectorAll("[id^='automa'], [class*='automa']").forEach(el => el.remove());
-
-    // Remove all scripts — exported file is a static snapshot
     clone.querySelectorAll("script").forEach(el => el.remove());
-
-    // Remove panel-injected style blocks (tenant/owner/vendor/modal CSS)
-    clone.querySelectorAll("style[id^='lpr-'], style[id^='tt-'], style.automa-element-selector").forEach(el => el.remove());
-
-    // Clean up edit state
-    clone.querySelectorAll("[contenteditable]").forEach(el => el.removeAttribute("contenteditable"));
-    clone.querySelectorAll(".tt-editing").forEach(el => el.classList.remove("tt-editing"));
+    stripSnapshotCommon(clone);
 
     // White background — no page chrome in exported file
     const bodyEl = clone.querySelector("body");
     if (bodyEl) { bodyEl.style.background = "#fff"; bodyEl.style.padding = "0"; }
 
-    const baseUrl = location.href.substring(0, location.href.lastIndexOf("/") + 1);
-
-    // Inline local stylesheets so exported file is fully self-contained
-    // (CSS custom properties resolve correctly without needing brand.css).
-    // Skipped on file:// pages: fetch() is CORS-blocked for file: URLs by
-    // browser policy (real users have no special flags set), so attempting
-    // it here only logs a console error before falling through to the same
-    // absolutized <link href> fallback below — better to go straight there.
-    if (location.protocol !== 'file:') {
-      for (const link of [...clone.querySelectorAll('link[rel~="stylesheet"]')]) {
-        const raw = link.getAttribute('href');
-        if (!raw || /^https?:/.test(raw)) continue;
-        try {
-          const resp = await fetch(baseUrl + raw);
-          if (resp.ok) {
-            const style = document.createElement('style');
-            style.textContent = await resp.text();
-            link.parentNode.replaceChild(style, link);
-          }
-        } catch (e) {}
-      }
-    }
-
-    // Make relative asset paths absolute
-    clone.querySelectorAll("[src], [href]").forEach(el => {
-      ["src", "href"].forEach(attr => {
-        const v = el.getAttribute(attr);
-        if (!v) return;
-        if (/^(?:https?:|data:|blob:|mailto:|tel:|#|\/)/.test(v)) return;
-        el.setAttribute(attr, baseUrl + v);
-      });
-    });
+    const baseUrl = pageDirUrl();
+    await inlineStylesheets(clone, baseUrl);
+    absolutizeAssets(clone, baseUrl);
 
     const html = "<!DOCTYPE html>\n" + clone.outerHTML;
     triggerDownload(new Blob([html], { type: "text/html;charset=utf-8" }), name + ".html");
@@ -1204,11 +1316,39 @@
   // buildSaveHtml() (HTML export, Save As, Save Edits) — the two mechanisms
   // run on different DOM references for different export kinds and don't
   // call each other.
+  // html2canvas rasterizes the SCREEN rendering, so @media print never runs
+  // and `.no-print` elements (dismiss buttons, restore bars, mode bars) would
+  // otherwise be baked into PNG/PDF exports. Hide them inline for the duration
+  // of the capture, then put every element back exactly as it was.
+  function hideNoPrintForRaster() {
+    const touched = [];
+    // Marker class for templates whose LAYOUT (not just visibility) has to
+    // change when the screen-only UI goes away — e.g. a grid column that
+    // exists solely to hold dismiss buttons must collapse, or cells reflow
+    // into it. @media print can't serve these: html2canvas rasterizes the
+    // screen rendering, where print styles never apply.
+    document.body.classList.add('tt-rastering');
+    document.querySelectorAll('.no-print').forEach(el => {
+      // Toolbar & co. live outside the sheets and are never captured anyway;
+      // only bother with nodes that sit inside what we are about to render.
+      if (!el.closest('.sheet')) return;
+      touched.push([el, el.style.display]);
+      el.style.display = 'none';
+    });
+    return function restoreNoPrint() {
+      touched.forEach(([el, prev]) => { el.style.display = prev; });
+      document.body.classList.remove('tt-rastering');
+    };
+  }
+
   function resolveExportSheets() {
+    // Runs first so the sheets are measured with the UI already hidden.
+    const restoreNoPrint = hideNoPrintForRaster();
+    const wrap = inner => function restoreAll() { inner(); restoreNoPrint(); };
     const root = findExportRoot();
     if (!root) {
       const sheets = [...document.querySelectorAll(".sheet")].filter(s => s.offsetHeight > 0);
-      return { sheets: sheets, restore: () => {} };
+      return { sheets: sheets, restore: wrap(() => {}) };
     }
     const restore = revealExportRoot(root);
     let sheets;
@@ -1224,7 +1364,7 @@
     } else {
       sheets = [...root.querySelectorAll(".sheet")];
     }
-    return { sheets: sheets, restore: restore };
+    return { sheets: sheets, restore: wrap(restore) };
   }
 
   async function exportPng(name) {
@@ -1342,51 +1482,32 @@
     // Save As and Save Edits both route through this one function, so they
     // inherit the same single cloneNode(true) call and the same "active
     // variant only" guarantee with no separate scrub logic here.
-    const clone = document.documentElement.cloneNode(true);
+    // Multi-page flow: save the ONE continuous source (page-flow.js re-paginates
+    // the saved copy on open), never the generated pages. Still exactly one
+    // cloneNode call. (exportHtml() deliberately keeps the pages: it's a static,
+    // script-free snapshot that can't re-flow.)
+    if (window.LPR_FLOW) window.LPR_FLOW.unpaginate();
+    let clone;
+    try { clone = document.documentElement.cloneNode(true); }
+    finally { if (window.LPR_FLOW) window.LPR_FLOW.paginate(); }
     clone.dataset.lprSnapshot = '1'; // tells employee.js not to overwrite baked-in values
 
-    // Strip all UI chrome — re-injected fresh on next open
+    // Save-only stripping: UI chrome is re-injected fresh on next open, but
+    // scripts stay so the saved copy keeps working (and re-paginates).
     clone.querySelectorAll([
       ".tt-btn", ".tt-export-wrap", "#tt-fmt-bar",
       "#lpr-fill-panel", "#lpr-insert-panel", // setup/insert panels must not be baked in
       ".tt-backdrop",                          // open modals
-      ".tt-sig-handle",                        // signature drag handles
-      "[id^='automa']", "[class*='automa']"    // browser extension injections
+      ".tt-sig-handle"                         // signature drag handles
     ].join(", ")).forEach(el => el.remove());
+    stripSnapshotCommon(clone);
 
-    // Strip dynamically-injected <style> blocks (re-injected by scripts on load)
-    clone.querySelectorAll(
-      "style[id^='lpr-'], style[id^='tt-'], style.automa-element-selector"
-    ).forEach(el => el.remove());
+    const baseUrl = pageDirUrl();
+    // Inlined stylesheets survive view.html's document.write context.
+    await inlineStylesheets(clone, baseUrl);
 
-    // Clean up edit-mode state
-    clone.querySelectorAll("[contenteditable]").forEach(el => el.removeAttribute("contenteditable"));
-    clone.querySelectorAll(".tt-editing").forEach(el => el.classList.remove("tt-editing"));
-
-    // Inline local stylesheets so they survive the view.html document.write
-    // context. Skipped on file:// pages for the same reason as exportHtml()
-    // above — fetch() is CORS-blocked for file: URLs, and the <base> tag
-    // added below already makes the un-inlined, absolutized <link href>
-    // resolve correctly, so there's no functional loss, only one fewer
-    // guaranteed-to-fail network attempt (and its console error).
-    const baseUrl = location.href.replace(/[?#].*$/, "").replace(/\/[^/]*$/, "/");
-    if (location.protocol !== 'file:') {
-      for (const link of [...clone.querySelectorAll('link[rel~="stylesheet"]')]) {
-        const raw = link.getAttribute('href');
-        if (!raw || /^https?:/.test(raw)) continue;
-        try {
-          const abs = /^(?:file:|data:|blob:)/.test(raw) ? raw : baseUrl + raw;
-          const resp = await fetch(abs);
-          if (resp.ok) {
-            const style = document.createElement('style');
-            style.textContent = await resp.text();
-            link.parentNode.replaceChild(style, link);
-          }
-        } catch (e) {}
-      }
-    }
-
-    // <base> tag so scripts/images resolve relative paths from the right directory
+    // <base> so anything loaded later by a relative path (ensureLib's
+    // html2canvas/jsPDF, page-flow's icon) resolves from the templates folder.
     const headEl = clone.querySelector("head");
     if (headEl) {
       const existing = headEl.querySelector("base");
@@ -1395,18 +1516,60 @@
       base.href = baseUrl;
       headEl.insertBefore(base, headEl.firstChild);
     }
+    absolutizeAssets(clone, baseUrl);
 
-    // Absolutize remaining relative asset paths
+    return "<!DOCTYPE html>\n" + clone.outerHTML;
+  }
+
+  /* --------- SHARED: snapshot preparation (HTML export + Save As) --------- */
+  // Folder URL of this page. Query/hash are dropped first: a "/" inside a URL
+  // parameter (e.g. ?title=Owner/Manager) must not move the folder.
+  function pageDirUrl() {
+    return location.href.replace(/[?#].*$/, "").replace(/\/[^/]*$/, "/");
+  }
+
+  // Stripped from every snapshot: browser-extension nodes, script-injected
+  // <style> blocks (re-injected on load), and edit-mode state.
+  function stripSnapshotCommon(clone) {
+    clone.querySelectorAll("[id^='automa'], [class*='automa']").forEach(el => el.remove());
+    clone.querySelectorAll("style[id^='lpr-'], style[id^='tt-'], style.automa-element-selector").forEach(el => el.remove());
+    clone.querySelectorAll("[contenteditable]").forEach(el => el.removeAttribute("contenteditable"));
+    clone.querySelectorAll(".tt-editing").forEach(el => el.classList.remove("tt-editing"));
+  }
+
+  // Replace local <link rel=stylesheet> with inline <style> so the snapshot is
+  // self-contained (CSS custom properties resolve without brand.css). Skipped
+  // on file:// pages: fetch() is CORS-blocked for file: URLs, and the
+  // absolutized <link href> already resolves — no functional loss, just no
+  // guaranteed-to-fail request (and its console error).
+  async function inlineStylesheets(clone, baseUrl) {
+    if (location.protocol === 'file:') return;
+    for (const link of [...clone.querySelectorAll('link[rel~="stylesheet"]')]) {
+      const raw = link.getAttribute('href');
+      if (!raw || /^https?:/.test(raw)) continue;
+      try {
+        const resp = await fetch(/^(?:file:|data:|blob:)/.test(raw) ? raw : baseUrl + raw);
+        if (resp.ok) {
+          const style = document.createElement('style');
+          style.textContent = await resp.text();
+          link.parentNode.replaceChild(style, link);
+        }
+      } catch (e) {}
+    }
+  }
+
+  // Make every remaining relative src/href absolute. URLs that already have a
+  // scheme are left alone — including file:, which under file:// used to get
+  // the folder prefixed a second time (the doubled <base> in Library copies).
+  function absolutizeAssets(clone, baseUrl) {
     clone.querySelectorAll("[src], [href]").forEach(el => {
       ["src", "href"].forEach(attr => {
         const v = el.getAttribute(attr);
         if (!v) return;
-        if (/^(?:https?:|data:|blob:|mailto:|tel:|#|\/)/.test(v)) return;
+        if (/^(?:https?:|file:|data:|blob:|mailto:|tel:|#|\/)/.test(v)) return;
         el.setAttribute(attr, baseUrl + v);
       });
     });
-
-    return "<!DOCTYPE html>\n" + clone.outerHTML;
   }
 
   /* --------- SAVE AS — create a new library entry --------- */
@@ -1445,7 +1608,7 @@
     const html = await buildSaveHtml();
     const id = "c_" + Date.now().toString(36);
     const saved = JSON.parse(localStorage.getItem("lpr_custom_templates") || "{}");
-    saved[id] = { id, name: name.trim(), html, base: decodeURIComponent(location.pathname.split("/").pop()), savedAt: new Date().toISOString() };
+    saved[id] = { id, name: name.trim(), html, base: decodeURIComponent(window.LPR_UTIL.pageFile()), savedAt: new Date().toISOString() };
     localStorage.setItem("lpr_custom_templates", JSON.stringify(saved));
     const goIndex = await showConfirm(
       `<strong>${name}</strong> saved to your template library.<br>Go back to the index now?`,

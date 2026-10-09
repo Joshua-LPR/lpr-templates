@@ -61,21 +61,8 @@
 (function () {
   'use strict';
 
-  /* ================================================================
-     PAGE KEY — duplicated from fill-fields.js's basename scheme so
-     this module has no hard dependency on fill-fields.js internals.
-     ================================================================ */
-  var PAGE_KEY = (function () {
-    var basename = (location.pathname.split('/').pop() || 'page').replace(/\.html?$/i, '');
-    if (basename === 'view') {
-      var id = new URLSearchParams(location.search).get('id');
-      if (id) {
-        var sanitized = String(id).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-        if (sanitized) return basename + '_' + sanitized;
-      }
-    }
-    return basename;
-  })();
+  /* ---- page identity (same key as fill-fields.js / mode-bar.js) ---- */
+  var PAGE_KEY = window.LPR_UTIL.pageKey(); // shared helper in user.js
 
   var STORAGE_KEY = 'lpr_addr_' + PAGE_KEY;
 
@@ -263,10 +250,7 @@
   /* ================================================================
      HELPERS
      ================================================================ */
-  function esc(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
+  function esc(s) { return window.LPR_UTIL.esc(s); } // shared helper in user.js
 
   /* ================================================================
      STYLES — the combined City/State/Zip row isn't part of

@@ -63,10 +63,7 @@
   /* ================================================================
      HELPERS
      ================================================================ */
-  function esc(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
+  function esc(s) { return window.LPR_UTIL.esc(s); } // shared helper in user.js
 
   /* ================================================================
      STYLES — reuses fill-fields.js's .lpr-ff-* classes for the body/

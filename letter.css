@@ -3,8 +3,8 @@
    Load AFTER brand.css. Used by:
      24-Hour Notice, Rent Increase Notice, Non-Renewal Notice,
      Security Deposit, Notice Template, TOPA Notice - DHCD,
-     Letter Watermark, Letterhead, Letterhead Clean,
-     Utilities Addendum.
+     Letter Watermark, Letterhead, Occupant Update,
+     Tenancy Confirmation, Utilities Addendum.
    Each template's inline <style> should keep ONLY the rules that
    are genuinely unique to that template — everything below is the
    canonical, de-duplicated version of what used to be copy-pasted
@@ -24,7 +24,7 @@ body { background: var(--lpr-page); padding: 96px 20px 40px; }
 }
 
 /* Letterhead-style "plain" body: no doc-badge/doc-title, wider top padding,
-   slightly looser line-height (shared by Letterhead + Letterhead Clean) */
+   slightly looser line-height (Letterhead) */
 .sheet.letter.lh-plain .lh-body { padding-top: 0.5in; line-height: 1.6; font-weight: 400; }
 
 /* ---- Header ---- */
@@ -59,6 +59,29 @@ body { background: var(--lpr-page); padding: 96px 20px 40px; }
   border-bottom: 1px dashed var(--lpr-rule); padding-bottom: 4px;
 }
 
+/* ---- Optional rows (optional-rows.js) ----
+   Dismiss (×) / restore (＋) for optional info-grid rows or blocks —
+   24-Hour Notice, Occupant Update, Tenancy Confirmation. */
+.opt-row-cell.opt-removed { display: none !important; }
+.opt-dismiss {
+  align-self: center; background: none; border: none; cursor: pointer;
+  color: var(--lpr-muted); font-size: 15px; line-height: 1;
+  width: 22px; height: 22px; border-radius: 50%; margin-left: 2px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0.4; transition: opacity 0.15s, color 0.15s, background 0.15s;
+  padding: 0;
+}
+.opt-dismiss:hover { opacity: 1; color: #c00; background: rgba(200,0,0,0.08); }
+.opt-dismiss.opt-removed { display: none !important; }
+.opt-restore-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; min-height: 0; }
+.opt-restore-btn {
+  font-family: inherit; font-size: 8.5pt; color: var(--lpr-muted);
+  background: none; border: 1px dashed var(--lpr-rule); border-radius: 4px;
+  padding: 2px 9px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.opt-restore-btn:hover { color: var(--lpr-blue); border-color: var(--lpr-blue); }
+
 /* ---- Callouts ---- */
 .callout { margin: 0 0 12px; padding: 8px 14px; border-radius: 0 4px 4px 0; font-size: 12pt; color: var(--lpr-ink); }
 .callout-blue { background: rgba(40,56,145,0.05); border-left: 3px solid var(--lpr-blue); }
@@ -79,6 +102,29 @@ body { background: var(--lpr-page); padding: 96px 20px 40px; }
 .signoff { margin-top: 0.45in; padding-top: 0; }
 .signature { height: auto; min-height: 0; }
 
+/* ---- Signature rows (signature-block.js; spec: style-guide "Signature Blocks") ----
+   One row spec for the sender's "Signature line" and every tenant row.
+   Scoped to .sig-block / .sig-as-line so Utilities Addendum's own local
+   .ua-sign rows (1.4in date line, no printed name) are untouched. */
+.sig-block { margin-top: 0.45in; }
+.sig-signer + .sig-signer { margin-top: 0.25in; }
+/* Fixed label column (fits "Landlord/Agent Signature"), so every signer's
+   line starts at the same x and printed names line up under the lines. */
+.sig-block .sig-row, .signature.sig-as-line .sig-row {
+  display: grid; grid-template-columns: 1.9in 1fr auto 1.6in;
+  column-gap: 8px; align-items: end;
+  padding-top: 0.45in; /* signing space above the line */
+}
+.sig-block .sig-label, .signature.sig-as-line .sig-label { font-size: 10pt; color: var(--lpr-ink); white-space: nowrap; line-height: 1.2; }
+.sig-block .sig-date-label, .signature.sig-as-line .sig-date-label { padding-left: 8px; }
+.sig-block .sig-line, .signature.sig-as-line .sig-line { border-bottom: 1px solid var(--lpr-ink); height: 1px; }
+/* Printed name under the line — same look for sender and tenant (sign-off
+   name style); the sender's title · company line follows, also under the line. */
+.signature.sig-as-line { margin-bottom: 4px; }
+.signature.sig-as-line ~ .signed-name,
+.signature.sig-as-line ~ .signed-role { padding-left: calc(1.9in + 8px); }
+.sig-block .sig-name { grid-column: 2 / -1; font-weight: 600; color: var(--lpr-ink); padding-top: 4px; min-height: 1.4em; }
+
 /* ---- Legal disclaimer strip ---- */
 .legal {
   font-size: 8.5pt; line-height: 1.5; color: var(--lpr-muted);
@@ -86,11 +132,56 @@ body { background: var(--lpr-page); padding: 96px 20px 40px; }
   padding: 6px 14px; border-top: 1px solid var(--lpr-rule);
 }
 
+/* ---- Multi-page flow (page-flow.js; spec: style-guide "Multi-Page Letters") ---- */
+/* Body is the measured flow box: bounded height, and the offsetParent of its blocks */
+.sheet[data-flow] .lh-body, .sheet.flow-page .lh-body { position: relative; min-height: 0; }
+.sheet.letter.flow-page .lh-body { padding-top: 0.3in; }
+/* A list item continued from the previous page: no second number / bullet */
+.flow-li-cont { list-style-type: none; }
+.flow-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 10px; border-bottom: 1px solid var(--lpr-blue);
+}
+.flow-head img { height: 0.35in; width: auto; }
+.flow-head-meta { font-size: 8.5pt; color: var(--lpr-muted); font-weight: 400; }
+.flow-pageno {
+  position: absolute; left: 0; right: 0; bottom: 0.4in;
+  text-align: center; font-size: 8pt; color: var(--lpr-muted);
+}
+/* Edit mode: the whole letter is one tall sheet */
+.sheet[data-flow].tt-editing { height: auto; min-height: 11in; }
+/* Forced page break — invisible except while editing */
+.flow-break { display: none; }
+.sheet.tt-editing .flow-break {
+  display: block; position: relative; height: 0; margin: 14px 0;
+  border-top: 2px dashed var(--lpr-blue);
+}
+.sheet.tt-editing .flow-break::after {
+  content: "New page starts here \2014  click, then Delete to remove";
+  position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  background: var(--lpr-paper); padding: 0 8px; white-space: nowrap;
+  font-size: 7.5pt; color: var(--lpr-blue); font-weight: 600;
+}
+/* Edit mode: where each page will begin (overlay, outside the editable sheet) */
+.flow-guide {
+  position: absolute; height: 0; pointer-events: none; z-index: 50;
+  border-top: 1px dashed var(--lpr-muted);
+}
+.flow-guide span {
+  /* left edge: the Insert Field sidebar covers the right side while editing */
+  position: absolute; left: 8px; top: -8px; background: var(--lpr-paper);
+  padding: 0 6px; font-size: 10px; color: var(--lpr-muted); letter-spacing: 0.5px;
+}
+.flow-measure { position: absolute; left: -99999px; top: 0; visibility: hidden; pointer-events: none; }
+
 /* ---- Print ---- */
 @media print {
   body { background: #fff; padding: 0; }
   .stage { gap: 0; }
   .label { display: none; }
+  /* no forced break after the last page (avoids a trailing blank sheet) */
+  .sheet.flow-last { page-break-after: auto; break-after: auto; }
+  .flow-guide { display: none; }
 }
 
 /* ---- M7: phone-viewing fit-to-width ----

@@ -23,23 +23,7 @@
 (function () {
   'use strict';
 
-  const PAGE_KEY    = (function() {
-    var basename = (location.pathname.split('/').pop() || 'page').replace(/\.html?$/i, '');
-
-    // Special handling for view.html with id parameter to avoid field value bleed
-    if (basename === 'view') {
-      var id = new URLSearchParams(location.search).get('id');
-      if (id) {
-        // Sanitize id using same pattern as slugify()
-        var sanitized = String(id).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-        if (sanitized) {
-          return basename + '_' + sanitized;
-        }
-      }
-    }
-
-    return basename;
-  })();
+  const PAGE_KEY    = window.LPR_UTIL.pageKey(); // shared helper in user.js
   const STORAGE_KEY = 'lpr_fill_' + PAGE_KEY;
 
   /* Tracks flatpickr instances created by the current render() so they can
@@ -314,10 +298,7 @@
   /* ================================================================
      HELPERS
      ================================================================ */
-  function esc(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  function esc(s) { return window.LPR_UTIL.esc(s); } // shared helper in user.js
 
   /* ================================================================
      STYLES
@@ -371,6 +352,10 @@
       '  content:attr(data-fill-placeholder);color:rgba(40,56,145,.3);',
       '  font-style:italic;font-size:.9em;border-bottom:1px dashed rgba(40,56,145,.22);pointer-events:none;}',
       '@media print{[data-fill-field]:empty::before{display:none;}}',
+      /* PNG/PDF export rasterizes screen styles, so @media print never
+         applies there; template-tools.js sets body.tt-rastering while
+         html2canvas captures. */
+      'body.tt-rastering [data-fill-field]:empty::before{display:none;}',
 
       /* ---- edit-mode highlight (gold so it's distinct from tenant/contact fields) ---- */
       '.sheet.tt-editing [data-fill-field]{background:rgba(214,163,90,.1);',

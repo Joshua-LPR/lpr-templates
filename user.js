@@ -14,6 +14,106 @@
      .clearActive()    log out
      .deleteUser(id)   wipe all data for a user
    ============================================================ */
+/* ============================================================
+   Shared helpers — window.LPR_UTIL
+   ------------------------------------------------------------
+   Small utilities every LPR script uses. They live HERE because
+   user.js is the one script every page AND every saved Library
+   copy loads first: a separate helpers file would be missing from
+   copies saved before it existed, and their scripts would break.
+
+   Page identity — three formulas ON PURPOSE. Saved settings are
+   keyed by each exact one, so never "unify" them (people would
+   silently lose saved data). URL-encoding is kept as-is
+   (e.g. "Certificate%20of%20Mailing").
+     pageFile()  raw last path segment       "Letterhead.html"
+     pageBase()  minus .html (default page)  "Letterhead"        mode bar
+     pageKey()   pageBase + Library id       "view_c_abc123"     fields, manual address
+     fileKey()   lower-cased file (default)  "letterhead.html"   signature offsets/options
+
+   Field tokens:
+     TOKEN_ATTRS / TOKEN_SEL          every data-*-field token
+     FILL_TOKEN_SEL                   fill-in tokens only (Print Blank
+                                      clears these; sender/employee stay)
+     spaceToken(el)                   add a space where a field touches a
+                                      letter/digit/another field ("JaneDoe");
+                                      none before punctuation or after "$".
+                                      Returns the inserted text nodes.
+     spaceAllTokens(root)             spaceToken for every field in root
+   ============================================================ */
+(function () {
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function pageFile() { return location.pathname.split('/').pop(); }
+  function pageBase() { return (pageFile() || 'page').replace(/\.html?$/i, ''); }
+  function pageKey() {
+    var base = pageBase();
+    // Library copies (view.html?id=…) get their own bucket so saved
+    // documents don't share field values.
+    if (base === 'view') {
+      var id = new URLSearchParams(location.search).get('id');
+      var slug = id ? String(id).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') : '';
+      if (slug) return base + '_' + slug;
+    }
+    return base;
+  }
+  function fileKey() { return (pageFile() || 'default').toLowerCase(); }
+
+  var TOKEN_ATTRS = ['data-fill-field', 'data-tenant-field', 'data-contact-field',
+                     'data-employee-field', 'data-owner-field', 'data-vendor-field'];
+  var FILL_TOKEN_ATTRS = ['data-fill-field', 'data-contact-field', 'data-tenant-field', 'data-vendor-field'];
+  function selectorFor(attrs) { return attrs.map(function (a) { return '[' + a + ']'; }).join(','); }
+  var TOKEN_SEL = selectorFor(TOKEN_ATTRS);
+
+  // What sits right next to a field, within its line: 'token' (another
+  // field), the neighbouring character, or '' (line edge / nothing).
+  var LINE_EDGE = /^(P|DIV|LI|H[1-6]|TD|TH|BR|UL|OL|TABLE)$/;
+  function neighbour(el, dir) {
+    for (var n = el; n; n = n.parentElement) {
+      for (var sib = dir < 0 ? n.previousSibling : n.nextSibling; sib; sib = dir < 0 ? sib.previousSibling : sib.nextSibling) {
+        if (sib.nodeType === 1) {
+          if (sib.matches(TOKEN_SEL)) return 'token';
+          // A styled element (has a class, e.g. TOPA's "Date: ____" line) is
+          // laid out on purpose — never space against it.
+          if (LINE_EDGE.test(sib.tagName) || sib.className) return '';
+          if (!sib.textContent.trim() && sib.querySelector(TOKEN_SEL)) return 'token';   // <b><field></b>
+        }
+        var t = sib.nodeType === 1 || sib.nodeType === 3 ? sib.textContent : '';
+        if (t.length) return dir < 0 ? t.slice(-1) : t.charAt(0);
+      }
+      if (!n.parentElement || LINE_EDGE.test(n.parentElement.tagName) || n.parentElement.classList.contains('sheet')) return '';
+    }
+    return '';
+  }
+  var needsSpace = function (c) { return c === 'token' || /[A-Za-z0-9À-ɏ]/.test(c); };
+  function spaceToken(el) {
+    var added = [];
+    if (!el || !el.parentNode || (el.parentElement && el.parentElement.closest(TOKEN_SEL))) return added;
+    if (needsSpace(neighbour(el, -1))) { added.push(el.parentNode.insertBefore(document.createTextNode(' '), el)); }
+    if (needsSpace(neighbour(el, 1))) { added.push(el.parentNode.insertBefore(document.createTextNode(' '), el.nextSibling)); }
+    return added;
+  }
+  // Visited in document order, so a field pair gets one space, not two.
+  function spaceAllTokens(root) {
+    var n = 0;
+    (root || document).querySelectorAll(TOKEN_SEL).forEach(function (el) { n += spaceToken(el).length; });
+    return n;
+  }
+
+  window.LPR_UTIL = {
+    esc: esc,
+    pageFile: pageFile, pageBase: pageBase, pageKey: pageKey, fileKey: fileKey,
+    TOKEN_ATTRS: TOKEN_ATTRS.slice(),
+    TOKEN_SEL: TOKEN_SEL,
+    FILL_TOKEN_SEL: selectorFor(FILL_TOKEN_ATTRS),
+    spaceToken: spaceToken,
+    spaceAllTokens: spaceAllTokens
+  };
+})();
+
 (function () {
   const USER_KEY  = "lpr_active_user";
   const USERS_KEY = "lpr_users";

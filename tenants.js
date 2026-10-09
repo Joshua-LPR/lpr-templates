@@ -246,23 +246,50 @@
     };
     document.querySelectorAll('[data-contact-field]').forEach(el => {
       const f = el.getAttribute('data-contact-field');
-      if (f in contactMap) el.textContent = contactMap[f] || '';
+      // Collapse whitespace-only values to a truly empty span. A span that
+      // holds only a space is not :empty, so the optional address_line2 row
+      // fails to hide and its "Address Line 2" placeholder prints inside
+      // the address line. parseCSV() trims imported cells, but values also
+      // arrive from manual overrides and saved snapshots, which are not.
+      if (f in contactMap) {
+        const v = contactMap[f];
+        el.textContent = (v && !/^\s*$/.test(String(v))) ? v : '';
+      }
     });
   }
 
-  function insertField(key, ns) {
+  /* Put a new field token at the caret (replacing any highlight), space it
+     from touching words/fields, park the caret after it, and register it
+     (with its spaces) for the token-aware undo in template-tools. Shared by
+     insertField and insertFillField. */
+  function placeToken(span) {
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return false;
-
     const range = sel.getRangeAt(0);
-    // Derive sheet from the range's ancestor
     let sheet = range.commonAncestorContainer;
-    if (sheet.nodeType === Node.TEXT_NODE) {
-      sheet = sheet.parentElement;
-    }
+    if (sheet.nodeType === Node.TEXT_NODE) sheet = sheet.parentElement;
     sheet = sheet ? sheet.closest('.sheet') : null;
     if (!sheet) return false;
+    // Atomic chip while editing (template-tools strips this on edit exit)
+    if (sheet.classList.contains('tt-editing')) span.setAttribute('contenteditable', 'false');
 
+    range.deleteContents();
+    range.insertNode(span);
+    const spaces = window.LPR_UTIL.spaceToken(span);
+
+    const after = document.createRange();
+    const last = spaces.length && spaces[spaces.length - 1].previousSibling === span ? spaces[spaces.length - 1] : span;
+    after.setStartAfter(last);
+    after.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(after);
+
+    // Programmatic inserts are invisible to the browser's undo stack.
+    window.LPR_EDIT_UNDO?.noteTokenInsert(span, spaces);
+    return true;
+  }
+
+  function insertField(key, ns) {
     const span = document.createElement('span');
     const attr  = ns === 'contact' ? 'data-contact-field'
                 : ns === 'vendor'  ? 'data-vendor-field'
@@ -272,22 +299,7 @@
                 : FIELD_LABELS[key];
     span.setAttribute(attr, key);
     if (label) span.setAttribute(attr.replace('-field', '-label'), label);
-    // Atomic chip while editing (template-tools strips this on edit exit)
-    if (sheet.classList.contains('tt-editing')) span.setAttribute('contenteditable', 'false');
-
-    range.deleteContents();
-    range.insertNode(span);
-
-    const after = range.cloneRange();
-    after.setStartAfter(span);
-    after.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(after);
-
-    // Programmatic inserts are invisible to the browser's undo stack —
-    // register with the token-aware undo in template-tools so Ctrl+Z works.
-    window.LPR_EDIT_UNDO?.noteTokenInsert(span);
-    return true;
+    return placeToken(span);
   }
 
   /* ================================================================
@@ -296,37 +308,12 @@
   var FILL_FIELD_LABELS = { date: 'Date', time: 'Time', amount: 'Amount', text: 'Text' };
 
   function insertFillField(type) {
-    var sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) return false;
-    var range = sel.getRangeAt(0);
-    // Derive sheet from the range's ancestor
-    var sheet = range.commonAncestorContainer;
-    if (sheet.nodeType === Node.TEXT_NODE) {
-      sheet = sheet.parentElement;
-    }
-    sheet = sheet ? sheet.closest('.sheet') : null;
-    if (!sheet) return false;
-
     var span = document.createElement('span');
     var label = FILL_FIELD_LABELS[type] || type;
     span.setAttribute('data-fill-field', type);
     span.setAttribute('data-fill-label', label);
     span.setAttribute('data-fill-placeholder', label);
-    // Atomic chip while editing (template-tools strips this on edit exit)
-    if (sheet.classList.contains('tt-editing')) span.setAttribute('contenteditable', 'false');
-
-    range.deleteContents();
-    range.insertNode(span);
-
-    var after = range.cloneRange();
-    after.setStartAfter(span);
-    after.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(after);
-
-    // Programmatic inserts are invisible to the browser's undo stack —
-    // register with the token-aware undo in template-tools so Ctrl+Z works.
-    window.LPR_EDIT_UNDO?.noteTokenInsert(span);
+    if (!placeToken(span)) return false;
 
     // Re-apply any saved fill-field values so the new span gets populated if its key exists
     if (window.LPR_FILL_APPLY) window.LPR_FILL_APPLY();
@@ -833,9 +820,7 @@
      HELPERS
      ================================================================ */
   function gid(s) { return document.getElementById(s); }
-  function esc(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
+  function esc(s) { return window.LPR_UTIL.esc(s); } // shared helper in user.js
 
   /* ================================================================
      STYLES
@@ -1029,6 +1014,11 @@
         pointer-events: none;
       }
       @media print { [data-contact-field]:empty::before { display: none; } }
+      /* PNG/PDF export rasterizes the SCREEN rendering, so the @media print
+         rule above never applies there and the placeholder would be baked
+         into the exported file. template-tools.js sets body.tt-rastering for
+         the duration of the capture. */
+      body.tt-rastering [data-contact-field]:empty::before { display: none; }
       .sheet.tt-editing [data-contact-field] {
         background: rgba(40,56,145,.08);
         outline: 1px dashed rgba(40,56,145,.4);
@@ -1052,6 +1042,7 @@
         [data-tenant-field]:empty::before { display: none; }
         #lpr-insert-panel, #lpr-fill-panel { display: none !important; }
       }
+      body.tt-rastering [data-tenant-field]:empty::before { display: none; }
 
       /* ---- Edit-mode field highlights in the sheet ---- */
       .sheet.tt-editing [data-tenant-field] {

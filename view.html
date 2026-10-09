@@ -26,8 +26,14 @@
   // document.open() replaces the current document while keeping the same
   // browsing context (window), so the file:// origin is preserved.
   // Scripts in the written HTML therefore load over file:// and localStorage works.
+  // Copies saved under file:// before 2026-10-08 carry a doubled
+  // <base href="X/X/"> (Save As used to prefix the folder onto its own
+  // file: URL). Collapse it so anything loaded by a relative path —
+  // the PDF/PNG export libraries, page-flow's icon — resolves again.
+  var html = t.html.replace(/<base href="([^"]+\/)\1+">/, '<base href="$1">');
+
   document.open();
-  document.write(t.html);
+  document.write(html);
   document.close();
 })();
 </script>

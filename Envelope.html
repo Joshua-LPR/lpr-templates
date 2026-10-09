@@ -146,7 +146,7 @@
   try {
     var legacy = localStorage.getItem('lpr_env_mode');
     if (!legacy) return;
-    var basename = (location.pathname.split('/').pop() || 'page').replace(/\.html?$/i, '');
+    var basename = window.LPR_UTIL.pageBase();
     var newKey = 'lpr_mode_' + basename + '_doc';
     if (localStorage.getItem(newKey) == null) localStorage.setItem(newKey, legacy);
   } catch (e) {}

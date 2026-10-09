@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LPR — Occupant Update</title>
+<link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="letter.css">
+<script src="user.js"></script>
+<style>
+  /* Verification letter: no postal recipient block (goes to whoever asks —
+     agency, bank, employer), so the body opens on the salutation. */
+
+  /* The address runs inline inside a sentence here (not as a stacked postal
+     block), so the ", unit" fragment collapses with its comma when empty. */
+  .addr2-inline:has([data-contact-field]:empty) { display: none; }
+  .sheet.tt-editing .addr2-inline:has([data-contact-field]:empty) { display: inline; }
+
+  /* Occupant roster: a 3-column grid (Name / DOB / dismiss). Four rows ship
+     by default; unused ones dismiss to the restore bar. Unlike the info-grid
+     key/val pattern this one is a real two-column table with a header row,
+     because both columns hold filled-in values, not label + value. */
+  .occ-grid {
+    display: grid; grid-template-columns: 1fr 1.35in auto;
+    gap: 6px 18px; align-items: end; margin: 0 0 6px;
+  }
+  .occ-head {
+    font-size: 8.5pt; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--lpr-blue); font-weight: 600; padding-bottom: 2px;
+    border-bottom: 2px solid var(--lpr-blue);
+  }
+  .occ-cell {
+    border-bottom: 1px dashed var(--lpr-rule); padding-bottom: 2px;
+    min-height: 1.35em; color: var(--lpr-text);
+  }
+
+  /* optional row dismiss / restore: shared styles in letter.css, behaviour in optional-rows.js */
+
+  @media print {
+    .occ-grid .no-print { display: block !important; visibility: hidden; height: 0 !important; min-height: 0 !important; padding: 0 !important; margin: 0 !important; overflow: hidden; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <a href="index.html" class="toolbar-back">← All templates</a>
+</div>
+
+<div class="stage">
+
+  <div class="mode-bar no-print" data-mode-group="doc" data-mode-key="occ">
+    <button class="mode-btn active" data-mode="in">Moved In</button>
+    <button class="mode-btn" data-mode="out">Moved Out</button>
+  </div>
+
+  <div class="label">OCCUPANT UPDATE — US LETTER</div>
+  <div class="sheet letter">
+
+    <div class="lh-header">
+      <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
+      <div class="meta">1517 Reisterstown Road, 2nd Floor<br/>
+      Pikesville, MD 21208<br/>
+      <span data-employee-field="phone">443.402.5641</span><br/>
+      office@lasalleparkrealty.com</div>
+    </div>
+
+    <div class="doc-badge">Occupant Update</div>
+    <div class="doc-title">Change in <br/>Household Occupants</div>
+
+    <div class="lh-body">
+
+      <div class="date"><span data-fill-field="date" data-fill-label="Notice Date"></span></div>
+
+      <p>To Whom It May Concern,</p>
+
+      <p><span data-contact-field="name"></span>, tenant at <strong><span data-contact-field="address_line1"></span><span class="addr2-inline">, <span data-contact-field="address_line2"></span></span>, <span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span></strong>, has informed us that the following person or persons <strong data-mode-when="doc:in">moved in to</strong><strong data-mode-when="doc:out" class="mode-hidden">moved out of</strong> the unit on <strong><span data-fill-field="date" data-fill-label="Effective Date"></span></strong>.</p>
+
+      <div class="occ-grid">
+        <div class="occ-head">Name</div>
+        <div class="occ-head">Date of Birth</div>
+        <div class="no-print" aria-hidden="true"></div>
+
+        <div class="occ-cell opt-row-cell" data-opt-row="occ1"><span data-fill-field="text" data-fill-label="Occupant 1 Name"></span></div>
+        <div class="occ-cell opt-row-cell" data-opt-row="occ1"><span data-fill-field="date" data-fill-label="Occupant 1 Date of Birth"></span></div>
+        <button class="opt-dismiss no-print" data-opt-row="occ1" data-opt-label="Occupant 1" title="Remove this row">×</button>
+
+        <div class="occ-cell opt-row-cell" data-opt-row="occ2"><span data-fill-field="text" data-fill-label="Occupant 2 Name"></span></div>
+        <div class="occ-cell opt-row-cell" data-opt-row="occ2"><span data-fill-field="date" data-fill-label="Occupant 2 Date of Birth"></span></div>
+        <button class="opt-dismiss no-print" data-opt-row="occ2" data-opt-label="Occupant 2" title="Remove this row">×</button>
+
+        <div class="occ-cell opt-row-cell" data-opt-row="occ3"><span data-fill-field="text" data-fill-label="Occupant 3 Name"></span></div>
+        <!-- Rows 3–4 start dismissed (data-opt-start): most household changes are one or two
+             people, and an empty dashed line reads as an unfilled field on a printed letter. -->
+        <div class="occ-cell opt-row-cell" data-opt-row="occ3"><span data-fill-field="date" data-fill-label="Occupant 3 Date of Birth"></span></div>
+        <button class="opt-dismiss no-print" data-opt-row="occ3" data-opt-label="Occupant 3" data-opt-start="removed" title="Remove this row">×</button>
+
+        <div class="occ-cell opt-row-cell" data-opt-row="occ4"><span data-fill-field="text" data-fill-label="Occupant 4 Name"></span></div>
+        <div class="occ-cell opt-row-cell" data-opt-row="occ4"><span data-fill-field="date" data-fill-label="Occupant 4 Date of Birth"></span></div>
+        <button class="opt-dismiss no-print" data-opt-row="occ4" data-opt-label="Occupant 4" data-opt-start="removed" title="Remove this row">×</button>
+      </div>
+      <div class="opt-restore-bar no-print" id="opt-restore"></div>
+
+      <p>Our records have been updated to reflect this change.</p>
+
+      <p>Questions? Call the office at <strong>443.402.5641</strong> or email <strong>office@lasalleparkrealty.com</strong>.</p>
+
+      <div class="signoff">
+        <p>Thank you,</p>
+        <div class="signature"></div>
+        <div class="signed-name" data-employee-field="name">David Mitnick</div>
+        <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span></div>
+      </div>
+    </div><!-- /lh-body -->
+
+  </div><!-- /sheet -->
+</div><!-- /stage -->
+
+<script src="employee.js"></script>
+<script src="tenants.js"></script>
+<script src="owners.js"></script>
+<script src="vendors.js"></script>
+<script src="fill-fields.js"></script>
+<script src="mode-bar.js"></script>
+<script src="template-tools.js"></script>
+<script src="optional-rows.js"></script>
+</body>
+</html>

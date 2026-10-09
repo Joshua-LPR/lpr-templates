@@ -28,7 +28,7 @@
     <button class="mode-btn" data-mode="on">With watermark</button>
   </div>
   <div class="label">LETTERHEAD — US LETTER (8.5″ × 11″)</div>
-  <div class="sheet letter lh-plain">
+  <div class="sheet letter lh-plain" data-flow data-sig-options>
     <img class="watermark" src="assets/logo-cropped.png" alt="" data-mode-when="wm:on"/>
     <div class="lh-header">
       <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
@@ -49,7 +49,7 @@
       </div>
       <p>Dear <span data-contact-field="name"></span>,</p>
       <p>[Body text. Replace this paragraph with your message. Body type is set in Montserrat 11pt with a 1.6 line-height for comfortable reading.]</p>
-      <p>[Continue here. Letterhead works best with 2–4 short paragraphs; long letters can run to a second page using the same margins.]</p>
+      <p>[Continue here. Long letters flow onto further pages automatically, with a continuation heading and page numbers.]</p>
       <p>[Closing paragraph or call to action.]</p>
       <div class="signoff">
         <p>Sincerely,</p>
@@ -80,13 +80,15 @@
     var legacy = localStorage.getItem('lpr_lh_wm');
     if (legacy == null) return;
     var mode = (legacy === '0') ? 'off' : 'on';
-    var basename = (location.pathname.split('/').pop() || 'page').replace(/\.html?$/i, '');
+    var basename = window.LPR_UTIL.pageBase();
     var newKey = 'lpr_mode_' + basename + '_wm';
     if (localStorage.getItem(newKey) == null) localStorage.setItem(newKey, mode);
   } catch (e) {}
 })();
 </script>
 <script src="mode-bar.js"></script>
+<script src="page-flow.js"></script>
+<script src="signature-block.js"></script>
 <script src="template-tools.js"></script>
 </body>
 </html>

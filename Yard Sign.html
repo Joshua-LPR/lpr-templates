@@ -290,7 +290,7 @@
    script (ahead of mode-bar.js's own <script src> tag below). */
 (function adoptLegacyModes() {
   try {
-    var basename = (location.pathname.split('/').pop() || 'page').replace(/\.html?$/i, '');
+    var basename = window.LPR_UTIL.pageBase();
     var legacyDesign = localStorage.getItem('lpr_yardsign_design');
     if (legacyDesign) {
       var designKey = 'lpr_mode_' + basename + '_design';

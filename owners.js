@@ -185,6 +185,20 @@
       </div>
     `;
 
+    // Extra sign-off rows contributed by other modules via
+    // window.LPR_SENDER_EXTRAS = [{ id, render(el) → commit() }] (e.g.
+    // signature-block.js). Placed above Apply and committed by it, like the
+    // toggles above. Rendered before the sub-toggle query below so a row
+    // marked .lpr-own-sub-toggle dims with "Include signer name".
+    const extCommits = [];
+    const foot = container.querySelector('.lpr-tp-foot');
+    (window.LPR_SENDER_EXTRAS || []).forEach(x => {
+      const el = document.createElement('div');
+      foot.before(el);
+      try { extCommits.push(x.render(el)); }
+      catch (e) { console.error('[owners] sender extra "' + (x.id || '?') + '" failed to render', e); }
+    });
+
     const fileInput = document.getElementById('lpr-own-file');
     if (fileInput) {
       fileInput.onchange = e => {
@@ -227,6 +241,7 @@
     if (applyBtn) {
       applyBtn.onclick = () => {
         applyOwner();
+        extCommits.forEach(commit => { if (typeof commit === 'function') commit(); });
         applyBtn.textContent = '✓ Applied';
         applyBtn.classList.add('ok');
         setTimeout(() => { applyBtn.textContent = 'Apply to Template'; applyBtn.classList.remove('ok'); }, 1800);
@@ -323,9 +338,7 @@
   /* ================================================================
      HELPERS
      ================================================================ */
-  function esc(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
+  function esc(s) { return window.LPR_UTIL.esc(s); } // shared helper in user.js
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

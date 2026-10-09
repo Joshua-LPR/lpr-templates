@@ -519,7 +519,7 @@ body { background: var(--lpr-page); }
     try {
       var legacy = localStorage.getItem('lpr_cof_mode');
       if (!legacy) return;
-      var basename = (location.pathname.split('/').pop() || 'page').replace(/\.html?$/i, '');
+      var basename = window.LPR_UTIL.pageBase();
       var newKey = 'lpr_mode_' + basename + '_doc';
       if (localStorage.getItem(newKey) == null) localStorage.setItem(newKey, legacy);
     } catch (e) {}
@@ -888,10 +888,7 @@ body { background: var(--lpr-page); }
 
   function renderAll() { renderSlotList(); renderThumbHighlights(); renderEditPanel(); renderTenantList(); }
 
-  function esc(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+  function esc(s) { return window.LPR_UTIL.esc(s); } // shared helper in user.js
 
   /* ── multi-mode text alignment calibration ── */
   function applyMultiCal() {
