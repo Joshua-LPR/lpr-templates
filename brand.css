@@ -114,6 +114,44 @@ body { margin: 0; font-family: 'Montserrat', sans-serif; color: var(--lpr-text);
 .mode-btn:hover:not(.active) { background: #eef0f8; border-color: #aab; }
 .mode-bar strong { font-size: 12px; color: var(--lpr-blue); margin-right: 4px; white-space: nowrap; }
 
+/* ---- Blank forms: on paper and in PDF/PNG exports an EMPTY field prints as a
+   write-in line long enough for what goes there (letters + notices only —
+   not labels, envelopes, cards or signs; Print Blank, or a field
+   left unfilled) — never "Dear ," or "due on .". Widths per field / date
+   format below; a legal date prints "the ___ day of ______, 20__". Rows that
+   hide when empty (address line 2, data-tenant-hide-empty) stay hidden.
+   Opt out with data-no-blank-lines on an area that draws its own write-in
+   lines (Utilities Addendum header rows); signature rows are never touched. ---- */
+[data-fill-field="date"]                          { --blank: 1.6in; }
+[data-fill-field="date"][data-fill-format="numeric"] { --blank: 1in; }
+[data-fill-field="date"][data-fill-format="short"]   { --blank: 1.2in; }
+[data-fill-field="date"][data-fill-format="weekday"] { --blank: 2.5in; }
+[data-fill-field="time"]                          { --blank: 0.9in; }
+[data-fill-field="amount"]                        { --blank: 1in; }
+[data-fill-field="text"]                          { --blank: 1.6in; }
+[data-contact-field="first_name"], [data-contact-field="last_name"],
+[data-tenant-field="first_name"], [data-tenant-field="last_name"] { --blank: 1.3in; }
+[data-contact-field="name"], [data-vendor-field="name"], [data-tenant-field="landlord"] { --blank: 2.4in; }
+[data-contact-field="address_line1"], [data-tenant-field="address_line1"], [data-vendor-field="address_line1"] { --blank: 2.6in; }
+[data-contact-field="city"], [data-tenant-field="city"], [data-vendor-field="city"] { --blank: 1.4in; }
+[data-contact-field="state"], [data-tenant-field="state"], [data-vendor-field="state"] { --blank: 0.45in; }
+[data-contact-field="zip"], [data-tenant-field="zip"], [data-vendor-field="zip"] { --blank: 0.8in; }
+[data-contact-field="email"], [data-tenant-field^="email"], [data-vendor-field^="email"] { --blank: 2.2in; }
+[data-tenant-field="lease_start"], [data-tenant-field="lease_end"], [data-tenant-field="dob"] { --blank: 1.3in; }
+[data-tenant-field="rent_amount"] { --blank: 1in; }
+@media print {
+  :is(.sheet.letter, .sheet.watermark) :is([data-fill-field], [data-contact-field], [data-tenant-field], [data-vendor-field]):empty:not(.sig-name *):not([data-no-blank-lines] *):not([data-fill-format="legal"]) {
+    display: inline-block; min-width: var(--blank, 1.4in); border-bottom: 1px solid currentColor; }
+  :is(.sheet.letter, .sheet.watermark) [data-fill-format="legal"]:empty::before { display: inline !important; content: "the ______ day of ______________, 20______" !important;
+    color: inherit !important; font-style: normal !important; font-size: inherit !important; border: 0 !important; }
+}
+body.tt-rastering :is(.sheet.letter, .sheet.watermark) :is([data-fill-field], [data-contact-field], [data-tenant-field], [data-vendor-field]):empty:not(.sig-name *):not([data-no-blank-lines] *):not([data-fill-format="legal"]) {
+  display: inline-block; min-width: var(--blank, 1.4in); border-bottom: 1px solid currentColor; }
+@media print { :is(.sheet.letter, .sheet.watermark) [data-dollar]:empty::before { display: inline !important; content: "$" !important; color: inherit !important; font-style: normal !important; font-size: inherit !important; border: 0 !important; } }
+body.tt-rastering :is(.sheet.letter, .sheet.watermark) [data-dollar]:empty::before { display: inline !important; content: "$" !important; color: inherit !important; font-style: normal !important; font-size: inherit !important; border: 0 !important; }
+body.tt-rastering :is(.sheet.letter, .sheet.watermark) [data-fill-format="legal"]:empty::before { display: inline !important; content: "the ______ day of ______________, 20______" !important;
+  color: inherit !important; font-style: normal !important; font-size: inherit !important; border: 0 !important; }
+
 /* ---- Field keys (field-keys.js) — here, not injected: HTML export strips
    scripts and injected lpr-* styles, and these must still apply ---- */
 /* Full address "123 Main St, Apt 2, City, MD 21215": ", Apt 2" only when there is one */

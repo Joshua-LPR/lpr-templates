@@ -32,6 +32,8 @@
 (function () {
   'use strict';
 
+  // A template may set its own defaults on the sheet, e.g. Utilities
+  // Addendum: data-sig-default-mode="line" data-sig-default-tenants="1".
   var DEFAULTS = { mode: 'gallery', tenants: '0' };
   var FILE = window.LPR_UTIL.fileKey();
   var KEY = 'lpr_sigopt_' + FILE;
@@ -92,7 +94,7 @@
   function applyTenants(sheet) {
     var old = sheet.querySelector('.sig-block[data-sig-tenant-block]');
     if (old) old.remove();
-    var n = parseInt(state.tenants, 10) || 0;
+    var n = Math.min(parseInt(state.tenants, 10) || 0, MAX_TENANTS);
     if (!n) return;
     var signoffs = sheet.querySelectorAll('.signoff');
     var anchor = signoffs[signoffs.length - 1];
@@ -149,7 +151,7 @@
     el.innerHTML =
       // sub-toggle: dims with "Include signer name" (no signer → no signature)
       row('Your signature', 'mode', [['gallery', 'Gallery default'], ['blank', 'Leave blank'], ['line', 'Signature line']], true) +
-      row('Tenant signature lines', 'tenants', [['0', 'None'], ['1', '1 tenant'], ['2', '2 tenants']], false);
+      row('Tenant signature lines', 'tenants', [['0', 'None'], ['1', '1 tenant'], ['2', '2 tenants']].slice(0, MAX_TENANTS + 1), false);
     el.querySelectorAll('select').forEach(function (s) { s.value = state[s.getAttribute('data-sigopt')]; });
     return function commit() {
       el.querySelectorAll('select').forEach(function (s) { state[s.getAttribute('data-sigopt')] = s.value; });
@@ -180,6 +182,11 @@
      ================================================================ */
   sheets = [].slice.call(document.querySelectorAll('.sheet[data-sig-options]'));
   if (!sheets.length) return;
+  DEFAULTS.mode = sheets[0].getAttribute('data-sig-default-mode') || DEFAULTS.mode;
+  DEFAULTS.tenants = sheets[0].getAttribute('data-sig-default-tenants') || DEFAULTS.tenants;
+  // A one-page form may cap the tenant lines (data-sig-max-tenants) so a
+  // choice never pushes the signatures off the page.
+  var MAX_TENANTS = parseInt(sheets[0].getAttribute('data-sig-max-tenants') || '2', 10);
   var snapshot = !!document.documentElement.dataset.lprSnapshot;
   state = snapshot ? readFromSheet(sheets[0]) : load();
   register();

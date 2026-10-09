@@ -37,7 +37,7 @@
   .ua-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 0.18in 0 0.32in;
+    margin: 0.18in 0 0.2in;
     font-size: 9.5pt;
     color: var(--lpr-text);
   }
@@ -70,13 +70,8 @@
   .paid-opts label { display: inline-flex; align-items: center; gap: 5px; font-weight: 600; color: var(--lpr-ink); }
   .paid-opts input[type="radio"] { width: 12px; height: 12px; accent-color: var(--lpr-blue); margin: 0; }
 
-  /* Signature block */
-  .ua-sign { margin-top: 0.45in; display: flex; flex-direction: column; gap: 0.28in; }
-  .ua-sign .sig-row { display: flex; align-items: baseline; gap: 8px; }
-  .ua-sign .sig-label { font-size: 10pt; color: var(--lpr-ink); white-space: nowrap; }
-  .ua-sign .sig-line { flex: 1; border-bottom: 1px solid var(--lpr-ink); display: inline-block; }
-  .ua-sign .date-label { font-size: 10pt; color: var(--lpr-ink); white-space: nowrap; padding-left: 8px; }
-  .ua-sign .date-line { width: 1.4in; border-bottom: 1px solid var(--lpr-ink); display: inline-block; }
+  /* Signature block: shared rows, compact variant (letter.css, data-sig-compact
+     on the sheet) so the Addendum stays one page. */
 
   /* Simple mode — fuel-type column hidden via [data-mode-when="doc:full"] +
      the shared .mode-hidden mechanism (mode-bar.js). Width/alignment shift
@@ -106,7 +101,7 @@
     <button class="mode-btn" data-mode="simple">Simplified — no Fuel Type</button>
   </div>
   <div class="label">UTILITIES ADDENDUM — US LETTER</div>
-  <div class="sheet letter">
+  <div class="sheet letter" data-sig-options data-sig-compact data-sig-default-mode="line" data-sig-default-tenants="1" data-sig-max-tenants="1">
 
     <div class="lh-header">
       <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
@@ -118,7 +113,7 @@
 
     <div class="ua-title">Utilities Addendum</div>
 
-    <div class="ua-fields">
+    <div class="ua-fields" data-no-blank-lines>
       <div class="row">
         <span class="lbl">Property Owner:</span>
         <span class="val"><span data-owner-field="name"></span></span>
@@ -238,27 +233,23 @@
       </table>
     </div>
 
-    <div class="ua-sign">
-      <div class="sig-row">
-        <span class="sig-label">Resident Signature</span>
-        <span class="sig-line"></span>
-        <span class="date-label">Date</span>
-        <span class="date-line"></span>
-      </div>
-      <div class="sig-row">
-        <span class="sig-label">Landlord/Agent Signature</span>
-        <span class="sig-line"></span>
-        <span class="date-label">Date</span>
-        <span class="date-line"></span>
-      </div>
+    <!-- Shared signature rows (signature-block.js + letter.css), set in
+         Setup → Sender. This template defaults to a Landlord/Agent signature
+         LINE and one tenant line (data-sig-default-* on the sheet). -->
+    <div class="signoff">
+      <div class="signature"></div>
+      <div class="signed-name" data-employee-field="name">David Mitnick</div>
+      <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span></div>
     </div>
 
   </div>
 </div>
 
+<script src="employee.js"></script>
 <script src="tenants.js"></script>
 <script src="owners.js"></script>
 <script src="mode-bar.js"></script>
+<script src="signature-block.js"></script>
 <script src="template-tools.js"></script>
 <script>
 (function () {

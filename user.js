@@ -142,7 +142,11 @@
   }
   function moneyText(el, raw) {
     var v = formatMoney(raw);
-    return parseMoney(raw) != null && !dollarBefore(el) ? '$' + v : v;
+    // data-dollar: left EMPTY, the field still prints "$____" on a blank
+    // form when the letter has no "$" of its own (brand.css "Blank forms").
+    var needs = !dollarBefore(el);
+    if (needs) el.setAttribute('data-dollar', ''); else el.removeAttribute('data-dollar');
+    return parseMoney(raw) != null && needs ? '$' + v : v;
   }
 
   // What sits right next to a field, within its line: 'token' (another

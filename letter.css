@@ -38,8 +38,16 @@ body { background: var(--lpr-page); padding: 96px 20px 40px; }
 
 /* ---- Body ---- */
 .lh-body { flex: 1; padding-top: 0.35in; font-size: 11pt; line-height: 1.65; color: var(--lpr-text); }
+/* Notices are one-page forms built to fill the page: date → recipient →
+   salutation stay tight (12 / 14px). A real business letter (Letterhead,
+   which flows onto more pages) uses the standard block-letter spacing of
+   one blank line (~22px at 11pt) after the date and after the inside
+   address (bead r8m, 2026-10-09 — 22px everywhere pushed Rent Increase and
+   Security Deposit "withheld" off their page). */
 .lh-body .date { color: var(--lpr-muted); font-size: 10pt; margin-bottom: 12px; }
 .lh-body .recipient { margin-bottom: 14px; line-height: 1.45; }
+.sheet.letter.lh-plain .lh-body .date,
+.sheet.letter.lh-plain .lh-body .recipient { margin-bottom: 22px; }
 .lh-body .subject { font-weight: 700; color: var(--lpr-ink); margin: 0 0 12px; }
 .lh-body p { margin: 0 0 12px; }
 
@@ -104,8 +112,7 @@ body { background: var(--lpr-page); padding: 96px 20px 40px; }
 
 /* ---- Signature rows (signature-block.js; spec: style-guide "Signature Blocks") ----
    One row spec for the sender's "Signature line" and every tenant row.
-   Scoped to .sig-block / .sig-as-line so Utilities Addendum's own local
-   .ua-sign rows (1.4in date line, no printed name) are untouched. */
+   Used by Letterhead and (since 2026-10-09, bead 9vg) Utilities Addendum. */
 .sig-block { margin-top: 0.45in; }
 .sig-signer + .sig-signer { margin-top: 0.25in; }
 /* Fixed label column (fits "Landlord/Agent Signature"), so every signer's
@@ -124,6 +131,19 @@ body { background: var(--lpr-page); padding: 96px 20px 40px; }
 .signature.sig-as-line ~ .signed-name,
 .signature.sig-as-line ~ .signed-role { padding-left: calc(1.9in + 8px); }
 .sig-block .sig-name { grid-column: 2 / -1; font-weight: 600; color: var(--lpr-ink); padding-top: 4px; min-height: 1.4em; }
+/* Compact rows — a one-page FORM that already prints the parties' names
+   above (Utilities Addendum: data-sig-compact on the sheet). Same grid,
+   labels and date line; 0.3in signing space; no printed names under the
+   lines; tighter gaps. */
+.sheet[data-sig-compact] .signoff { margin-top: 0.25in; }
+.sheet[data-sig-compact] .sig-block { margin-top: 0.1in; }
+.sheet[data-sig-compact] .sig-signer + .sig-signer { margin-top: 0.1in; }
+.sheet[data-sig-compact] .sig-block .sig-row,
+.sheet[data-sig-compact] .signature.sig-as-line .sig-row { padding-top: 0.3in; }
+.sheet[data-sig-compact] .sig-block .sig-name,
+.sheet[data-sig-compact] .signoff .signed-name,
+.sheet[data-sig-compact] .signoff .signed-role { display: none; }
+.sheet[data-sig-compact] .signoff img.lpr-sig-img { max-height: 0.35in; width: auto; }
 
 /* ---- Legal disclaimer strip ---- */
 .legal {

@@ -630,7 +630,7 @@ Per-document override in Setup → **Sender** (moved there from Options 2026-10-
 ### E. Style guide changes — APPLIED 2026-10-08
 - Added "Multi-Page Letters" and "Signature Blocks" sections to style-guide.html (sender signature label: **Landlord/Agent Signature**).
 - Fixed guide drift: signoff token now `0.45in` fixed (was `auto + 0.4in`). Fixed this file: letterhead signoff 36px → 0.45in; checklist step 9 exempts flow templates.
-- **⚠ PENDING USER REVIEW — remind Joshua:** `.date`/`.recipient` margin-bottom. Guide + this file say 22px; templates ship 12px/14px. Decision: keep the current 12/14px look, but Joshua wants to see it before the guide is changed. Do NOT edit the 22px lines in style-guide.html (dev appendix) or this file until he confirms.
+- **RESOLVED 2026-10-09 (bead `r8m`, Joshua: "whichever looks better and is more standard"):** `.date`/`.recipient` margin-bottom = **22px on Letterhead** (one blank line — standard block-letter spacing; page flow means it can never clip) and **12 / 14px on the one-page notices** (22px pushed Rent Increase −6px and Security Deposit "withheld" −18px off the page). letter.css + style-guide dev tokens updated.
 
 ### Status (2026-10-08)
 - **Step 2 DONE — page flow live on Letterhead.** `page-flow.js` + "Multi-page flow" block in `letter.css` + hooks in `template-tools.js` (toggleEdit → `setEditing`, buildSaveHtml unpaginates around its single cloneNode, printBlank re-paginates, doExportNow `hold()`s the layout during capture, "⤓ New page" format-bar button). `logo-icon.png` added to `assets/img-data.js`.
@@ -639,7 +639,7 @@ Per-document override in Setup → **Sender** (moved there from Options 2026-10-
 - **Steps 3–5 DONE.** `signature-block.js` adds rows to Setup → Sender (via `LPR_SENDER_EXTRAS`, committed by Apply) for sheets with `data-sig-options`: Your signature (Gallery default · Leave blank · Signature line) and Tenant signature (None · 1 · 2). employee.js's image insertion was extracted into `injectSignature()` / `window.LPR_SIGNATURE.inject` (single copy, reused). Row CSS in `letter.css` "Signature rows". State per template in `lpr_sigopt_<file>` + mirrored on the sheet so Library copies reopen as saved. Applied to Letterhead and Letterhead Clean; manifest descs; README row; placeholder text fixed. Tested: all three sender states, tenant rows/names/labels, sender row = tenant row geometry, persistence, 29 page-flow sweep layouts (tenant block stays with sign-off), Save As → Library reopen.
 - Revised 2026-10-08 per Joshua: printed names (sender + tenant) always sit **under the line**, same SemiBold sign-off name style; fixed 1.9in label column so all signers' lines align. Sender keeps the title · company line under the name (signing capacity = as agent, not personally).
 - Fixed 2026-10-08: signature toggles did nothing once the sign-off had flowed onto page 2+ (signature-block.js only searched page 1) — `apply()` now unpaginates → edits → re-paginates.
-- **Follow-ups:** (1) Utilities Addendum's local `.ua-sign` rows don't match the style-guide signature spec (1.4in date line, 0.28in gaps, no printed name) — left untouched on purpose; migrate to the shared rows only with Joshua's OK (bead `joshu_AKIVA-9vg`). (2) ~~Letterhead Clean~~ — DELETED 2026-10-08 (DRY cleanup step A); Letterhead's "Clean (none)" mode replaces it. (3) date/recipient spacing review (above; bead `joshu_AKIVA-r8m`). (4) ~~Library-copy export failure under file://~~ — FIXED 2026-10-08 (DRY cleanup step D: doubled `<base>`).
+- **Follow-ups:** (1) ~~Utilities Addendum's local `.ua-sign` rows~~ — MIGRATED 2026-10-09 (bead `9vg`, Joshua: "put in the new signature lines, signature line by default"): shared rows in the **compact** variant (`data-sig-compact`: 0.3in signing space, no printed names — the form prints Property Owner / Resident Name above), defaults line + 1 tenant, capped at 1 tenant (`data-sig-max-tenants`) — the full-size rows pushed the tenant line ~135px off the page. (2) ~~Letterhead Clean~~ — DELETED 2026-10-08 (DRY cleanup step A); Letterhead's "Clean (none)" mode replaces it. (3) date/recipient spacing review (above; bead `joshu_AKIVA-r8m`). (4) ~~Library-copy export failure under file://~~ — FIXED 2026-10-08 (DRY cleanup step D: doubled `<base>`).
 
 ### Build order
 1. Style-guide drafts → approval. 2. Page flow on Letterhead + full test matrix (1/2/3 pages, sign-off at break, watermark, edit→Done, Save As→reopen, Chrome+Edge print, PDF/PNG, phone). 3. Sender signature states. 4. Tenant block + shared sig-row CSS (recheck Utilities Addendum). 5. Letterhead Clean, fix placeholder text, manifest desc, this section → move to Features. **All done** (Features entries added; this section kept as the design record).
@@ -649,6 +649,10 @@ Per-document override in Setup → **Sender** (moved there from Options 2026-10-
 ## Phase 5 — date + money input — DONE 2026-10-09 (tests `tests/formats.test.mjs`)
 
 As built (differences from the plan below): **five date formats per field** (Joshua added weekday + legal): October 8, 2026 (default) · 10/8/2026 · Thursday, October 8, 2026 · Oct 8, 2026 · the 8th day of October, 2026 — Fields-tab dropdown under each date; keys `{{numeric|weekday|short|legal date: Label}}` (stored on the span as `data-fill-format`; your Fields-tab choice, stored in `lpr_fillfmt_<page>`, wins). Typed dates also accept a leading weekday and the legal form. flatpickr's `setDate` is wrapped so unreadable text is refused (red outline) instead of clearing the date. Money helpers live in **LPR_UTIL** (`formatMoney`, `moneyText`) and also format the **tenant's Rent Amount**. `$` audit (Joshua): every amount field in every template has a written `$` before it and nothing else does — kept on purpose (Print Blank shows "$ ____"); the smart `$` never doubles it. No hard-coded dollar figures in any template. `bqt` fixed in `stripSnapshotCommon`.
+
+### Blank forms (2026-10-09, Joshua: "check how it prints as a blank form … if the date format is weekday it needs a gap large enough")
+
+Before: an empty field printed as nothing ("Dear ,", "due on ."). Now, on paper and in PDF/PNG exports, an **empty field on a letter or notice prints as a write-in line sized for what goes there** — brand.css "Blank forms" (widths per field type and date format via `--blank`; legal date prints "the ___ day of ______, 20___"; an amount with no "$" in the letter prints "$____" — `data-dollar`, set by `LPR_UTIL.moneyText`). Applies to Print Blank and to any field left unfilled; screen view unchanged (faint labels). Not on envelopes, labels, cards, signs (`.sheet.letter` / `.sheet.watermark` only). Signature rows and hide-when-empty rows untouched; an area that draws its own lines opts out with `data-no-blank-lines` (Utilities Addendum header rows). Tests: `tests/blank.test.mjs`; `tests/fit.test.mjs` checks every one-page template still fits as a blank print.
 
 ### Original plan (approved 2026-10-09)
 
@@ -809,9 +813,8 @@ All US Letter templates share these values. Do not deviate per-template.
 **Body** (`.lh-body` / `.n-body`)
 - `padding-top: 0.35in` — gap between title and body content
 - `font-size: 11pt; line-height: 1.65`
-- ⚠ **Pending Joshua's review (bead `joshu_AKIVA-r8m`) — do not edit these two lines or letter.css until he confirms:** the templates actually ship `.date` 12px / `.recipient` 14px; the 22px below is the old documented value.
-- `.date` — `font-size: 10pt; margin-bottom: 22px`
-- `.recipient` / `.to` — `margin-bottom: 22px; line-height: 1.45`
+- `.date` — `font-size: 10pt; margin-bottom: 22px` on Letterhead (`.lh-plain`), `12px` on one-page notices (bead `r8m`, resolved 2026-10-09)
+- `.recipient` / `.to` — `margin-bottom: 22px` on Letterhead, `14px` on notices; `line-height: 1.45`
 - `p` — `margin: 0 0 12px`
 
 **Signoff (notice family)**
