@@ -50,11 +50,12 @@ TENANT ONLY
   {{email 1}}                    Email 1
   {{email 2}}                    Email 2
   {{date of birth}}              Date of Birth
+  {{landlord}}                   Landlord
   {{tenant full address}}        the tenant's address on one line: 123 Main St, Apt 2, Baltimore, MD 21215 (", Apt 2" only when there is one)
 
 SENDER
 ------
-  {{landlord}}                   Landlord / Company
+  {{sender company}}             Sender Company
   {{signer name}}                Signer Name
   {{signer title}}               Signer Title
   {{signer phone}}               Signer Phone

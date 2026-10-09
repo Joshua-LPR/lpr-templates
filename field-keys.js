@@ -60,7 +60,9 @@
     var e = { ns: 'tenant', field: k };
     ['tenant' + k, 'tenant' + F.tenant[k]].forEach(function (a) { if (!(norm(a) in LOOKUP)) LOOKUP[norm(a)] = e; });
   });
-  add('Sender', 'landlord', { ns: 'owner', field: 'name' }, ['company', 'owner', 'landlord company', 'sender']);
+  // {{landlord}} is the TENANT's landlord (tenant-only field above); the
+  // company signing the letter (LPR as agent) is {{sender company}}.
+  add('Sender', 'sender company', { ns: 'owner', field: 'name' }, ['company', 'sender']);
   addNs('Sender', 'employee', Object.keys(F.employee), '', false);
   addNs('Vendor — always starts with "vendor"', 'vendor', Object.keys(F.vendor), 'vendor', false);
 

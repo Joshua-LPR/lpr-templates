@@ -40,7 +40,7 @@ try {
     'vendor phone': 'vendor.phone', 'vendor: phone': 'vendor.phone', 'vendor work phone': 'vendor.phone', 'vendor name': 'vendor.name',
     'vendor email': 'vendor.email1', 'vendor email alternate': 'vendor.email2', 'vendor mobile': 'vendor.mobile', 'mobile': null, 'work phone': null,
     'signer name': 'employee.name', 'signer title': 'employee.title', 'title': null,
-    'landlord': 'owner.name', 'company': 'owner.name',
+    'landlord': 'tenant.landlord', 'tenant landlord': 'tenant.landlord', 'sender company': 'owner.name', 'company': 'owner.name',
     // tenant-only, no prefix needed
     'lease start': 'tenant.lease_start', 'rent amount': 'tenant.rent_amount', 'phone 2': 'tenant.phone2', 'email 1': 'tenant.email1', 'date of birth': 'tenant.dob',
     // fill-ins
@@ -76,7 +76,7 @@ try {
   s.check('*{{date: Due Date}}* → italic date field, filled from the saved "Due Date" value', due && due.italic && /2026/.test(due.text), JSON.stringify(due));
   const bi = await t.eval(TOK(`${P} [data-fill-field="amount"][data-fill-label="Balance Due"]`));
   s.check('***{{amount: Balance Due}}*** → bold + italic field (the legend\'s example)', bi && bi.bold && bi.italic, JSON.stringify(bi));
-  s.check('{{landlord}} → owner field', await t.eval(`!!document.querySelector('${P} p [data-owner-field="name"]')`));
+  s.check('{{landlord}} → the tenant\'s landlord field', await t.eval(`!!document.querySelector('${P} p [data-tenant-field="landlord"]')`));
   const unk = await t.eval(`(() => { const m = document.querySelector('.lpr-key-unknown'); return { mark: m && m.textContent, note: (document.getElementById('lpr-keys-note') || {}).textContent || '' }; })()`);
   s.check('unknown {{bogus key}} kept as highlighted text + listed in a notice', unk.mark === '{{bogus key}}' && /bogus key/.test(unk.note), JSON.stringify(unk));
   s.check('no leftover {{…}} for known keys after paste', await t.eval(`!/\\{\\{(first name|amount|date|landlord)/.test(document.querySelector('${P}').textContent)`));

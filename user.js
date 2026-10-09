@@ -86,7 +86,8 @@
       city: 'City', state: 'State', zip: 'Zip',
       lease_start: 'Lease Start', lease_end: 'Lease End', rent_amount: 'Rent Amount',
       phone: 'Phone (Mobile)', phone2: 'Phone 2 (Home/Work)',
-      email1: 'Email 1', email2: 'Email 2', dob: 'Date of Birth'
+      email1: 'Email 1', email2: 'Email 2', dob: 'Date of Birth',
+      landlord: 'Landlord'      // the owning entity, matched from the Properties CSV (tenants.js)
     },
     vendor: {         // data-vendor-field
       name: 'Vendor Name', address_line1: 'Street Address', address_line2: 'Address Line 2',
@@ -94,7 +95,7 @@
       email1: 'Email (Primary)', email2: 'Email (Alternate)', phone: 'Work Phone', mobile: 'Mobile'
     },
     fill: { date: 'Date', time: 'Time', amount: 'Amount', text: 'Text' },   // data-fill-field (+ data-fill-label)
-    owner: { name: 'Landlord / Company' },                                  // data-owner-field (Setup → Sender)
+    owner: { name: 'Sender Company' },      // data-owner-field (Setup → Sender) — LPR signs as agent; NOT the tenant's landlord
     employee: { name: 'Signer Name', title: 'Signer Title', phone: 'Signer Phone', email: 'Signer Email' }  // data-employee-field
   };
 

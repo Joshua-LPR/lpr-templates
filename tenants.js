@@ -114,35 +114,86 @@
   /* ================================================================
      CSV PARSER
      ================================================================ */
+  // Rows as {header: value}. Quoted cells may contain commas, "" and line
+  // breaks (Buildium's Properties export has multi-line descriptions).
   function parseCSV(text) {
-    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-    if (!lines.length) return [];
-    const headers = splitLine(lines[0]);
-    const rows = [];
-    for (let i = 1; i < lines.length; i++) {
-      if (!lines[i].trim()) continue;
-      const vals = splitLine(lines[i]);
-      const row = {};
-      headers.forEach((h, j) => { row[h.trim()] = (vals[j] || '').trim(); });
-      rows.push(row);
-    }
-    return rows;
-  }
-
-  function splitLine(line) {
-    const result = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
+    const recs = [];
+    let row = [], cur = '', inQ = false;
+    text = text.replace(/^﻿/, '');
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
       if (c === '"') {
-        if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
+        if (inQ && text[i + 1] === '"') { cur += '"'; i++; }
         else inQ = !inQ;
       } else if (c === ',' && !inQ) {
-        result.push(cur); cur = '';
+        row.push(cur); cur = '';
+      } else if ((c === '\n' || c === '\r') && !inQ) {
+        if (c === '\r' && text[i + 1] === '\n') i++;
+        row.push(cur); recs.push(row); row = []; cur = '';
       } else cur += c;
     }
-    result.push(cur);
-    return result;
+    if (cur || row.length) { row.push(cur); recs.push(row); }
+    if (!recs.length) return [];
+    const headers = recs[0].map(h => h.trim());
+    return recs.slice(1).filter(r => r.some(v => v.trim())).map(vals => {
+      const row = {};
+      headers.forEach((h, j) => { row[h] = (vals[j] || '').trim(); });
+      return row;
+    });
+  }
+
+  /* ================================================================
+     LANDLORD — from Buildium's Properties export
+     Only Address 1 / Address 2 / Postal code → Rental owners is kept.
+     A tenant's landlord = the owner of the property at their street
+     address + zip. It's the tenant's imported ("source") value, so a
+     landlord typed by hand (override) always wins. Two properties at
+     one address with different owners: Address 2 decides if it can,
+     otherwise the landlord stays blank (never guessed).
+     ================================================================ */
+  const PROPS_KEY = 'lpr_properties';
+  const STREET_ABBR = {
+    avenue: 'ave', av: 'ave', street: 'st', road: 'rd', drive: 'dr', court: 'ct', lane: 'ln',
+    boulevard: 'blvd', place: 'pl', terrace: 'ter', circle: 'cir', parkway: 'pkwy', highway: 'hwy',
+    square: 'sq', north: 'n', south: 's', east: 'e', west: 'w'
+  };
+  function normAddr(s) {
+    return String(s || '').toLowerCase().replace(/[.,#]/g, ' ').split(/\s+/).filter(Boolean)
+      .map(w => STREET_ABBR[w] || w).join(' ');
+  }
+  function normZip(z) { return String(z || '').replace(/\D/g, '').slice(0, 5); }
+  function loadProperties() {
+    try { return JSON.parse(localStorage.getItem(PROPS_KEY) || '{}').list || []; }
+    catch (e) { return []; }
+  }
+  // → { owner, why }  why: 'match' | 'ambiguous' | 'none'
+  function findLandlord(src, props) {
+    const a = normAddr(src.address_line1), z = normZip(src.zip);
+    if (!a) return { owner: '', why: 'none' };
+    let hits = props.filter(p => p.a === a && (!z || !p.z || p.z === z));
+    if (hits.length > 1) {
+      const byLine2 = hits.filter(p => p.a2 === normAddr(src.address_line2));
+      if (byLine2.length) hits = byLine2;
+    }
+    const owners = [...new Set(hits.map(p => p.owner))];
+    return owners.length === 1 ? { owner: owners[0], why: 'match' } : { owner: '', why: owners.length ? 'ambiguous' : 'none' };
+  }
+  function importPropertiesCSV(text) {
+    const list = parseCSV(text)
+      .map(r => ({ a: normAddr(r['Address 1']), a2: normAddr(r['Address 2']), z: normZip(r['Postal code']), owner: (r['Rental owners'] || '').trim() }))
+      .filter(p => p.a && p.owner);
+    localStorage.setItem(PROPS_KEY, JSON.stringify({ imported: new Date().toISOString(), list }));
+    // Re-match every tenant already loaded.
+    const data = loadTenants(), n = { match: 0, ambiguous: 0, none: 0 };
+    Object.values(data).forEach(t => {
+      const r = findLandlord(t.source, list);
+      n[r.why]++;
+      t.source.landlord = r.owner;
+      if (t.overrides && t.overrides.landlord === r.owner) delete t.overrides.landlord;
+      t.effective = computeEffective(t);
+    });
+    saveTenants(data);
+    return { properties: list.length, matched: n.match, ambiguous: n.ambiguous, unmatched: n.none };
   }
 
   /* ================================================================
@@ -159,11 +210,12 @@
 
       const source = {};
       ALL_FIELDS.forEach(f => {
-        if (f === 'phone2') return;
+        if (f === 'phone2' || f === 'landlord') return;
         const col = Object.entries(CSV_MAP).find(([k, v]) => v === f && k !== 'Id')?.[0];
         source[f] = col ? (row[col] || '').trim() : '';
       });
       source['phone2'] = (row['Home phone'] || '').trim() || (row['Work phone'] || '').trim();
+      source['landlord'] = findLandlord(source, loadProperties()).owner;
 
       if (!data[id]) {
         data[id] = { _id: id, source, overrides: {}, effective: { ...source } };
@@ -511,6 +563,10 @@
           <input type="file" accept=".csv" id="lpr-tp-file" hidden/>
           ↑ Import CSV
         </label>
+        <label class="lpr-tp-import-btn lpr-tp-import-props" title="Import Buildium's Properties export — fills each tenant's Landlord from their street address + zip">
+          <input type="file" accept=".csv" id="lpr-tp-props-file" hidden/>
+          ↑ Properties
+        </label>
         <button class="lpr-tp-add-btn" id="lpr-tp-add">+ Add</button>
         <span class="lpr-tp-count">${named.length} tenant${named.length !== 1 ? 's' : ''}</span>
       </div>
@@ -553,6 +609,20 @@
       reader.onload = ev => {
         const res = importCSV(ev.target.result);
         importMsg = `✓ ${res.added} added · ${res.updated} updated · ${res.unchanged} unchanged`;
+        renderFillPanel();
+      };
+      reader.readAsText(file);
+    };
+
+    gid('lpr-tp-props-file').onchange = e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const r = importPropertiesCSV(ev.target.result);
+        importMsg = `✓ ${r.properties} properties · landlord found for ${r.matched} tenant${r.matched !== 1 ? 's' : ''}` +
+          (r.ambiguous ? ` · ${r.ambiguous} at an address with 2 owners (left blank — type it in)` : '') +
+          (r.unmatched ? ` · ${r.unmatched} not found` : '');
         renderFillPanel();
       };
       reader.readAsText(file);
@@ -1021,5 +1091,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 
-  window.LPR_TENANTS = { loadTenants, importCSV, applyTenant, applyTenantAsRecipient, insertField };
+  window.LPR_TENANTS = { loadTenants, importCSV, importPropertiesCSV, applyTenant, applyTenantAsRecipient, insertField };
 })();
