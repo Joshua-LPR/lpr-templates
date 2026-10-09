@@ -1538,6 +1538,9 @@
   function stripSnapshotCommon(clone) {
     clone.querySelectorAll("[id^='automa'], [class*='automa']").forEach(el => el.remove());
     clone.querySelectorAll("style[id^='lpr-'], style[id^='tt-'], style.automa-element-selector").forEach(el => el.remove());
+    // Hidden date-picker popups (fill-fields.js appends them to <body>);
+    // a Library copy builds its own when opened (bead bqt).
+    clone.querySelectorAll(".flatpickr-calendar").forEach(el => el.remove());
     clone.querySelectorAll("[contenteditable]").forEach(el => el.removeAttribute("contenteditable"));
     clone.querySelectorAll(".tt-editing").forEach(el => el.classList.remove("tt-editing"));
   }

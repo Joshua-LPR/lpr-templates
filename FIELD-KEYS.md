@@ -76,12 +76,17 @@ VENDOR — ALWAYS STARTS WITH "VENDOR"
 
 FILL-IN BLANKS (you choose the label)
 -------------------------------------
-  {{date: Payment Due Date}}     a date
-  {{amount: Back Rent Owed}}     a dollar amount (write the $ before it: ${{amount: …}})
+  {{date: Payment Due Date}}     a date: October 8, 2026
+  {{numeric date: …}}            10/8/2026
+  {{weekday date: …}}            Thursday, October 8, 2026
+  {{short date: …}}              Oct 8, 2026
+  {{legal date: …}}              the 8th day of October, 2026
+  {{amount: Back Rent Owed}}     a dollar amount: $1,234.50 (the $ is added for you)
   {{time: Inspection Time}}      a time
   {{text: Unit Number}}          any short text
 The label is what the Fields tab asks for. The same label used twice is the
-same value (fill it once, it appears everywhere).
+same value (fill it once, it appears everywhere). A date's format can also
+be changed later in the Fields tab.
 
 INSTRUCTIONS FOR AN AI DRAFTING A LETTER
 ----------------------------------------

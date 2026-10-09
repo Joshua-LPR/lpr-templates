@@ -19,7 +19,8 @@
   if (window.LPR_KEYS) return;
   var U = window.LPR_UTIL, F = U.FIELDS;
   var KEY_RE = /\{\{\s*([^{}]*?)\s*\}\}/g;
-  var FILL_RE = /^(date|time|amount|text)\s*(?::\s*(.*))?$/i;
+  // Optional date format word first: {{numeric date: Due Date}} (fill-fields.js DATE_FORMATS).
+  var FILL_RE = /^(?:(numeric|weekday|short|legal|spelled)\s+(?=date\b))?(date|time|amount|text)\s*(?::\s*(.*))?$/i;
   var NSWORD = { contact: 'recipient', tenant: 'tenant', vendor: 'vendor', owner: 'sender', employee: 'signer' };
 
   function norm(s) { return String(s).toLowerCase().replace(/[^a-z0-9]/g, ''); }
@@ -68,7 +69,8 @@
 
   function resolve(raw) {
     var m = FILL_RE.exec(raw.trim());
-    if (m) return { ns: 'fill', field: m[1].toLowerCase(), fillLabel: (m[2] || '').trim() || F.fill[m[1].toLowerCase()] };
+    if (m) return { ns: 'fill', field: m[2].toLowerCase(), fillLabel: (m[3] || '').trim() || F.fill[m[2].toLowerCase()],
+                    fillFormat: m[1] && m[1].toLowerCase() !== 'spelled' ? m[1].toLowerCase() : '' };
     return LOOKUP[norm(raw)] || null;
   }
 
@@ -85,7 +87,9 @@
   }
   function build(r) {
     if (r.preset === 'full_address') return fullAddress(r.ns);
-    return U.makeToken(r.ns, r.field, r.fillLabel);
+    var tok = U.makeToken(r.ns, r.field, r.fillLabel);
+    if (r.fillFormat) tok.setAttribute('data-fill-format', r.fillFormat);
+    return tok;
   }
   function tokensOf(el) { return el.matches(U.TOKEN_SEL) ? [el] : [].slice.call(el.querySelectorAll(U.TOKEN_SEL)); }
 
@@ -206,12 +210,17 @@
     });
     L.push('FILL-IN BLANKS (you choose the label)');
     L.push('-------------------------------------');
-    L.push('  {{date: Payment Due Date}}     a date');
-    L.push('  {{amount: Back Rent Owed}}     a dollar amount (write the $ before it: ${{amount: …}})');
+    L.push('  {{date: Payment Due Date}}     a date: October 8, 2026');
+    L.push('  {{numeric date: …}}            10/8/2026');
+    L.push('  {{weekday date: …}}            Thursday, October 8, 2026');
+    L.push('  {{short date: …}}              Oct 8, 2026');
+    L.push('  {{legal date: …}}              the 8th day of October, 2026');
+    L.push('  {{amount: Back Rent Owed}}     a dollar amount: $1,234.50 (the $ is added for you)');
     L.push('  {{time: Inspection Time}}      a time');
     L.push('  {{text: Unit Number}}          any short text');
     L.push('The label is what the Fields tab asks for. The same label used twice is the');
-    L.push('same value (fill it once, it appears everywhere).');
+    L.push('same value (fill it once, it appears everywhere). A date\'s format can also');
+    L.push('be changed later in the Fields tab.');
     L.push('');
     L.push('INSTRUCTIONS FOR AN AI DRAFTING A LETTER');
     L.push('----------------------------------------');

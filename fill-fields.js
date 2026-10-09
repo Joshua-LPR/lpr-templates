@@ -4,9 +4,12 @@
    Adds a "Fields" tab to the Setup panel for any template
    that has data-fill-field spans. Supported types:
 
-     date   → calendar date picker → displays "Month D, YYYY"
+     date   → type it (10/8/2026, Oct 8 2026, …) or pick it → shown per
+              field: October 8, 2026 · 10/8/2026 · Thursday, October 8,
+              2026 · Oct 8, 2026 · the 8th day of October, 2026
      time   → clock picker         → displays "H:MM AM/PM"
-     amount → dollar text input    → displays as typed ($ shown outside span)
+     amount → dollar text input    → "1,234.50" (2 decimals); "$" added
+              only when the letter has none right before the field
      text   → plain text input     → displays as typed
 
    Template markup:
@@ -70,25 +73,100 @@
   var MONTHS = ['January','February','March','April','May','June',
                 'July','August','September','October','November','December'];
 
-  function formatValue(type, raw) {
-    if (!raw) return '';
-    if (type === 'date') {
-      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
-      if (!m) return raw;
-      return MONTHS[+m[2] - 1] + ' ' + +m[3] + ', ' + m[1];
+  var WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+  /* ---- dates: typed in any common form, stored as YYYY-MM-DD ----
+     10/8/2026 · 10-08-26 · 10.8.2026 · 2026-10-08 · October 8 2026 ·
+     Oct 8, 2026 · Sept. 8th 2026 · 8 Oct 2026 · Thursday, October 8, 2026.
+     Two-digit year → 20xx. null for anything else (or e.g. 2/30). */
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function monthOf(w) {
+    if (!w || w.length < 3) return 0;
+    for (var i = 0; i < 12; i++) if (MONTHS[i].toLowerCase().indexOf(w) === 0) return i + 1;
+    return 0;
+  }
+  function parseDate(s) {
+    s = String(s || '').trim().toLowerCase().replace(/(\d)(st|nd|rd|th)\b/g, '$1')
+      .replace(/^(sun|mon|tue|wed|thu|fri|sat)[a-z]*\.?,?\s+/, '')         // a leading weekday is ignored
+      .replace(/^the\s+(\d{1,2})\s+day\s+of\s+/, '$1 ');                  // "the 8th day of October, 2026"
+    var y, m, d, x, w;
+    if ((x = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s))) { y = +x[1]; m = +x[2]; d = +x[3]; }
+    else if ((x = /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2}|\d{4})$/.exec(s))) { m = +x[1]; d = +x[2]; y = +x[3]; }
+    else if ((w = s.replace(/[,.]/g, ' ').split(/\s+/).filter(Boolean)).length === 3 && /^(\d{2}|\d{4})$/.test(w[2])) {
+      if (monthOf(w[0]) && /^\d{1,2}$/.test(w[1])) { m = monthOf(w[0]); d = +w[1]; }
+      else if (monthOf(w[1]) && /^\d{1,2}$/.test(w[0])) { m = monthOf(w[1]); d = +w[0]; }
+      y = +w[2];
     }
+    if (!m || !d || !y) return null;
+    if (y < 100) y += 2000;
+    var dt = new Date(y, m - 1, d);
+    if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return null;
+    return y + '-' + pad2(m) + '-' + pad2(d);
+  }
+  function ordinal(n) { var t = n % 100, u = n % 10; return n + (t >= 11 && t <= 13 ? 'th' : u === 1 ? 'st' : u === 2 ? 'nd' : u === 3 ? 'rd' : 'th'); }
+  // The date formats (per field — Fields tab dropdown, or the key: {{numeric date: …}}).
+  var DATE_FORMATS = {
+    spelled: { label: 'October 8, 2026',               fn: function (y, m, d) { return MONTHS[m - 1] + ' ' + d + ', ' + y; } },
+    numeric: { label: '10/8/2026',                     fn: function (y, m, d) { return m + '/' + d + '/' + y; } },
+    weekday: { label: 'Thursday, October 8, 2026',     fn: function (y, m, d) { return WEEKDAYS[new Date(y, m - 1, d).getDay()] + ', ' + MONTHS[m - 1] + ' ' + d + ', ' + y; } },
+    short:   { label: 'Oct 8, 2026',                   fn: function (y, m, d) { return MONTHS[m - 1].slice(0, 3) + ' ' + d + ', ' + y; } },
+    legal:   { label: 'the 8th day of October, 2026',  fn: function (y, m, d) { return 'the ' + ordinal(d) + ' day of ' + MONTHS[m - 1] + ', ' + y; } }
+  };
+  function formatDate(raw, fmt) {
+    var x = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+    if (!x) return raw;
+    return (DATE_FORMATS[fmt] || DATE_FORMATS.spelled).fn(+x[1], +x[2], +x[3]);
+  }
+
+  // Money: shared with the tenant's rent (user.js LPR_UTIL).
+  var formatMoney = window.LPR_UTIL.formatMoney;
+
+  /* ---- per-field date format (Joshua: per field) ----
+     Your Fields-tab choice (stored per page) wins; else the field's own
+     data-fill-format (from a {{weekday date: …}} key, or a saved copy);
+     else spelled out. Written back onto the spans so Save As / exports
+     keep it. */
+  var FMT_KEY = 'lpr_fillfmt_' + PAGE_KEY;
+  function loadFormats() {
+    try { return JSON.parse(localStorage.getItem(FMT_KEY) || '{}'); }
+    catch (e) { return {}; }
+  }
+  function formatOf(def) {
+    if (def.type !== 'date') return '';
+    var chosen = loadFormats()[def.key];
+    if (DATE_FORMATS[chosen]) return chosen;
+    var own = def.els.map(function (el) { return el.getAttribute('data-fill-format'); }).filter(function (f) { return DATE_FORMATS[f]; })[0];
+    return own || 'spelled';
+  }
+  function setFormat(def, fmt) {
+    var f = loadFormats();
+    f[def.key] = fmt;
+    localStorage.setItem(FMT_KEY, JSON.stringify(f));
+  }
+
+  function formatValue(type, raw, fmt) {
+    if (!raw) return '';
+    if (type === 'date') return formatDate(raw, fmt);
+    if (type === 'amount') return formatMoney(raw);
     if (type === 'time') {
       var t = /^(\d{1,2}):(\d{2})$/.exec(raw);
       if (!t) return raw;
       var h = +t[1], min = t[2];
       return ((h % 12) || 12) + ':' + min + ' ' + (h >= 12 ? 'PM' : 'AM');
     }
-    return raw; // amount, text — display as typed
+    return raw; // text — display as typed
   }
 
   function applyField(def, raw) {
-    var display = formatValue(def.type, raw);
-    def.els.forEach(function (el) { el.textContent = display; });
+    var fmt = formatOf(def);
+    var display = formatValue(def.type, raw, fmt);
+    def.els.forEach(function (el) {
+      if (def.type === 'date') {
+        if (fmt !== 'spelled') el.setAttribute('data-fill-format', fmt); else el.removeAttribute('data-fill-format');
+      }
+      // "$" only where the letter doesn't already have one right before the field
+      el.textContent = def.type === 'amount' ? window.LPR_UTIL.moneyText(el, raw) : display;
+    });
   }
 
   function applyAll() {
@@ -150,6 +228,18 @@
       if (def.type === 'amount' || def.type === 'text') {
         inp.addEventListener('input', onUpdate);
       }
+      // Money: tidy the box when you leave it ("1234.5" → "1,234.50"; the
+      // box already shows a "$", so none is kept inside it).
+      if (def.type === 'amount') {
+        inp.addEventListener('change', function () { inp.value = formatMoney(inp.value); onUpdate(); });
+      }
+      // Date: how it appears in the letter (per field).
+      var sel = container.querySelector('[data-ff-fmt="' + def.key + '"]');
+      if (sel) sel.addEventListener('change', function () {
+        setFormat(def, sel.value);
+        applyField(def, loadValues()[def.key] || '');
+        render(container);
+      });
     });
 
     document.getElementById('lpr-ff-apply-btn').onclick = function () {
@@ -183,10 +273,30 @@
             }
           };
           if (def.type === 'date') {
+            // Type a date in any common form, or pick it. The box shows it
+            // the way the letter will. Unreadable text → red outline and
+            // nothing changes (flatpickr would otherwise clear the date).
+            var fmt = formatOf(def);
             opts.dateFormat   = 'Y-m-d';
             opts.altInput     = true;
-            opts.altFormat    = 'F j, Y';
+            opts.altFormat    = 'letter';
             opts.altInputClass = 'lpr-ff-inp lpr-ff-has-icon';
+            opts.allowInput   = true;
+            opts.formatDate = function (date, format) {
+              var iso = date.getFullYear() + '-' + pad2(date.getMonth() + 1) + '-' + pad2(date.getDate());
+              return format === 'letter' ? formatDate(iso, fmt) : iso;
+            };
+            opts.parseDate = function (str) {
+              var iso = parseDate(str);
+              if (!iso) return undefined;
+              var p = iso.split('-');
+              return new Date(+p[0], +p[1] - 1, +p[2]);
+            };
+            opts.onChange = function (selectedDates, dateStr, fp) {
+              if (fp.altInput) { fp.altInput.classList.remove('lpr-ff-bad'); fp.altInput.title = ''; }
+              saveValue(def.key, dateStr);
+              applyField(def, dateStr);
+            };
           } else {
             opts.enableTime   = true;
             opts.noCalendar   = true;
@@ -196,7 +306,23 @@
             opts.altFormat    = 'h:i K';
             opts.altInputClass = 'lpr-ff-inp lpr-ff-has-icon';
           }
-          flatpickrInstances.push(flatpickr(inp, opts));
+          var fp = flatpickr(inp, opts);
+          if (def.type === 'date') {
+            // flatpickr clears the date on text it can't read; refuse it
+            // instead — red outline, the saved date and the letter stay.
+            var setDate = fp.setDate;
+            fp.setDate = function (date) {
+              if (typeof date === 'string' && date.trim() && !parseDate(date)) {
+                if (fp.altInput) {
+                  fp.altInput.classList.add('lpr-ff-bad');
+                  fp.altInput.title = 'Not a date I can read — try 10/8/2026 or October 8, 2026';
+                }
+                return;
+              }
+              return setDate.apply(fp, arguments);
+            };
+          }
+          flatpickrInstances.push(fp);
         });
       }).catch(function () {}); // silently fall back to native picker on network error
     }
@@ -275,7 +401,13 @@
     var k = esc(def.key);
     var input;
     if (def.type === 'date') {
-      input = '<div class="lpr-ff-icon-wrap"><input type="date" class="lpr-ff-inp lpr-ff-has-icon" data-ff-key="' + k + '" value="' + esc(raw) + '" /><span class="lpr-ff-icon" aria-hidden="true">' + CAL_ICON + '</span></div>';
+      var fmt = formatOf(def);
+      input = '<div class="lpr-ff-icon-wrap"><input type="date" class="lpr-ff-inp lpr-ff-has-icon" data-ff-key="' + k + '" value="' + esc(raw) + '" /><span class="lpr-ff-icon" aria-hidden="true">' + CAL_ICON + '</span></div>' +
+        '<select class="lpr-ff-fmt" data-ff-fmt="' + k + '" title="How this date appears in the letter">' +
+          Object.keys(DATE_FORMATS).map(function (f) {
+            return '<option value="' + f + '"' + (f === fmt ? ' selected' : '') + '>' + esc(DATE_FORMATS[f].label) + '</option>';
+          }).join('') +
+        '</select>';
     } else if (def.type === 'time') {
       input = '<div class="lpr-ff-icon-wrap"><input type="time" class="lpr-ff-inp lpr-ff-has-icon" data-ff-key="' + k + '" value="' + esc(raw) + '" /><span class="lpr-ff-icon" aria-hidden="true">' + CLK_ICON + '</span></div>';
     } else if (def.type === 'amount') {
@@ -324,6 +456,8 @@
       '  font-family:\'Montserrat\',sans-serif;font-size:12.5px;color:var(--lpr-ink);outline:none;background:#fff;}',
       '.lpr-ff-inp:focus{border-color:var(--lpr-blue);}',
       '.lpr-ff-inp[type="date"],.lpr-ff-inp[type="time"]{cursor:pointer;}',
+      '.lpr-ff-inp.lpr-ff-bad{border-color:#cc2222!important;background:#fff5f5;}',
+      '.lpr-ff-fmt{margin-top:4px;padding:4px 6px;border:1px solid #ddd;border-radius:5px;font-family:inherit;font-size:11px;color:var(--lpr-muted);background:#fff;cursor:pointer;}',
 
       /* ---- dollar-amount compound field ---- */
       '.lpr-ff-money{display:flex;align-items:stretch;border:1px solid #ddd;border-radius:5px;overflow:hidden;background:#fff;}',
@@ -380,6 +514,7 @@
     window.LPR_FILL_TABS.push({ id: 'fill-fields', label: 'Fields', render: render });
 
     window.LPR_FILL_APPLY = applyAll; // lets insert sidebar trigger a re-apply after inserting a span
+    window.LPR_FILL_FORMAT = { parseDate: parseDate, formatDate: formatDate, formatMoney: formatMoney, DATE_FORMATS: DATE_FORMATS };
   }
 
   if (document.readyState === 'loading') {

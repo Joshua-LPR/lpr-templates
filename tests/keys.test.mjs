@@ -53,6 +53,8 @@ try {
     return [k, r ? r.ns + '.' + (r.field || r.preset) + (r.ns === 'fill' ? ':' + r.fillLabel : '') : null]; }))`);
   const wrong = got.filter(([k, v]) => v !== CASES[k]).map(([k, v]) => `${k} → ${v} (want ${CASES[k]})`);
   s.check(`${got.length} key spellings resolve as intended (overlaps, fill types, prefixes)`, !wrong.length, wrong.join('; '));
+  const fmts = await t.eval(`['numeric date: Due', 'Weekday Date: Due', 'short date', 'legal date: Signing', 'spelled date: Due', 'date: Due'].map(k => { const r = LPR_KEYS.resolve(k); return r && r.field + ':' + r.fillLabel + ':' + (r.fillFormat || '-'); })`);
+  s.check('date-format keys: numeric / weekday / short / legal set the format; spelled = default', fmts.join(' ') === 'date:Due:numeric date:Due:weekday date:Date:short date:Signing:legal date:Due:- date:Due:-', fmts.join(' '));
   const legend = await t.eval(`(() => { const E = LPR_KEYS.entries(); const names = E.map(e => e.name);
     return { dupes: names.filter((n, i) => names.indexOf(n) !== i), roundTrip: E.filter(e => LPR_KEYS.resolve(e.name) !== e).map(e => e.name) }; })()`);
   s.check('every legend key is unique and resolves to itself', !legend.dupes.length && !legend.roundTrip.length, JSON.stringify(legend));

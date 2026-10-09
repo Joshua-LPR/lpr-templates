@@ -242,7 +242,8 @@
     document.querySelectorAll('[data-tenant-field]').forEach(el => {
       const f = el.getAttribute('data-tenant-field');
       const val = tenant.effective[f] || '';
-      el.textContent = val;
+      // Rent is money: "1,200.00", "$" only if the letter has none before it.
+      el.textContent = f === 'rent_amount' ? window.LPR_UTIL.moneyText(el, val) : val;
       if (el.hasAttribute('data-tenant-hide-empty')) {
         el.style.display = val ? '' : 'none';
       }

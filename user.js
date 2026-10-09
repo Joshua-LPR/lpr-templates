@@ -42,6 +42,9 @@
      spaceAllTokens(root)             spaceToken for every field in root
      FIELDS                           THE field table: namespace → key → label
      makeToken(ns, key, fillLabel)    a new empty field span (all namespaces)
+     formatMoney(raw) / moneyText(el, raw)
+                                      "1,234.50"; moneyText adds "$" only
+                                      if the letter has none before el
    ============================================================ */
 (function () {
   function esc(s) {
@@ -115,6 +118,33 @@
     return span;
   }
 
+  /* ---- money (Fields-tab amounts AND the tenant's rent) ----
+     "1234.5", "$1,234.5" → "1,234.50" — always 2 decimals. Non-numbers
+     ("TBD") stay as typed. moneyText(el, raw) is what goes in a field:
+     a "$" is added only when the letter has none right before it. */
+  function parseMoney(raw) {
+    var c = String(raw == null ? '' : raw).replace(/[$,\s]/g, '');
+    if (!/^-?(\d+\.?\d*|\.\d+)$/.test(c)) return null;
+    var n = Number(c);
+    return isFinite(n) ? n : null;
+  }
+  function formatMoney(raw) {
+    var n = parseMoney(raw);
+    if (n == null) return String(raw == null ? '' : raw).trim();
+    return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function dollarBefore(el) {
+    var block = el.closest('p, div, li, td, th, h1, h2, h3, h4, h5, h6') || el.parentNode;
+    var r = document.createRange();
+    r.setStart(block, 0);
+    r.setEndBefore(el);
+    return /\$\s*$/.test(r.toString());
+  }
+  function moneyText(el, raw) {
+    var v = formatMoney(raw);
+    return parseMoney(raw) != null && !dollarBefore(el) ? '$' + v : v;
+  }
+
   // What sits right next to a field, within its line: 'token' (another
   // field), the neighbouring character, or '' (line edge / nothing).
   var LINE_EDGE = /^(P|DIV|LI|H[1-6]|TD|TH|BR|UL|OL|TABLE)$/;
@@ -158,6 +188,7 @@
     FILL_TOKEN_SEL: selectorFor(FILL_TOKEN_ATTRS),
     FIELDS: FIELDS,
     makeToken: makeToken,
+    parseMoney: parseMoney, formatMoney: formatMoney, moneyText: moneyText,
     spaceToken: spaceToken,
     spaceAllTokens: spaceAllTokens
   };

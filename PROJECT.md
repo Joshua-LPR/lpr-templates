@@ -646,7 +646,11 @@ Per-document override in Setup → **Sender** (moved there from Options 2026-10-
 
 ---
 
-## Planned: Phase 5 — date + money input (approved 2026-10-09)
+## Phase 5 — date + money input — DONE 2026-10-09 (tests `tests/formats.test.mjs`)
+
+As built (differences from the plan below): **five date formats per field** (Joshua added weekday + legal): October 8, 2026 (default) · 10/8/2026 · Thursday, October 8, 2026 · Oct 8, 2026 · the 8th day of October, 2026 — Fields-tab dropdown under each date; keys `{{numeric|weekday|short|legal date: Label}}` (stored on the span as `data-fill-format`; your Fields-tab choice, stored in `lpr_fillfmt_<page>`, wins). Typed dates also accept a leading weekday and the legal form. flatpickr's `setDate` is wrapped so unreadable text is refused (red outline) instead of clearing the date. Money helpers live in **LPR_UTIL** (`formatMoney`, `moneyText`) and also format the **tenant's Rent Amount**. `$` audit (Joshua): every amount field in every template has a written `$` before it and nothing else does — kept on purpose (Print Blank shows "$ ____"); the smart `$` never doubles it. No hard-coded dollar figures in any template. `bqt` fixed in `stripSnapshotCommon`.
+
+### Original plan (approved 2026-10-09)
 
 Joshua: "multiple ways to input date formats — mm/dd/yyyy and spelled out; mm/dd/yyyy drops leading 0s; money inputs automatically add commas and add/remove the $ sign when needed/extra." All in `fill-fields.js` (Fields tab).
 - **Date input:** type `10/8/2026`, `10-08-26`, `2026-10-08`, `October 8 2026`, `Oct 8, 2026`, `8 Oct 2026` — or use the calendar. Unreadable → red outline, letter unchanged. 2-digit year → 20xx. Stored as `YYYY-MM-DD` (unchanged, so saved values keep working).
