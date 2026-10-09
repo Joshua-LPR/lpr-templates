@@ -646,6 +646,21 @@ Per-document override in Setup → **Sender** (moved there from Options 2026-10-
 
 ---
 
+## PROPOSED (not approved) — Mail merge (bead `4z2`), drafted 2026-10-09 while Joshua was away
+
+**Goal:** pick a template and a set of tenants → one filled copy per tenant, previewed, printed (or saved as one PDF) in one go.
+
+**Approach (reuses what exists — DRY):** a **Merge…** button in the Tenants tab. Tick tenants (search box + quick filters **by building / street address** and **by landlord** — the Phase 4 landlord field makes "all tenants of X LLC" one click). Preview builds one copy of the sheet per tenant by running the same `applyTenantAsRecipient()` the single pick uses, then lets page-flow paginate each copy (multi-page letters keep their continuation headings) with a page break between copies. Fill-ins from the Fields tab, the Sender settings and signature options are shared by every copy. Print / Export → PDF then work on the whole stack exactly as today (one job / one file). Blank-form lines show for any tenant missing a value, so gaps are visible in the preview.
+
+**Decisions needed (Joshua):**
+1. **Per-tenant amounts/dates:** e.g. Rent Increase — every tenant's new rent differs. Options: (a) shared fill-ins only (merge suits identical notices); (b) a small per-tenant grid in the preview for chosen fill-ins; (c) import a CSV column (tenant Id → value). Recommend (b), with (c) later.
+2. **Output:** one print job / one combined PDF (recommended), or one PDF per tenant (file names = tenant name).
+3. **Envelopes / labels in the same run** (Envelope.html, Mailing Labels) — now or later?
+4. **Save to Library:** one entry per tenant, one entry for the batch, or none (recommended: none; print/PDF is the record).
+5. **Cap:** max tenants per batch (browser memory; suggest 100 with a warning).
+
+**Planned tests:** N tenants → N copies with the right names/addresses each; multi-page letter per copy paginates independently; shared fill-ins identical across copies; per-tenant overrides (if 1b) land on the right copy; preview count = print page count; PDF export one file with all pages; tenant missing an address shows write-in lines; fit test on every copy; no console errors; nothing saved to Downloads.
+
 ## Phase 5 — date + money input — DONE 2026-10-09 (tests `tests/formats.test.mjs`)
 
 As built (differences from the plan below): **five date formats per field** (Joshua added weekday + legal): October 8, 2026 (default) · 10/8/2026 · Thursday, October 8, 2026 · Oct 8, 2026 · the 8th day of October, 2026 — Fields-tab dropdown under each date; keys `{{numeric|weekday|short|legal date: Label}}` (stored on the span as `data-fill-format`; your Fields-tab choice, stored in `lpr_fillfmt_<page>`, wins). Typed dates also accept a leading weekday and the legal form. flatpickr's `setDate` is wrapped so unreadable text is refused (red outline) instead of clearing the date. Money helpers live in **LPR_UTIL** (`formatMoney`, `moneyText`) and also format the **tenant's Rent Amount**. `$` audit (Joshua): every amount field in every template has a written `$` before it and nothing else does — kept on purpose (Print Blank shows "$ ____"); the smart `$` never doubles it. No hard-coded dollar figures in any template. `bqt` fixed in `stripSnapshotCommon`.
