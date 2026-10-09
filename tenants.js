@@ -57,23 +57,7 @@
   };
   // phone2 derives from two CSV columns — handled separately in importCSV
 
-  const FIELD_LABELS = {
-    first_name:    'First Name',
-    last_name:     'Last Name',
-    address_line1: 'Street Address',
-    address_line2: 'Address Line 2',
-    city:          'City',
-    state:         'State',
-    zip:           'Zip',
-    lease_start:   'Lease Start',
-    lease_end:     'Lease End',
-    rent_amount:   'Rent Amount',
-    phone:         'Phone (Mobile)',
-    phone2:        'Phone 2 (Home/Work)',
-    email1:        'Email 1',
-    email2:        'Email 2',
-    dob:           'Date of Birth',
-  };
+  const FIELD_LABELS = window.LPR_UTIL.FIELDS.tenant;   // the one field table (user.js)
 
   const ALL_FIELDS = Object.keys(FIELD_LABELS);
 
@@ -216,18 +200,7 @@
   /* ================================================================
      INSERT FIELD AT CURSOR
      ================================================================ */
-  const CONTACT_FIELD_LABELS = {
-    first_name:    'First Name',
-    last_name:     'Last Name',
-    name:          'Recipient Name',
-    address_line1: 'Street Address',
-    address_line2: 'Address Line 2',
-    city:          'City',
-    state:         'State',
-    zip:           'Zip',
-    email:         'Email',
-    phone:         'Phone',
-  };
+  const CONTACT_FIELD_LABELS = window.LPR_UTIL.FIELDS.contact;
 
   function applyTenantAsRecipient(tenant) {
     applyTenant(tenant);
@@ -270,8 +243,12 @@
     if (sheet.nodeType === Node.TEXT_NODE) sheet = sheet.parentElement;
     sheet = sheet ? sheet.closest('.sheet') : null;
     if (!sheet) return false;
-    // Atomic chip while editing (template-tools strips this on edit exit)
-    if (sheet.classList.contains('tt-editing')) span.setAttribute('contenteditable', 'false');
+    // Atomic chips while editing (template-tools strips this on edit exit).
+    // A preset (full address) is a plain wrapper: lock the fields inside it.
+    const TS = window.LPR_UTIL.TOKEN_SEL;
+    if (sheet.classList.contains('tt-editing')) {
+      (span.matches(TS) ? [span] : [...span.querySelectorAll(TS)]).forEach(el => el.setAttribute('contenteditable', 'false'));
+    }
 
     range.deleteContents();
     range.insertNode(span);
@@ -290,30 +267,14 @@
   }
 
   function insertField(key, ns) {
-    const span = document.createElement('span');
-    const attr  = ns === 'contact' ? 'data-contact-field'
-                : ns === 'vendor'  ? 'data-vendor-field'
-                : 'data-tenant-field';
-    const label = ns === 'contact' ? CONTACT_FIELD_LABELS[key]
-                : ns === 'vendor'  ? (window.LPR_VENDORS?.FIELD_LABELS?.[key])
-                : FIELD_LABELS[key];
-    span.setAttribute(attr, key);
-    if (label) span.setAttribute(attr.replace('-field', '-label'), label);
-    return placeToken(span);
+    return placeToken(window.LPR_UTIL.makeToken(ns === 'contact' || ns === 'vendor' ? ns : 'tenant', key));
   }
 
   /* ================================================================
      INSERT FILL FIELD AT CURSOR
      ================================================================ */
-  var FILL_FIELD_LABELS = { date: 'Date', time: 'Time', amount: 'Amount', text: 'Text' };
-
   function insertFillField(type) {
-    var span = document.createElement('span');
-    var label = FILL_FIELD_LABELS[type] || type;
-    span.setAttribute('data-fill-field', type);
-    span.setAttribute('data-fill-label', label);
-    span.setAttribute('data-fill-placeholder', label);
-    if (!placeToken(span)) return false;
+    if (!placeToken(window.LPR_UTIL.makeToken('fill', type))) return false;
 
     // Re-apply any saved fill-field values so the new span gets populated if its key exists
     if (window.LPR_FILL_APPLY) window.LPR_FILL_APPLY();
@@ -387,14 +348,16 @@
       <div class="lpr-ins-body">
         <div class="lpr-ins-group-label" style="border-top:none;margin-top:0;padding-top:0">FILL FIELDS</div>
         <div class="lpr-ins-grid lpr-ins-grid-2col">
-          <button class="lpr-ins-btn" data-ff-type="date">Date</button>
-          <button class="lpr-ins-btn" data-ff-type="time">Time</button>
-          <button class="lpr-ins-btn" data-ff-type="amount">Amount</button>
-          <button class="lpr-ins-btn" data-ff-type="text">Text</button>
+          ${Object.entries(window.LPR_UTIL.FIELDS.fill).map(([type, label]) => `
+            <button class="lpr-ins-btn" data-ff-type="${esc(type)}">${esc(label)}</button>`).join('')}
         </div>
         ${insGroup('RECIPIENT', Object.entries(CONTACT_FIELD_LABELS), 'contact')}
+        <div class="lpr-ins-grid"><button class="lpr-ins-btn" data-preset="full_address" data-ns="contact" title="123 Main St, Apt 2, City, MD 21215 — “, Apt 2” only when there is one">Full Address</button></div>
         ${insGroup('TENANT — body reference', Object.entries(FIELD_LABELS), 'tenant')}
+        <div class="lpr-ins-grid"><button class="lpr-ins-btn" data-preset="full_address" data-ns="tenant" title="123 Main St, Apt 2, City, MD 21215 — “, Apt 2” only when there is one">Full Address</button></div>
         ${Object.keys(vendorLabels).length ? insGroup('VENDOR — body reference', Object.entries(vendorLabels), 'vendor') : ''}
+        <div class="lpr-ins-group-label">FIELD KEYS — for drafting with {{…}} / AI</div>
+        <div id="lpr-ins-keys"></div>
         <div id="lpr-ins-hint" class="lpr-ins-hint"></div>
         <button class="lpr-ins-clear" id="lpr-ins-clear">Clear All Fields</button>
       </div>
@@ -415,10 +378,15 @@
       setTimeout(() => { btn.textContent = 'Clear All Fields'; }, 1500);
     };
 
-    insertPanel.querySelectorAll('.lpr-ins-btn[data-ff-type]').forEach(btn => {
+    // Every insert button: fill field, recipient/tenant/vendor field, or a
+    // preset (full address). mousedown + preventDefault keeps the caret.
+    insertPanel.querySelectorAll('.lpr-ins-btn').forEach(btn => {
       btn.addEventListener('mousedown', e => {
         e.preventDefault();
-        const ok = insertFillField(btn.dataset.ffType);
+        const d = btn.dataset;
+        const ok = d.ffType ? insertFillField(d.ffType)
+                 : d.preset ? !!window.LPR_KEYS && placeToken(window.LPR_KEYS.fullAddress(d.ns))
+                 : insertField(d.field, d.ns);
         if (ok) {
           btn.classList.add('inserted');
           setTimeout(() => btn.classList.remove('inserted'), 500);
@@ -434,24 +402,9 @@
       });
     });
 
-    insertPanel.querySelectorAll('.lpr-ins-btn[data-field]').forEach(btn => {
-      btn.addEventListener('mousedown', e => {
-        e.preventDefault(); // keep focus in contenteditable
-        const ok = insertField(btn.dataset.field, btn.dataset.ns);
-        if (ok) {
-          btn.classList.add('inserted');
-          setTimeout(() => btn.classList.remove('inserted'), 500);
-        } else {
-          const hint = document.getElementById('lpr-ins-hint');
-          if (hint) {
-            hint.textContent = 'Click inside the template first.';
-            hint.style.opacity = '1';
-            clearTimeout(hint._t);
-            hint._t = setTimeout(() => { hint.style.opacity = '0'; }, 2500);
-          }
-        }
-      });
-    });
+    // Field-key legend: Copy / Download .txt (field-keys.js)
+    const keysBox = document.getElementById('lpr-ins-keys');
+    if (keysBox && window.LPR_KEYS) keysBox.appendChild(window.LPR_KEYS.legendButtons('lpr-ins-clear lpr-ins-keybtn'));
   }
 
   /* When both panels are open, offset the fill panel so they don't overlap */
@@ -904,6 +857,9 @@
       .lpr-ins-hint { font-size: 11px; color: #c04; min-height: 16px; opacity: 0; transition: opacity .3s; }
       .lpr-ins-clear { width: 100%; margin-top: 4px; padding: 8px; background: none; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 12px; color: #888; cursor: pointer; transition: all .15s; }
       .lpr-ins-clear:hover { border-color: #c04; color: #c04; }
+      #lpr-ins-keys .lpr-keys-btns { display: flex; gap: 6px; }
+      #lpr-ins-keys .lpr-ins-keybtn { color: var(--lpr-blue, #283891); }
+      #lpr-ins-keys .lpr-ins-keybtn:hover { border-color: var(--lpr-blue, #283891); color: var(--lpr-blue, #283891); }
 
       /* ---- Fill panel elements ---- */
       .lpr-tp-import-row {

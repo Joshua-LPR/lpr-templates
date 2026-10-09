@@ -33,18 +33,7 @@
     'Mobile (optional)':                   'mobile',
   };
 
-  const FIELD_LABELS = {
-    name:          'Vendor Name',
-    address_line1: 'Street Address',
-    address_line2: 'Address Line 2',
-    city:          'City',
-    state:         'State',
-    zip:           'Zip',
-    email1:        'Email (Primary)',
-    email2:        'Email (Alternate)',
-    phone:         'Work Phone',
-    mobile:        'Mobile',
-  };
+  const FIELD_LABELS = window.LPR_UTIL.FIELDS.vendor;   // the one field table (user.js)
 
   const ALL_FIELDS = Object.keys(FIELD_LABELS);
 

@@ -113,3 +113,14 @@ body { margin: 0; font-family: 'Montserrat', sans-serif; color: var(--lpr-text);
 .mode-btn.active { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
 .mode-btn:hover:not(.active) { background: #eef0f8; border-color: #aab; }
 .mode-bar strong { font-size: 12px; color: var(--lpr-blue); margin-right: 4px; white-space: nowrap; }
+
+/* ---- Field keys (field-keys.js) — here, not injected: HTML export strips
+   scripts and injected lpr-* styles, and these must still apply ---- */
+/* Full address "123 Main St, Apt 2, City, MD 21215": ", Apt 2" only when there is one */
+.lpr-addr2-part:has(> [data-contact-field]:empty),
+.lpr-addr2-part:has(> [data-tenant-field]:empty) { display: none; }
+.sheet.tt-editing .lpr-addr2-part { display: inline !important; }
+/* An unknown {{key}}: highlighted on screen, plain text on paper / in exports */
+.lpr-key-unknown { background: rgba(204, 34, 34, .14); outline: 1px dashed rgba(204, 34, 34, .8); color: inherit; }
+@media print { .lpr-key-unknown { background: none; outline: none; } }
+body.tt-rastering .lpr-key-unknown { background: none; outline: none; }

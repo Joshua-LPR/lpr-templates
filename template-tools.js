@@ -15,7 +15,9 @@
 
     // Clean paste while editing (paste-clean.js). Deferred a tick: init() can
     // run before this file's later declarations (libPromises) are evaluated.
-    Promise.resolve().then(() => ensureLib("paste-clean.js", "LPR_PASTE")).catch(e => console.error(e));
+    // Then {{field keys}} (field-keys.js), which registers a paste transform.
+    Promise.resolve().then(() => ensureLib("paste-clean.js", "LPR_PASTE"))
+      .then(() => ensureLib("field-keys.js", "LPR_KEYS")).catch(e => console.error(e));
 
     // Normalize title: replace em/en dash with plain hyphen so Print → PDF filenames are clean
     document.title = document.title.replace(/\s*[—–]\s*/g, ' - ');
@@ -580,6 +582,8 @@
     } else if (editSnapshots.length) {
       // Fields typed/pasted/dragged against a word or another field get
       // their space ("JaneDoe" → "Jane Doe"); Insert Field does it live.
+      // Typed {{field keys}} become fields first.
+      if (window.LPR_KEYS) window.LPR_KEYS.convertSheets(sheets);
       sheets.forEach(s => window.LPR_UTIL.spaceAllTokens(s));
       const affected = editSnapshots
         .map(snap => ({ snap: snap, lost: diffLostSpans(snap.census, censusTokenSpans(snap.sheet), deliberateLoss) }))
@@ -1498,7 +1502,8 @@
       ".tt-btn", ".tt-export-wrap", "#tt-fmt-bar",
       "#lpr-fill-panel", "#lpr-insert-panel", // setup/insert panels must not be baked in
       ".tt-backdrop",                          // open modals
-      ".tt-sig-handle"                         // signature drag handles
+      ".tt-sig-handle",                        // signature drag handles
+      "#lpr-keys-note"                         // field-key notice
     ].join(", ")).forEach(el => el.remove());
     stripSnapshotCommon(clone);
 

@@ -884,6 +884,12 @@
     <div class="grid" id="search-archived-grid"></div>
   </div>
 
+  <div class="backup-zone" id="field-keys-zone">
+    <h2>Field keys for drafting</h2>
+    <p class="sub">Write <strong>{{first name}}</strong>, <strong>{{date: Payment Due Date}}</strong>, <strong>{{landlord}}</strong>… where a name, date or amount belongs — in your own draft or one from an AI — then paste it into a template in Edit mode: every key becomes a live field. Bold or italic keys give bold or italic fields. The list includes ready-to-paste instructions for an AI.</p>
+    <div class="actions" id="field-keys-actions"></div>
+  </div>
+
   <div class="backup-zone">
     <h2>Backup &amp; Restore</h2>
     <p class="sub">All your saved templates, favorites, archive, presets and order live only in this browser on this device. If browser data ever gets cleared, your customizations go with it.</p>
@@ -1139,6 +1145,8 @@
 
 </div>
 
+<script src="field-keys.js"></script>
+<script>document.getElementById('field-keys-actions').appendChild(LPR_KEYS.legendButtons(''));</script>
 <script src="assets/vendor/Sortable.min.js"></script>
 <script>
 /* ============================================================

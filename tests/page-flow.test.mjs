@@ -53,7 +53,9 @@ try {
   st = await t.eval(STATE);
   const textAfter = await t.eval(TEXT);
   s.check('Done re-paginates with no overflow', st.length >= 3 && st.every(p => p.over <= 1), 'pages=' + st.length);
-  s.check('edit kept every word and added the new sentence', textAfter.includes('EXTRA EDITED SENTENCE.') && textAfter.replace(' EXTRA EDITED SENTENCE.', '') === textPaged);
+  const firstDiff = (a, b) => { let i = 0; while (i < a.length && a[i] === b[i]) i++; return JSON.stringify({ before: a.slice(Math.max(0, i - 40), i + 40), after: b.slice(Math.max(0, i - 40), i + 40) }); };
+  const stripped = textAfter.replace(' EXTRA EDITED SENTENCE.', '');
+  s.check('edit kept every word and added the new sentence', textAfter.includes('EXTRA EDITED SENTENCE.') && stripped === textPaged, firstDiff(textPaged, stripped));
   s.check('forced page break starts a page at paragraph 5', st.some(p => p.first.startsWith('Paragraph 5.')), st.map(p => p.first.slice(0, 14)).join(' | '));
 
   let worst = null, n = 0;

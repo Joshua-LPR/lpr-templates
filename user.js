@@ -40,6 +40,8 @@
                                       none before punctuation or after "$".
                                       Returns the inserted text nodes.
      spaceAllTokens(root)             spaceToken for every field in root
+     FIELDS                           THE field table: namespace → key → label
+     makeToken(ns, key, fillLabel)    a new empty field span (all namespaces)
    ============================================================ */
 (function () {
   function esc(s) {
@@ -67,6 +69,50 @@
   var FILL_TOKEN_ATTRS = ['data-fill-field', 'data-contact-field', 'data-tenant-field', 'data-vendor-field'];
   function selectorFor(attrs) { return attrs.map(function (a) { return '[' + a + ']'; }).join(','); }
   var TOKEN_SEL = selectorFor(TOKEN_ATTRS);
+
+  // THE field list — key → label per namespace. Insert Field, the Setup
+  // tabs, the {{field key}} matcher and the legend (field-keys.js) are all
+  // built from this one table. Order = display order (and tenant/vendor
+  // CSV column order), so append, don't reorder.
+  var FIELDS = {
+    contact: {        // data-contact-field — the recipient (a tenant or vendor)
+      first_name: 'First Name', last_name: 'Last Name', name: 'Recipient Name',
+      address_line1: 'Street Address', address_line2: 'Address Line 2',
+      city: 'City', state: 'State', zip: 'Zip', email: 'Email', phone: 'Phone'
+    },
+    tenant: {         // data-tenant-field — legacy alias; tenant-only data
+      first_name: 'First Name', last_name: 'Last Name',
+      address_line1: 'Street Address', address_line2: 'Address Line 2',
+      city: 'City', state: 'State', zip: 'Zip',
+      lease_start: 'Lease Start', lease_end: 'Lease End', rent_amount: 'Rent Amount',
+      phone: 'Phone (Mobile)', phone2: 'Phone 2 (Home/Work)',
+      email1: 'Email 1', email2: 'Email 2', dob: 'Date of Birth'
+    },
+    vendor: {         // data-vendor-field
+      name: 'Vendor Name', address_line1: 'Street Address', address_line2: 'Address Line 2',
+      city: 'City', state: 'State', zip: 'Zip',
+      email1: 'Email (Primary)', email2: 'Email (Alternate)', phone: 'Work Phone', mobile: 'Mobile'
+    },
+    fill: { date: 'Date', time: 'Time', amount: 'Amount', text: 'Text' },   // data-fill-field (+ data-fill-label)
+    owner: { name: 'Landlord / Company' },                                  // data-owner-field (Setup → Sender)
+    employee: { name: 'Signer Name', title: 'Signer Title', phone: 'Signer Phone', email: 'Signer Email' }  // data-employee-field
+  };
+
+  // A new (empty) field token. `fillLabel`: a fill-in's own label ("Payment
+  // Due Date" — same label = same value); defaults to the type's label.
+  function makeToken(ns, key, fillLabel) {
+    var span = document.createElement('span');
+    var label = (FIELDS[ns] || {})[key] || key;
+    span.setAttribute('data-' + ns + '-field', key);
+    if (ns === 'fill') {
+      label = fillLabel || label;
+      span.setAttribute('data-fill-label', label);
+      span.setAttribute('data-fill-placeholder', label);
+    } else if (ns === 'contact' || ns === 'tenant' || ns === 'vendor') {
+      span.setAttribute('data-' + ns + '-label', label);
+    }
+    return span;
+  }
 
   // What sits right next to a field, within its line: 'token' (another
   // field), the neighbouring character, or '' (line edge / nothing).
@@ -109,6 +155,8 @@
     TOKEN_ATTRS: TOKEN_ATTRS.slice(),
     TOKEN_SEL: TOKEN_SEL,
     FILL_TOKEN_SEL: selectorFor(FILL_TOKEN_ATTRS),
+    FIELDS: FIELDS,
+    makeToken: makeToken,
     spaceToken: spaceToken,
     spaceAllTokens: spaceAllTokens
   };

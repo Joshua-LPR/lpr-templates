@@ -379,6 +379,15 @@ While in Edit mode, the Setup panel shows an **Insert Field** sidebar with four 
 - **TENANT — body reference** — inserts legacy `data-tenant-field` alias spans (prefer RECIPIENT for new content)
 - **VENDOR — body reference** — inserts `data-vendor-field` spans (only shown when `vendors.js` is loaded)
 
+Also: **Full Address** (Recipient and Tenant groups — "123 Main St, Apt 2, City, MD 21215", the ", Apt 2" part hides when line 2 is empty; rules in brand.css) and **FIELD KEYS — Copy field keys / Download .txt** (the legend below).
+
+### Field keys `{{…}}` (field-keys.js)
+
+Type or paste `{{first name}}`, `{{date: Payment Due Date}}`, `{{landlord}}`… in Edit mode: pasted keys become fields at once (a `LPR_PASTE.transforms` hook), typed ones on Done (`LPR_KEYS.convertSheets`, called from template-tools before auto-spacing). Spelling is forgiving (lower-cased, non-alphanumerics dropped). **Formatting carries over** (Joshua): a key inside bold / italic / underline — rich text, or Markdown `**…**` / `*…*` — stays inside it, so the field keeps that formatting through filling, Save As and export. New fields copy a value from a filled twin already on the page, and fill-ins re-apply the Fields tab's saved value for their label. Unknown keys stay as highlighted text (`mark.lpr-key-unknown`, plain on paper/exports) and are listed in a notice — never dropped.
+- **Name overlaps** (Joshua): a bare key = the **recipient** (`data-contact-field`, filled from the tenant OR vendor picked as recipient). Tenant-only fields (lease, rent, phone 2, email 1/2, DOB) need no prefix; `{{tenant …}}` forces the tenant list for shared names; vendor keys **only** with the `vendor` prefix and signer keys only as `{{signer …}}`, so `{{phone}}` can never silently become the vendor's or signer's.
+- **Fill-ins:** `{{date}}`, `{{time}}`, `{{amount}}`, `{{text}}`, or with a label: `{{date: Due Date}}` (same label = same value). "date of birth" is the tenant field, not a date blank.
+- **Legend + AI instructions:** `LPR_KEYS.legendText()`, built from `LPR_UTIL.FIELDS` — never hand-copied. Copy / Download .txt in the Insert Field panel and on the index page ("Field keys for drafting"). `FIELD-KEYS.md` in the repo is generated: `node tests/keys.test.mjs --write` (the suite fails if it's out of date). The AI instructions say to format the KEY for a bold/italic value.
+
 **Automatic spacing:** an inserted field that touches a letter, digit or another field gets a space (`LPR_UTIL.spaceToken`, so "JaneDoe" can't happen); none before punctuation (`Jane's`, `Doe,`) or after the `$` sign. Undo removes the field together with its space. Done applies the same rule to the whole letter (`spaceAllTokens`) for fields glued together any other way. All inserts go through one function, `placeToken()` in tenants.js.
 
 ---
@@ -405,7 +414,9 @@ lpr-templates/
 ├── fill-fields.js                      # Fill Fields tab (date/time/amount/text inputs + Flatpickr integration)
 ├── mode-bar.js                         # Standardized on-page mode selector (.mode-bar[data-mode-group] + [data-mode-when="group:mode"]) — button state, persistence, lpr:modechange event, central export/clone scrub
 ├── optional-rows.js                    # Dismiss (×) / restore (＋) optional rows — 24-Hour Notice, Occupant Update, Tenancy Confirmation (markup: data-opt-row / data-opt-label / data-opt-start)
-├── paste-clean.js                      # Clean paste in edit mode (every template; loaded by template-tools.js) — keeps structure + bold/italic/lists, drops foreign fonts/colours; Markdown-lite for plain text
+├── paste-clean.js                      # Clean paste in edit mode (every template; loaded by template-tools.js) — keeps structure + bold/italic/lists, drops foreign fonts/colours; Markdown-lite for plain text; Clear body / Clear all
+├── field-keys.js                       # {{field keys}} → fields (paste + Done), full address preset, key legend + AI instructions (loaded by template-tools.js after paste-clean, and by index.html)
+├── FIELD-KEYS.md                       # GENERATED legend — node tests/keys.test.mjs --write
 ├── page-flow.js                        # Automatic multi-page flow for [data-flow] letter sheets — continuation pages, "Page X of Y", edit-mode break guides (window.LPR_FLOW)
 ├── signature-block.js                  # Per-document sender signature (gallery / leave blank / signature line) + tenant signature lines, as rows in Setup → Sender
 ├── template-options.js                 # "Options" tab in the Setup panel — templates register groups via window.LPR_TEMPLATE_OPTIONS
@@ -634,13 +645,13 @@ Per-document override in Setup → **Sender** (moved there from Options 2026-10-
 
 ---
 
-## Planned: letter-drafting improvements (approved 2026-10-09 — Phases 1–2 done)
+## Planned: letter-drafting improvements (approved 2026-10-09 — Phases 1–3 done)
 
 Epic `joshu_AKIVA-w2b`. From Joshua drafting a payment-plan addendum on Letterhead.
 
 **Phase 1 — Paste + page flow (bug `joshu_AKIVA-mcw`) — DONE 2026-10-09.** Tests: `tests/paste.test.mjs` (111 checks: Google Docs / Word / AI rich text / Markdown / plain text × date line / mid-paragraph / empty line / sign-off; inline paste; Undo; repair of already-broken letters; a payment-plan-shaped agreement). Decisions (Joshua 2026-10-09): clean paste on every template; Markdown in plain-text paste; continuation heading falls back to the document title (style guide updated). Root cause: page-flow.js only splits direct-child `<p>`; pasted content arrives as one wrapper (`<b id="docs-internal-guid…">`, a `<span>`) or lands inside `.date` (keep-together) → text clipped off the page, page-2 heading printed the whole `.date` text. Fix: split any tall block between its children (lists keep numbering via `start`, headings stay with the next block; nothing is ever clipped); repair structure on Done / Library open (unwrap paste wrappers, hoist blocks out of `.date` / `.recipient`); clean paste on every template (keep paragraphs, headings → `.subject`, bold/italic/underline, lists; drop fonts/sizes/colours/spacing; never insert inside date/recipient/sign-off); continuation heading uses only the name + date fields, length-capped.
 **Phase 2 — Editing helpers — DONE 2026-10-09.** Clear buttons (`w2b.1`) — **two buttons, no dialog** (Joshua): *Clear body* (keeps date + recipient; **removes the "Dear …" line too** — Joshua) and *Clear all* (removes those too); both never touch the letterhead header, sign-off or tenant signature lines, and don't trigger the "fields were removed" warning (`paste-clean.js` `clear()`); auto-space between adjacent fields (`w2b.2`, `LPR_UTIL.spaceToken`); B / I / **U (new button — Joshua)** / Plain / Size / Color work on field chips (`w2b.3`, template-tools `formatWithChips`, undo entry type `style`). Tests: `tests/clear.test.mjs`, `tests/fields.test.mjs`.
-**Phase 3 — Field keys.** `{{first name}}`-style keys convert to fields on paste / Done (`w2b.4`) — **a bold/italic key gives a bold/italic field** (stated in the legend); legend `FIELD-KEYS.md` with AI drafting instructions, one-click **Copy** + **Download .txt**; Full address preset with address line 2 handled (`w2b.5`).
+**Phase 3 — Field keys — DONE 2026-10-09** (see Features → "Field keys"; tests `tests/keys.test.mjs`). `{{first name}}`-style keys convert to fields on paste / Done (`w2b.4`) — **a bold/italic key gives a bold/italic field** (stated in the legend); legend `FIELD-KEYS.md` with AI drafting instructions, one-click **Copy** + **Download .txt**; Full address preset with address line 2 handled (`w2b.5`).
 **Phase 4 — Landlord auto-fill (`w2b.6`).** Import Buildium Properties export (Address 1 + Postal code → Rental owners) in the Sender tab; picking a tenant selects the property's owner; Sender/Landlord section in Insert Field; `{{landlord}}` key.
 
 Each phase: new browser tests (paste fixtures from Google Docs / Word / plain text at the date line, mid-paragraph and on an empty line; no page overflow, all text present, numbering continues, field formatting survives fill, key conversion, address-line-2 hiding, owner matching) + all existing suites + baseline compare.
@@ -723,7 +734,9 @@ Use these instead of writing your own copy (the DRY audit of 2026-10-08 removed 
 - `LPR_UTIL.esc(s)` — HTML-escape text/attribute values (`& < > " '`; null/undefined → "").
 - Page identity for `localStorage` keys — **pick the one the existing feature uses; never invent or "unify"** (saved settings are keyed by each exact formula): `pageBase()` (mode-bar legacy keys), `pageKey()` (fields, manual address, mode bar — adds the Library-copy id), `fileKey()` (signature offsets/options), `pageFile()` (raw file name).
 - `TOKEN_ATTRS` / `TOKEN_SEL` (all six `data-*-field` types), `FILL_TOKEN_SEL` (fill-ins only — Print Blank).
-- `spaceToken(el)` / `spaceAllTokens(root)` — space a field from a touching word/field; returns the inserted text nodes / count. Field keys (Phase 3) must use these too.
+- `spaceToken(el)` / `spaceAllTokens(root)` — space a field from a touching word/field; returns the inserted text nodes / count. Never spaces against an element with a class (deliberate layout, e.g. TOPA's date line).
+- `FIELDS` — **the** field table (namespace → key → label: contact, tenant, vendor, fill, owner, employee). tenants.js / vendors.js, Insert Field, field keys and the legend all read it; add a field here, nowhere else. Order = display + CSV column order: append, don't reorder.
+- `makeToken(ns, key, fillLabel)` — a new empty field span with the right attributes for any namespace.
 
 They live in user.js because it is the one script every page **and every saved Library copy** loads first; a new helpers file would be missing from older saved copies. `tests/helpers.test.mjs` proves each helper matches the code it replaced.
 
