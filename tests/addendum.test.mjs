@@ -1,6 +1,6 @@
-// Utilities Addendum on the shared signature rows (bead 9vg): compact variant
-// (data-sig-compact), defaults to a Landlord/Agent signature LINE + 1 tenant
-// line, capped at 1 tenant (data-sig-max-tenants) so it always stays one page.
+// Utilities Addendum on the shared full-size signature rows (bead 9vg; chart
+// condensed 2026-10-10 to make room): defaults to a Landlord/Agent signature
+// LINE + 1 tenant line, capped at 1 tenant (data-sig-max-tenants) — 2 don't fit.
 // "Fits" is measured as real overflow — the sheet clips (overflow:hidden), so a
 // PDF page count alone would hide signatures pushed off the page.
 import { open } from './lib/cdp.mjs';
@@ -43,6 +43,10 @@ try {
   await t.send('Emulation.setEmulatedMedia', { media: 'print' }); await t.wait(200);
   const dbl = await t.eval(`[...document.querySelectorAll('.ua-fields [data-contact-field]')].filter(e => getComputedStyle(e).borderBottomStyle === 'solid').length`);
   s.check('blank print: Resident Name / Address rows keep their single line (no doubled lines)', dbl === 0, 'field lines=' + dbl);
+  const txt = await t.eval(`({ addr: document.querySelector('.ua-addr').innerText.trim(), role: document.querySelector('.signoff .signed-role').innerText.trim(),
+    name: getComputedStyle(document.querySelector('.signoff .signed-name')).display })`);
+  s.check('blank print: no stray ", ," in Address; no dangling "·" after the title; signer\'s printed name shows (full-size rows)',
+    !/,/.test(txt.addr) && !/·\s*$/.test(txt.role) && txt.name !== 'none', JSON.stringify(txt));
   await t.send('Emulation.setEmulatedMedia', { media: '' });
   s.check('no console errors', t.logs.length === 0, t.logs.join(' || '));
 } catch (e) { s.crash(e); }

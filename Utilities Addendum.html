@@ -14,14 +14,16 @@
     font-size: 16pt; font-weight: 700; letter-spacing: 3px;
     text-transform: uppercase;
     color: var(--lpr-ink);
-    margin-top: 0.25in;
-    margin-bottom: 0.22in;
+    margin-top: 0.18in;
+    margin-bottom: 0.16in;
   }
 
   /* Identification fields */
-  .ua-fields { font-size: 11pt; line-height: 1.9; color: var(--lpr-text); margin-bottom: 0.28in; }
-  .ua-fields .row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+  .ua-fields { font-size: 11pt; line-height: 1.6; color: var(--lpr-text); margin-bottom: 0.2in; }
+  .ua-fields .row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 7px; }
   .ua-fields .lbl { color: var(--lpr-ink); font-weight: 600; white-space: nowrap; }
+  /* Blank address (Print Blank): no stray ", ," on the write-in line */
+  .ua-addr .addr-sep:has(+ [data-contact-field]:empty) { visibility: hidden; }
   .ua-fields .val {
     flex: 1;
     border-bottom: 1px solid var(--lpr-rule);
@@ -37,15 +39,19 @@
   .ua-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 0.18in 0 0.2in;
+    margin: 0.12in 0 0;
     font-size: 9.5pt;
     color: var(--lpr-text);
   }
   .ua-table th, .ua-table td {
     border: 1px solid var(--lpr-rule);
-    padding: 7px 8px;
+    padding: 5px 8px;
     vertical-align: middle;
   }
+  /* The four no-fuel utilities: one row of four, joined under the table above */
+  .ua-table.ua-others { margin: -1px 0 0.15in; table-layout: fixed; }
+  .ua-others td { width: 25%; text-align: center; padding: 5px 6px; }
+  .ua-others .util-name { display: block; font-weight: 600; color: var(--lpr-ink); margin-bottom: 3px; }
   .ua-table thead th {
     background: rgba(40,56,145,0.06);
     color: var(--lpr-ink);
@@ -70,8 +76,8 @@
   .paid-opts label { display: inline-flex; align-items: center; gap: 5px; font-weight: 600; color: var(--lpr-ink); }
   .paid-opts input[type="radio"] { width: 12px; height: 12px; accent-color: var(--lpr-blue); margin: 0; }
 
-  /* Signature block: shared rows, compact variant (letter.css, data-sig-compact
-     on the sheet) so the Addendum stays one page. */
+  /* Signature block: the shared full-size rows (letter.css, signature-block.js) —
+     the chart above was condensed (2026-10-10) so they fit on one page. */
 
   /* Simple mode — fuel-type column hidden via [data-mode-when="doc:full"] +
      the shared .mode-hidden mechanism (mode-bar.js). Width/alignment shift
@@ -101,7 +107,7 @@
     <button class="mode-btn" data-mode="simple">Simplified — no Fuel Type</button>
   </div>
   <div class="label">UTILITIES ADDENDUM — US LETTER</div>
-  <div class="sheet letter" data-sig-options data-sig-compact data-sig-default-mode="line" data-sig-default-tenants="1" data-sig-max-tenants="1">
+  <div class="sheet letter" data-sig-options data-sig-default-mode="line" data-sig-default-tenants="1" data-sig-max-tenants="1">
 
     <div class="lh-header">
       <img src="assets/logo-cropped.png" alt="LPR Management, LLC"/>
@@ -124,7 +130,7 @@
       </div>
       <div class="row">
         <span class="lbl">Address:</span>
-        <span class="val"><span data-contact-field="address_line1"></span>, <span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span></span>
+        <span class="val ua-addr"><span data-contact-field="address_line1"></span><span class="addr-sep">, </span><span data-contact-field="city"></span><span class="addr-sep">, </span><span data-contact-field="state"></span> <span data-contact-field="zip"></span></span>
       </div>
     </div>
 
@@ -189,40 +195,32 @@
               </div>
             </td>
           </tr>
+        </tbody>
+      </table>
+      <!-- Utilities with no fuel type: one row of four, each with its own T / O
+           (they used to be four table rows whose fuel column only said "—"). -->
+      <table class="ua-table ua-others">
+        <tbody>
           <tr>
-            <td class="util-name">Air Conditioning</td>
-            <td class="fuel-cell" data-mode-when="doc:full"><span class="na">—</span></td>
-            <td>
+            <td><span class="util-name">Air Conditioning</span>
               <div class="paid-opts">
                 <label><input type="radio" name="paid-ac" /> T</label>
                 <label><input type="radio" name="paid-ac" /> O</label>
               </div>
             </td>
-          </tr>
-          <tr>
-            <td class="util-name">Other Electric</td>
-            <td class="fuel-cell" data-mode-when="doc:full"><span class="na">—</span></td>
-            <td>
+            <td><span class="util-name">Other Electric</span>
               <div class="paid-opts">
                 <label><input type="radio" name="paid-otherelectric" /> T</label>
                 <label><input type="radio" name="paid-otherelectric" /> O</label>
               </div>
             </td>
-          </tr>
-          <tr>
-            <td class="util-name">Water</td>
-            <td class="fuel-cell" data-mode-when="doc:full"><span class="na">—</span></td>
-            <td>
+            <td><span class="util-name">Water</span>
               <div class="paid-opts">
                 <label><input type="radio" name="paid-water" /> T</label>
                 <label><input type="radio" name="paid-water" /> O</label>
               </div>
             </td>
-          </tr>
-          <tr>
-            <td class="util-name">Sewer</td>
-            <td class="fuel-cell" data-mode-when="doc:full"><span class="na">—</span></td>
-            <td>
+            <td><span class="util-name">Sewer</span>
               <div class="paid-opts">
                 <label><input type="radio" name="paid-sewer" /> T</label>
                 <label><input type="radio" name="paid-sewer" /> O</label>

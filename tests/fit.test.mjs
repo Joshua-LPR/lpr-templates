@@ -8,8 +8,9 @@ import { url, suite } from './lib/site.mjs';
 const s = suite('One-page templates fit inside the margins');
 const PAGES = ['24-Hour Notice.html', 'Non-Renewal Notice.html', 'Notice Template.html', 'Occupant Update.html', 'Rent Increase Notice.html',
   'Security Deposit.html', 'TOPA Notice - DHCD.html', 'Tenancy Confirmation.html', 'Utilities Addendum.html'];
-// Known, logged, waiting on Joshua — reported but not failed.
-const KNOWN = { 'TOPA Notice - DHCD.html|letter letter-2': 'bead joshu_AKIVA-wvd' };
+// Known, logged, waiting on Joshua — reported but not failed. (TOPA page 2,
+// bead wvd, was here until it got page flow on 2026-10-10.)
+const KNOWN = {};
 const OVER = `[...document.querySelectorAll('.sheet')].filter(s => s.offsetHeight > 0).map(sh => { const r = sh.getBoundingClientRect(); const lim = r.bottom - parseFloat(getComputedStyle(sh).paddingBottom);
   let max = -1e9; sh.querySelectorAll('*').forEach(e => { const cs = getComputedStyle(e); if (cs.position === 'absolute' || cs.position === 'fixed') return; const b = e.getBoundingClientRect(); if (b.height && b.bottom > max) max = b.bottom; });
   return { cls: sh.className.replace(/\\bsheet\\b|\\bmode-hidden\\b|\\btt-\\S+/g, '').trim().replace(/\\s+/g, ' '), over: Math.round(max - lim) }; })`;

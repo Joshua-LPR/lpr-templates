@@ -130,20 +130,10 @@ body { background: var(--lpr-page); padding: 96px 20px 40px; }
 .signature.sig-as-line { margin-bottom: 4px; }
 .signature.sig-as-line ~ .signed-name,
 .signature.sig-as-line ~ .signed-role { padding-left: calc(1.9in + 8px); }
+/* "Title · Company": no dangling "·" when the company is empty (e.g. the
+   Utilities Addendum clears it until a Sender company is applied). */
+.signed-role .owner-sep:has(+ [data-owner-field]:empty) { display: none; }
 .sig-block .sig-name { grid-column: 2 / -1; font-weight: 600; color: var(--lpr-ink); padding-top: 4px; min-height: 1.4em; }
-/* Compact rows — a one-page FORM that already prints the parties' names
-   above (Utilities Addendum: data-sig-compact on the sheet). Same grid,
-   labels and date line; 0.3in signing space; no printed names under the
-   lines; tighter gaps. */
-.sheet[data-sig-compact] .signoff { margin-top: 0.25in; }
-.sheet[data-sig-compact] .sig-block { margin-top: 0.1in; }
-.sheet[data-sig-compact] .sig-signer + .sig-signer { margin-top: 0.1in; }
-.sheet[data-sig-compact] .sig-block .sig-row,
-.sheet[data-sig-compact] .signature.sig-as-line .sig-row { padding-top: 0.3in; }
-.sheet[data-sig-compact] .sig-block .sig-name,
-.sheet[data-sig-compact] .signoff .signed-name,
-.sheet[data-sig-compact] .signoff .signed-role { display: none; }
-.sheet[data-sig-compact] .signoff img.lpr-sig-img { max-height: 0.35in; width: auto; }
 
 /* ---- Legal disclaimer strip ---- */
 .legal {
