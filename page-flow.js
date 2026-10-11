@@ -29,6 +29,7 @@
    Public API (window.LPR_FLOW):
      paginate()     lay out every [data-flow] sheet now
      unpaginate()   merge every flow back into its source sheet
+     rescan()       sheets added/removed (mail merge): re-collect + lay out
      flush()        run a pending (debounced) re-layout now
      hold()         freeze pages during an export; returns release()
      insertBreak()  edit mode: forced new page before the caret's block
@@ -552,6 +553,14 @@
     quietly(function () { sources.forEach(unpaginateOne); });
   }
 
+  // Sheets were added / removed (mail merge copies): merge every current flow
+  // back, collect the [data-flow] sheets again, lay them out.
+  function rescan() {
+    unpaginate();
+    sources = [].slice.call(document.querySelectorAll('.sheet[data-flow]'));
+    paginate();
+  }
+
   /* ================================================================
      EDIT MODE — page-break guides
      ================================================================ */
@@ -724,6 +733,7 @@
   window.LPR_FLOW = {
     paginate: paginate,
     unpaginate: unpaginate,
+    rescan: rescan,
     flush: flush,
     hold: hold,
     insertBreak: insertBreak,

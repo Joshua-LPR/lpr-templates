@@ -238,8 +238,9 @@
   /* ================================================================
      APPLY TENANT TO PAGE
      ================================================================ */
-  function applyTenant(tenant) {
-    document.querySelectorAll('[data-tenant-field]').forEach(el => {
+  // root: fill only inside this element (a mail-merge copy); default the page.
+  function applyTenant(tenant, root) {
+    (root || document).querySelectorAll('[data-tenant-field]').forEach(el => {
       const f = el.getAttribute('data-tenant-field');
       const val = tenant.effective[f] || '';
       // Rent is money: "1,200.00", "$" only if the letter has none before it.
@@ -255,8 +256,8 @@
      ================================================================ */
   const CONTACT_FIELD_LABELS = window.LPR_UTIL.FIELDS.contact;
 
-  function applyTenantAsRecipient(tenant) {
-    applyTenant(tenant);
+  function applyTenantAsRecipient(tenant, root) {
+    applyTenant(tenant, root);
     const name = [tenant.effective.first_name, tenant.effective.last_name].filter(Boolean).join(' ');
     const contactMap = {
       name,
@@ -270,7 +271,7 @@
       email:         tenant.effective.email1,
       phone:         tenant.effective.phone,
     };
-    document.querySelectorAll('[data-contact-field]').forEach(el => {
+    (root || document).querySelectorAll('[data-contact-field]').forEach(el => {
       const f = el.getAttribute('data-contact-field');
       // Collapse whitespace-only values to a truly empty span. A span that
       // holds only a space is not :empty, so the optional address_line2 row
@@ -569,6 +570,7 @@
           ↑ Properties
         </label>
         <button class="lpr-tp-add-btn" id="lpr-tp-add">+ Add</button>
+        ${document.querySelector('[data-merge]') ? '<button class="lpr-tp-add-btn" id="lpr-tp-merge" title="Mail merge: one copy of this template per tenant you pick">Merge…</button>' : ''}
         <span class="lpr-tp-count">${named.length} tenant${named.length !== 1 ? 's' : ''}</span>
       </div>
       ${importMsg ? `<div class="lpr-tp-msg">${esc(importMsg)}</div>` : ''}
@@ -628,6 +630,9 @@
       };
       reader.readAsText(file);
     };
+
+    // Mail merge (merge.js, loaded by template-tools) — templates opt in with data-merge.
+    if (gid('lpr-tp-merge')) gid('lpr-tp-merge').onclick = () => { if (window.LPR_MERGE) window.LPR_MERGE.open(); };
 
     gid('lpr-tp-add').onclick = () => {
       addMode = true;

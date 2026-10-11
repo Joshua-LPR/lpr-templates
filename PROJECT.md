@@ -416,6 +416,7 @@ lpr-templates/
 ├── mode-bar.js                         # Standardized on-page mode selector (.mode-bar[data-mode-group] + [data-mode-when="group:mode"]) — button state, persistence, lpr:modechange event, central export/clone scrub
 ├── optional-rows.js                    # Dismiss (×) / restore (＋) optional rows — 24-Hour Notice, Occupant Update, Tenancy Confirmation (markup: data-opt-row / data-opt-label / data-opt-start)
 ├── paste-clean.js                      # Clean paste in edit mode (every template; loaded by template-tools.js) — keeps structure + bold/italic/lists, drops foreign fonts/colours; Markdown-lite for plain text; Clear body / Clear all
+├── merge.js                            # Mail merge (Tenants tab → Merge…): one copy per tenant on templates with data-merge; loaded by template-tools.js
 ├── field-keys.js                       # {{field keys}} → fields (paste + Done), full address preset, key legend + AI instructions (loaded by template-tools.js after paste-clean, and by index.html)
 ├── FIELD-KEYS.md                       # GENERATED legend — node tests/keys.test.mjs --write
 ├── page-flow.js                        # Automatic multi-page flow for [data-flow] letter sheets — continuation pages, "Page X of Y", edit-mode break guides (window.LPR_FLOW)
@@ -646,7 +647,15 @@ Per-document override in Setup → **Sender** (moved there from Options 2026-10-
 
 ---
 
-## PROPOSED (not approved) — Mail merge (bead `4z2`), drafted 2026-10-09 while Joshua was away
+## Mail merge — Phase 1 BUILT 2026-10-10 (bead `4z2`; tests `tests/merge.test.mjs`)
+
+**Scope (Joshua 2026-10-10):** "for now mail merge on letterhead, notice and envelopes etc. Individualized ones (security deposit, rent increase etc) will be a later phase." Opted in with `data-merge` on `.stage`: **Letterhead, Letter Watermark, Notice Template, 24-Hour Notice, Envelope, Envelope Premium.**
+
+**How it works (merge.js, loaded by template-tools only where `data-merge` exists):** Tenants tab → **Merge…** → picker (search; filter by building = street address, and by landlord; Tick all shown / Untick all; max 100) → **Preview N copies**: the visible sheet is cloned once per tenant (last-name order) and each clone is filled by `LPR_TENANTS.applyTenantAsRecipient(tenant, clone)` — the same code a single pick uses, now with an optional root. The original is hidden (and loses `data-flow` while merging); `LPR_FLOW.rescan()` lays out every copy, so long letters paginate per copy with their own continuation heading. Shared by all copies: wording, Fields-tab values, Sender, signature lines. A merge bar offers **Print · Save PDF · Exit merge** (reusing the Export menu: one print job / one PDF). While merging, **Edit, Save As, Save Edits and Setup are hidden** — a tenant pick or Sender apply would change every copy; Exit restores the single document exactly.
+
+**Later phase:** individualized notices (Security Deposit, Rent Increase…) need per-tenant amounts — options noted below.
+
+### Original proposal (drafted 2026-10-09 while Joshua was away)
 
 **Goal:** pick a template and a set of tenants → one filled copy per tenant, previewed, printed (or saved as one PDF) in one go.
 

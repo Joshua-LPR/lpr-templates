@@ -17,7 +17,10 @@
     // run before this file's later declarations (libPromises) are evaluated.
     // Then {{field keys}} (field-keys.js), which registers a paste transform.
     Promise.resolve().then(() => ensureLib("paste-clean.js", "LPR_PASTE"))
-      .then(() => ensureLib("field-keys.js", "LPR_KEYS")).catch(e => console.error(e));
+      .then(() => ensureLib("field-keys.js", "LPR_KEYS"))
+      // Mail merge (merge.js) on templates that opt in with data-merge.
+      .then(() => document.querySelector("[data-merge]") ? ensureLib("merge.js", "LPR_MERGE") : null)
+      .catch(e => console.error(e));
 
     // Normalize title: replace em/en dash with plain hyphen so Print → PDF filenames are clean
     document.title = document.title.replace(/\s*[—–]\s*/g, ' - ');
@@ -83,6 +86,7 @@
     // SAVE AS (always present)
     const saveBtn = mkBtn("Save As", saveAs);
     saveBtn.title = "Save this filled-in template to your library";
+    saveBtn.setAttribute("data-merge-hide", ""); // hidden during a mail merge (merge.js)
     toolbar.appendChild(saveBtn);
 
     // SAVE EDITS — only when viewing an existing library entry via view.html
@@ -91,6 +95,7 @@
       : null;
     if (libId) {
       const saveEditsBtn = mkBtn("Save Edits", () => doSaveEdits(libId));
+      saveEditsBtn.setAttribute("data-merge-hide", "");
       saveEditsBtn.id = "tt-save-edits-btn";
       saveEditsBtn.title = "Overwrite this library entry with your current edits";
       toolbar.appendChild(saveEditsBtn);
