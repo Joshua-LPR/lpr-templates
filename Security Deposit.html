@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>LPR — Security Deposit Notice</title>
+<title>LPR · Security Deposit Notice</title>
 <link rel="stylesheet" href="brand.css">
 <link rel="stylesheet" href="letter.css">
 <script src="user.js"></script>
@@ -23,7 +23,7 @@
     <button class="mode-btn" data-mode="returned">Full Refund</button>
   </div>
 
-  <div class="label">SECURITY DEPOSIT NOTICES — US LETTER</div>
+  <div class="label">SECURITY DEPOSIT NOTICES · US LETTER</div>
 
   <!-- ── Withheld ── -->
   <div class="sheet letter" data-mode-when="doc:withheld">
@@ -44,15 +44,15 @@
         <span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span>
       </div>
       <p>Dear <span data-contact-field="first_name"></span> <span data-contact-field="last_name"></span>,</p>
-      <p>We have applied your security deposit for <strong><span data-contact-field="address_line1"></span></strong>, plus accrued interest, to the unpaid balance on your account. Here is the summary:</p>
+      <p>We have applied your security deposit for <strong><span data-contact-field="address_line1"></span></strong>, plus accrued interest, to the unpaid balance on your account. The amounts are summarized below.</p>
       <table class="acct-table">
         <tr><td>Security deposit held</td><td class="amt">$<span data-fill-field="amount" data-fill-label="Deposit Held"></span></td></tr>
         <tr><td>Accrued interest</td><td class="amt">+ $<span data-fill-field="amount" data-fill-label="Accrued Interest"></span></td></tr>
         <tr><td>Deductions (itemized on attached statement)</td><td class="amt">− $<span data-fill-field="amount" data-fill-label="Total Deductions"></span></td></tr>
-        <tr class="acct-total"><td>Remaining balance due</td><td class="amt">$<span data-fill-field="amount" data-fill-label="Balance Due"></span></td></tr>
+        <tr class="acct-total"><td>Remaining balance due</td><td class="amt">$<span data-fill-field="amount" data-fill-label="Balance Due" data-fill-calc="total_deductions - deposit_held - accrued_interest" data-fill-calc-negative="The deposit plus interest is more than the deductions: use the Partial Refund notice instead."></span></td></tr>
       </table>
-      <div class="callout callout-blue">Payment due by <strong><span data-fill-field="date" data-fill-label="Payment Due Date"></span></strong> — by check to the office or through your resident portal.</div>
-      <p>If we add any further charges, we will send you an updated statement. If you believe any charge is incorrect, call us at 443.402.5641 within 14 days and we will review your account with you.</p>
+      <div class="callout callout-blue">Please remit the remaining balance by <strong><span data-fill-field="date" data-fill-label="Payment Due Date"></span></strong>, either by check delivered to our office or through your resident portal.</div>
+      <p>Should any additional charges be assessed, we will provide you with an updated statement.</p>
       <div class="signoff">
         <p>Sincerely,</p>
         <div class="signature"></div>
@@ -81,17 +81,16 @@
         <span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span>
       </div>
       <p>Dear <span data-contact-field="first_name"></span> <span data-contact-field="last_name"></span>,</p>
-      <p>Enclosed is a check for <strong>$<span data-fill-field="amount" data-fill-label="Refund Amount"></span></strong> — the remainder of your security deposit and interest for <strong><span data-contact-field="address_line1"></span></strong>, after the deductions summarized below.</p>
+      <p>Enclosed please find a check in the amount of <strong>$<span data-fill-field="amount" data-fill-label="Refund Amount" data-fill-calc="deposit_held + accrued_interest - total_deductions" data-fill-calc-negative="The deductions are more than the deposit plus interest: use the Withheld notice instead."></span></strong>, representing the balance of your security deposit and accrued interest for <strong><span data-contact-field="address_line1"></span></strong> after the deductions summarized below.</p>
       <table class="acct-table">
         <tr><td>Security deposit held</td><td class="amt">$<span data-fill-field="amount" data-fill-label="Deposit Held"></span></td></tr>
         <tr><td>Accrued interest</td><td class="amt">+ $<span data-fill-field="amount" data-fill-label="Accrued Interest"></span></td></tr>
         <tr><td>Deductions (itemized on attached statement)</td><td class="amt">− $<span data-fill-field="amount" data-fill-label="Total Deductions"></span></td></tr>
-        <tr class="acct-total"><td>Refund enclosed</td><td class="amt">$<span data-fill-field="amount" data-fill-label="Refund Amount"></span></td></tr>
+        <tr class="acct-total"><td>Refund enclosed</td><td class="amt">$<span data-fill-field="amount" data-fill-label="Refund Amount" data-fill-calc="deposit_held + accrued_interest - total_deductions" data-fill-calc-negative="The deductions are more than the deposit plus interest: use the Withheld notice instead."></span></td></tr>
       </table>
-      <p>If you believe any charge is incorrect, call us at 443.402.5641 within 14 days and we will review your account with you.</p>
-      <p>We appreciated having you as a tenant, and we wish you the best in your new home.</p>
+      <p>Thank you for your tenancy. We wish you well in your new home.</p>
       <div class="signoff">
-        <p>Thank you,</p>
+        <p>Sincerely,</p>
         <div class="signature"></div>
         <div class="signed-name" data-employee-field="name">David Mitnick</div>
         <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span></div>
@@ -118,11 +117,11 @@
         <span data-contact-field="city"></span>, <span data-contact-field="state"></span> <span data-contact-field="zip"></span>
       </div>
       <p>Dear <span data-contact-field="first_name"></span> <span data-contact-field="last_name"></span>,</p>
-      <p>Good news — your security deposit for <strong><span data-contact-field="address_line1"></span></strong> is being returned in full.</p>
-      <div class="callout callout-gold">Enclosed is a check for <strong>$<span data-fill-field="amount" data-fill-label="Full Refund Amount" data-fill-key="refund_amount_full"></span></strong>, covering your entire deposit plus accrued interest.</div>
-      <p>Thank you for taking such good care of the home. We appreciated having you as a tenant, and we wish you the best in your new place.</p>
+      <p>We are pleased to inform you that your security deposit for <strong><span data-contact-field="address_line1"></span></strong> is being returned in full.</p>
+      <div class="callout callout-gold">Enclosed please find a check in the amount of <strong>$<span data-fill-field="amount" data-fill-label="Full Refund Amount" data-fill-key="refund_amount_full" data-fill-calc="deposit_held + accrued_interest"></span></strong>, representing your full security deposit plus accrued interest.</div>
+      <p>Thank you for maintaining the property in good condition throughout your tenancy. We wish you well in your new home.</p>
       <div class="signoff">
-        <p>Thank you,</p>
+        <p>Sincerely,</p>
         <div class="signature"></div>
         <div class="signed-name" data-employee-field="name">David Mitnick</div>
         <div class="signed-role" data-employee-hide-if-empty="title"><span data-employee-field="title">Senior Property Manager</span><span class="owner-sep"> · </span><span data-owner-field="name">LPR Management, LLC</span></div>

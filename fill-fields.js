@@ -44,9 +44,53 @@
       var label = el.getAttribute('data-fill-label') || type;
       var key   = el.getAttribute('data-fill-key')   || slugify(label);
       if (!seen.has(key)) seen.set(key, { type: type, label: label, key: key, els: [] });
-      seen.get(key).els.push(el);
+      var def = seen.get(key);
+      def.els.push(el);
+      if (!def.calc && el.getAttribute('data-fill-calc')) def.calc = el.getAttribute('data-fill-calc');
     });
     return Array.from(seen.values());
+  }
+
+  /* ================================================================
+     CALCULATED AMOUNTS — data-fill-calc="deposit_held + accrued_interest
+     - total_deductions": the field is worked out from other fields' keys
+     (+ / − only, no eval) and filled wherever it appears; it is read-only
+     in the Fields tab. Blank until every input has a number.
+     ================================================================ */
+  function calcValue(expr, vals) {
+    var total = 0, ok = true;
+    String(expr).replace(/\s+/g, '').replace(/([+\-]?)([a-z0-9_]+)/g, function (m, sign, key) {
+      var n = window.LPR_UTIL.parseMoney(vals[key]);
+      if (n == null) ok = false; else total += sign === '-' ? -n : n;
+      return '';
+    });
+    return ok ? total.toFixed(2) : '';
+  }
+  function applyCalcs(vals) {
+    getFieldDefs().forEach(function (def) { if (def.calc) applyField(def, calcValue(def.calc, vals || loadValues())); });
+  }
+  // "deposit_held + accrued_interest - total_deductions" → the fields' labels
+  function formulaText(expr) {
+    var labels = {};
+    getFieldDefs().forEach(function (d) { labels[d.key] = d.label; });
+    return String(expr).replace(/[a-z0-9_]+/g, function (k) { return labels[k] || k; }).replace(/-/g, '−').replace(/\s+/g, ' ');
+  }
+  // Fields tab: show each calculated amount; a negative result means the
+  // other notice fits (the template says which: data-fill-calc-negative).
+  function refreshCalcBoxes(container) {
+    if (!container) return;
+    var vals = loadValues();
+    getFieldDefs().forEach(function (def) {
+      if (!def.calc) return;
+      var box = container.querySelector('[data-ff-calc="' + def.key + '"]');
+      var note = container.querySelector('[data-ff-note="' + def.key + '"]');
+      var v = calcValue(def.calc, vals);
+      if (box) box.value = v === '' ? '' : formatMoney(v);
+      if (note) {
+        var msg = def.els.map(function (el) { return el.getAttribute('data-fill-calc-negative'); }).filter(Boolean)[0];
+        note.textContent = v !== '' && Number(v) < 0 ? (msg || 'This works out below zero.') : '';
+      }
+    });
   }
 
   function slugify(str) {
@@ -121,27 +165,43 @@
   // Money: shared with the tenant's rent (user.js LPR_UTIL).
   var formatMoney = window.LPR_UTIL.formatMoney;
 
-  /* ---- per-field date format (Joshua: per field) ----
-     Your Fields-tab choice (stored per page) wins; else the field's own
-     data-fill-format (from a {{weekday date: …}} key, or a saved copy);
-     else spelled out. Written back onto the spans so Save As / exports
-     keep it. */
+  /* ---- date formats: per PLACE, with a per-field override ----
+     Each place a date appears may have its own format (data-fill-format,
+     set by a key like {{weekday date: Due Date}}), so one date can show as
+     "Thursday, October 8, 2026" in the body and "10/8/2026" in a table.
+     The Fields-tab dropdown sets ALL places of the field at once (stored per
+     page, mirrored on the spans as data-fill-fmt-field so Save As copies
+     keep it); its "Different in each place" choice clears that override.
+     What a place actually shows is written to data-fill-shown (brand.css
+     sizes blank-form lines by it). */
   var FMT_KEY = 'lpr_fillfmt_' + PAGE_KEY;
   function loadFormats() {
     try { return JSON.parse(localStorage.getItem(FMT_KEY) || '{}'); }
     catch (e) { return {}; }
   }
-  function formatOf(def) {
+  // The field-wide override, or '' when each place keeps its own.
+  function fieldFormat(def) {
     if (def.type !== 'date') return '';
     var chosen = loadFormats()[def.key];
     if (DATE_FORMATS[chosen]) return chosen;
-    var own = def.els.map(function (el) { return el.getAttribute('data-fill-format'); }).filter(function (f) { return DATE_FORMATS[f]; })[0];
-    return own || 'spelled';
+    var mirrored = def.els.map(function (el) { return el.getAttribute('data-fill-fmt-field'); }).filter(function (f) { return DATE_FORMATS[f]; })[0];
+    return mirrored || '';
+  }
+  function placeFormat(def, el) {
+    var own = el.getAttribute('data-fill-format');
+    return fieldFormat(def) || (DATE_FORMATS[own] ? own : 'spelled');
+  }
+  // For the dropdown: the one format every place shows, or '' if they differ.
+  function formatOf(def) {
+    if (def.type !== 'date') return '';
+    var shown = def.els.map(function (el) { return placeFormat(def, el); });
+    return shown.every(function (f) { return f === shown[0]; }) ? shown[0] : '';
   }
   function setFormat(def, fmt) {
     var f = loadFormats();
-    f[def.key] = fmt;
+    if (fmt) f[def.key] = fmt; else delete f[def.key];
     localStorage.setItem(FMT_KEY, JSON.stringify(f));
+    def.els.forEach(function (el) { if (fmt) el.setAttribute('data-fill-fmt-field', fmt); else el.removeAttribute('data-fill-fmt-field'); });
   }
 
   function formatValue(type, raw, fmt) {
@@ -158,20 +218,22 @@
   }
 
   function applyField(def, raw) {
-    var fmt = formatOf(def);
-    var display = formatValue(def.type, raw, fmt);
     def.els.forEach(function (el) {
       if (def.type === 'date') {
-        if (fmt !== 'spelled') el.setAttribute('data-fill-format', fmt); else el.removeAttribute('data-fill-format');
+        var fmt = placeFormat(def, el);
+        if (fmt !== 'spelled') el.setAttribute('data-fill-shown', fmt); else el.removeAttribute('data-fill-shown');   // spelled = the default, no marker
+        el.textContent = formatValue('date', raw, fmt);
+        return;
       }
       // "$" only where the letter doesn't already have one right before the field
-      el.textContent = def.type === 'amount' ? window.LPR_UTIL.moneyText(el, raw) : display;
+      el.textContent = def.type === 'amount' ? window.LPR_UTIL.moneyText(el, raw) : formatValue(def.type, raw);
     });
   }
 
   function applyAll() {
     var vals = loadValues();
-    getFieldDefs().forEach(function (def) { applyField(def, vals[def.key] || ''); });
+    getFieldDefs().forEach(function (def) { if (!def.calc) applyField(def, vals[def.key] || ''); });
+    applyCalcs(vals);
   }
 
   /* ================================================================
@@ -223,6 +285,8 @@
         var raw = inp.value;
         saveValue(def.key, raw);
         applyField(def, raw);
+        applyCalcs();
+        refreshCalcBoxes(container);
       }
       inp.addEventListener('change', onUpdate);
       if (def.type === 'amount' || def.type === 'text') {
@@ -241,6 +305,8 @@
         render(container);
       });
     });
+
+    refreshCalcBoxes(container);
 
     document.getElementById('lpr-ff-apply-btn').onclick = function () {
       applyAll();
@@ -276,7 +342,7 @@
             // Type a date in any common form, or pick it. The box shows it
             // the way the letter will. Unreadable text → red outline and
             // nothing changes (flatpickr would otherwise clear the date).
-            var fmt = formatOf(def);
+            var fmt = formatOf(def) || 'spelled';   // places differ → the box shows it spelled out
             opts.dateFormat   = 'Y-m-d';
             opts.altInput     = true;
             opts.altFormat    = 'letter';
@@ -315,7 +381,7 @@
               if (typeof date === 'string' && date.trim() && !parseDate(date)) {
                 if (fp.altInput) {
                   fp.altInput.classList.add('lpr-ff-bad');
-                  fp.altInput.title = 'Not a date I can read — try 10/8/2026 or October 8, 2026';
+                  fp.altInput.title = 'Not a date I can read. Try 10/8/2026 or October 8, 2026';
                 }
                 return;
               }
@@ -402,14 +468,29 @@
     var input;
     if (def.type === 'date') {
       var fmt = formatOf(def);
+      // Options show THIS field's date (or an example until one is entered).
+      var sample = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : '2026-10-08';
+      // Places set to different formats (by keys) can keep them.
+      var own = def.els.map(function (el) { return DATE_FORMATS[el.getAttribute('data-fill-format')] ? el.getAttribute('data-fill-format') : 'spelled'; });
+      var mixed = own.some(function (f) { return f !== own[0]; });
       input = '<div class="lpr-ff-icon-wrap"><input type="date" class="lpr-ff-inp lpr-ff-has-icon" data-ff-key="' + k + '" value="' + esc(raw) + '" /><span class="lpr-ff-icon" aria-hidden="true">' + CAL_ICON + '</span></div>' +
-        '<select class="lpr-ff-fmt" data-ff-fmt="' + k + '" title="How this date appears in the letter">' +
+        '<select class="lpr-ff-fmt" data-ff-fmt="' + k + '" title="How this date appears in the letter' + (def.els.length > 1 ? ' (all ' + def.els.length + ' places)' : '') + '">' +
+          (mixed || !fmt ? '<option value=""' + (!fmt ? ' selected' : '') + '>Different in each place</option>' : '') +
           Object.keys(DATE_FORMATS).map(function (f) {
-            return '<option value="' + f + '"' + (f === fmt ? ' selected' : '') + '>' + esc(DATE_FORMATS[f].label) + '</option>';
+            return '<option value="' + f + '"' + (f === fmt ? ' selected' : '') + '>' + esc(formatDate(sample, f)) + '</option>';
           }).join('') +
         '</select>';
     } else if (def.type === 'time') {
       input = '<div class="lpr-ff-icon-wrap"><input type="time" class="lpr-ff-inp lpr-ff-has-icon" data-ff-key="' + k + '" value="' + esc(raw) + '" /><span class="lpr-ff-icon" aria-hidden="true">' + CLK_ICON + '</span></div>';
+    } else if (def.calc) {
+      // Worked out from other fields — read-only, with its formula.
+      input =
+        '<div class="lpr-ff-money lpr-ff-calc">' +
+          '<span class="lpr-ff-dollar">$</span>' +
+          '<input type="text" class="lpr-ff-inp lpr-ff-amt-inp" data-ff-calc="' + k + '" readonly tabindex="-1" value="" />' +
+        '</div>' +
+        '<div class="lpr-ff-formula">= ' + esc(formulaText(def.calc)) + '</div>' +
+        '<div class="lpr-ff-calc-note" data-ff-note="' + k + '"></div>';
     } else if (def.type === 'amount') {
       input =
         '<div class="lpr-ff-money">' +
@@ -417,7 +498,10 @@
           '<input type="text" class="lpr-ff-inp lpr-ff-amt-inp" data-ff-key="' + k + '" value="' + esc(raw) + '" placeholder="0.00" inputmode="decimal" />' +
         '</div>';
     } else {
-      input = '<input type="text" class="lpr-ff-inp" data-ff-key="' + k + '" value="' + esc(raw) + '" placeholder="' + esc(def.label) + '" />';
+      // A field in a notice's large title may run over two lines (Enter = new line).
+      input = def.els.some(function (el) { return el.closest('.doc-title'); })
+        ? '<textarea class="lpr-ff-inp lpr-ff-title" rows="2" data-ff-key="' + k + '" placeholder="' + esc(def.label) + '">' + esc(raw) + '</textarea>'
+        : '<input type="text" class="lpr-ff-inp" data-ff-key="' + k + '" value="' + esc(raw) + '" placeholder="' + esc(def.label) + '" />';
     }
     return (
       '<div class="lpr-ff-field">' +
@@ -456,6 +540,10 @@
       '  font-family:\'Montserrat\',sans-serif;font-size:12.5px;color:var(--lpr-ink);outline:none;background:#fff;}',
       '.lpr-ff-inp:focus{border-color:var(--lpr-blue);}',
       '.lpr-ff-inp[type="date"],.lpr-ff-inp[type="time"]{cursor:pointer;}',
+      '.lpr-ff-calc{background:#f7f8ff;}.lpr-ff-calc .lpr-ff-amt-inp{background:transparent;color:var(--lpr-ink);font-weight:600;cursor:default;}',
+      '.lpr-ff-formula{font-size:10px;color:var(--lpr-muted);}',
+      '.lpr-ff-calc-note:empty{display:none;}.lpr-ff-calc-note{font-size:11px;color:#cc2222;}',
+      '.lpr-ff-title{resize:vertical;font-family:inherit;line-height:1.4;}',
       '.lpr-ff-inp.lpr-ff-bad{border-color:#cc2222!important;background:#fff5f5;}',
       '.lpr-ff-fmt{margin-top:4px;padding:4px 6px;border:1px solid #ddd;border-radius:5px;font-family:inherit;font-size:11px;color:var(--lpr-muted);background:#fff;cursor:pointer;}',
 
@@ -514,6 +602,14 @@
     window.LPR_FILL_TABS.push({ id: 'fill-fields', label: 'Fields', render: render });
 
     window.LPR_FILL_APPLY = applyAll; // lets insert sidebar trigger a re-apply after inserting a span
+    // Set a fill field by its label (field-keys.js {{title: …}} / {{badge: …}}).
+    window.LPR_FILL_SET = function (label, value) {
+      var def = getFieldDefs().filter(function (d) { return d.label === label; })[0];
+      if (!def) return false;
+      saveValue(def.key, value);
+      applyField(def, value);
+      return true;
+    };
     window.LPR_FILL_FORMAT = { parseDate: parseDate, formatDate: formatDate, formatMoney: formatMoney, DATE_FORMATS: DATE_FORMATS };
   }
 

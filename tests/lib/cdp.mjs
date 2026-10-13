@@ -57,9 +57,26 @@ const QUIET = ['--disable-background-networking', '--disable-component-update', 
   '--no-default-browser-check', '--disable-default-apps', '--disable-extensions', '--disable-breakpad',
   '--disable-crash-reporter', '--disable-features=msEdgeShopping,EdgeCollections,msUndersideButton,Translate'];
 
+// A promise that gives up after `ms` (a stalled browser start must never hang
+// a whole suite until run-all's 10-minute kill, which skips all cleanup).
+function within(promise, ms, what) {
+  let t;
+  return Promise.race([promise, new Promise((_, j) => { t = setTimeout(() => j(new Error(what + ' timed out after ' + ms / 1000 + 's')), ms); })])
+    .finally(() => clearTimeout(t));
+}
+
 // Open a fresh browser profile on `url`. user.js redirects to users.html when
-// no user is active, so a test user is signed in first.
-export async function open(url, { width = 1100, height = 1400, user = 'joshua' } = {}) {
+// no user is active, so a test user is signed in first. A launch that stalls
+// is abandoned (its browser stopped, its profile removed) and tried once more.
+export async function open(url, opts = {}) {
+  try { return await openOnce(url, opts); }
+  catch (e) {
+    if (!/timed out|did not start/.test(e.message)) throw e;
+    console.log('(test browser start stalled: ' + e.message + ' — retrying once)');
+    return openOnce(url, opts);
+  }
+}
+async function openOnce(url, { width = 1100, height = 1400, user = 'joshua' } = {}) {
   const edge = EDGE_PATHS.find(p => existsSync(p));
   if (!edge) throw new Error('Microsoft Edge not found — set EDGE_PATH');
   const port = nextPort++;
@@ -72,15 +89,18 @@ export async function open(url, { width = 1100, height = 1400, user = 'joshua' }
   const entry = { proc, prof };
   live.add(entry);
 
+  const abandon = () => { stopByProfile([prof]); removeProfile(prof); live.delete(entry); };
   let page;
   for (let i = 0; i < 75 && !page; i++) {
-    try { page = (await (await fetch(`http://127.0.0.1:${port}/json`)).json()).find(t => t.type === 'page'); } catch {}
+    try { page = (await (await fetch(`http://127.0.0.1:${port}/json`, { signal: AbortSignal.timeout(2000) })).json()).find(t => t.type === 'page'); } catch {}
     if (!page) await new Promise(r => setTimeout(r, 200));
   }
-  if (!page) { stopByProfile([prof]); throw new Error('Edge did not start'); }
+  if (!page) { abandon(); throw new Error('Edge did not start'); }
 
   const ws = new WebSocket(page.webSocketDebuggerUrl);
-  await new Promise((r, j) => { ws.addEventListener('open', r, { once: true }); ws.addEventListener('error', j, { once: true }); });
+  try {
+    await within(new Promise((r, j) => { ws.addEventListener('open', r, { once: true }); ws.addEventListener('error', j, { once: true }); }), 10000, 'DevTools connection');
+  } catch (e) { try { ws.close(); } catch {} abandon(); throw e; }
   let id = 0;
   const pending = new Map();
   const logs = [];
@@ -130,10 +150,10 @@ export async function open(url, { width = 1100, height = 1400, user = 'joshua' }
   await send('Page.setDownloadBehavior', { behavior: 'deny' });
   let browserWs = null;
   try {
-    const ver = await (await fetch(`http://127.0.0.1:${port}/json/version`)).json();
+    const ver = await (await fetch(`http://127.0.0.1:${port}/json/version`, { signal: AbortSignal.timeout(3000) })).json();
     browserWs = new WebSocket(ver.webSocketDebuggerUrl);
-    await new Promise((r, j) => { browserWs.addEventListener('open', r, { once: true }); browserWs.addEventListener('error', j, { once: true }); });
-    await new Promise(r => { browserWs.addEventListener('message', r, { once: true }); browserWs.send(JSON.stringify({ id: 1, method: 'Browser.setDownloadBehavior', params: { behavior: 'deny' } })); });
+    await within(new Promise((r, j) => { browserWs.addEventListener('open', r, { once: true }); browserWs.addEventListener('error', j, { once: true }); }), 5000, 'browser connection');
+    await within(new Promise(r => { browserWs.addEventListener('message', r, { once: true }); browserWs.send(JSON.stringify({ id: 1, method: 'Browser.setDownloadBehavior', params: { behavior: 'deny' } })); }), 5000, 'download setting');
   } catch (e) { /* step 1 still applies */ }
   await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
   if (user) {

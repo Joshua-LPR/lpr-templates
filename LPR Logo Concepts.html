@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>LPR — Logo Refinements</title>
+<title>LPR · Logo Refinements</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -224,7 +224,7 @@ function IntroCard() {
         far to push it.
       </p>
       <div className="size-rule" />
-      <div className="label-tiny">REFERENCE — CURRENT LOGO</div>
+      <div className="label-tiny">REFERENCE · CURRENT LOGO</div>
       <div className="reference-box">
         <img src="assets/logo-current.png" alt="current LPR logo" />
         <p className="concept-rationale">
@@ -271,14 +271,14 @@ function App() {
   return (
     <>
       <DesignCanvas
-        title="LPR — Logo Refinements"
+        title="LPR · Logo Refinements"
         subtitle={`Five evolutions of the existing brand. Palette: ${palette.name}`}
       >
         <DCSection id="setup" title="Setup">
           <DCArtboard id="brief" label="Brief & current logo" width={620} height={520}>
             <IntroCard />
           </DCArtboard>
-          <DCArtboard id="palettes" label="Palettes — click to apply" width={1180} height={360}>
+          <DCArtboard id="palettes" label="Palettes: click to apply" width={1180} height={360}>
             <PaletteBoard activeId={tweaks.selected} onPick={(id)=>setTweak("selected", id)} />
           </DCArtboard>
         </DCSection>
@@ -300,7 +300,7 @@ function App() {
                 <VariantStrip Concept={C} palette={palette} on="light" label="VARIANTS" />
               </DCArtboard>
               <DCArtboard id={c.id+"-scale"} label="Small-size behavior" width={780} height={300}>
-                <ScaleCard Concept={C} palette={palette} on="light" label="SCALE — 40 / 56 / 80 / 110 px" />
+                <ScaleCard Concept={C} palette={palette} on="light" label="SCALE · 40 / 56 / 80 / 110 px" />
               </DCArtboard>
             </DCSection>
           );

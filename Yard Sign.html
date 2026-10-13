@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>LPR — Yard Sign · For Rent</title>
+<title>LPR · Yard Sign · For Rent</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="stylesheet" href="brand.css">
 <script src="user.js"></script>
@@ -175,7 +175,7 @@
 </div>
 
 <div class="stage">
-  <div class="label">YARD SIGN · FOR RENT — 24″ × 18″ LANDSCAPE</div>
+  <div class="label">YARD SIGN · FOR RENT · 24″ × 18″ LANDSCAPE</div>
 
   <!-- Track 4 §4: standardized mode-bar contract. mode-bar.js owns button
        state, persistence (lpr_mode_<pageKey>_<group>), the shared
@@ -428,8 +428,8 @@
             document.body.appendChild(a); a.click(); a.remove();
             setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
           }, 'image/png');
-        }).catch(function (err) { restoreImgs(); restore(); hiresBusy = false; msg.textContent = 'PNG export failed — check your internet connection and try again'; msg.style.background = '#b3261e'; setTimeout(function () { msg.remove(); }, 4000); console.error(err); });
-      }).catch(function (err) { restoreImgs(); restore(); hiresBusy = false; msg.textContent = 'PNG export failed — check your internet connection and try again'; msg.style.background = '#b3261e'; setTimeout(function () { msg.remove(); }, 4000); console.error(err); });
+        }).catch(function (err) { restoreImgs(); restore(); hiresBusy = false; msg.textContent = 'PNG export failed. Check your internet connection and try again'; msg.style.background = '#b3261e'; setTimeout(function () { msg.remove(); }, 4000); console.error(err); });
+      }).catch(function (err) { restoreImgs(); restore(); hiresBusy = false; msg.textContent = 'PNG export failed. Check your internet connection and try again'; msg.style.background = '#b3261e'; setTimeout(function () { msg.remove(); }, 4000); console.error(err); });
     });
   }
 })();
@@ -567,7 +567,7 @@
           '<input type="text" class="lpr-ff-inp" data-ys="phone" placeholder="443.402.5641" />' +
         '</div>' +
         '<div class="lpr-ff-field" style="margin-top:10px;">' +
-          '<label class="lpr-ff-lbl">QR Code Link — leave blank to hide</label>' +
+          '<label class="lpr-ff-lbl">QR Code Link (leave blank to hide)</label>' +
           '<input type="text" class="lpr-ff-inp" data-ys="qr" placeholder="mailto:info@lprmanagement.com?subject=Rental Inquiry" />' +
         '</div>' +
         '<div class="lpr-ff-field" style="margin-top:10px;">' +

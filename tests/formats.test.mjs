@@ -48,7 +48,7 @@ try {
   await t.eval(TYPE('notice_date', 'October 9, 2026')); await t.wait(200);
 
   await t.eval(`(() => { const s = document.querySelector('[data-ff-fmt="notice_date"]'); s.value = 'numeric'; s.dispatchEvent(new Event('change')); })()`); await t.wait(300);
-  const num = await t.eval(`({ text: (${LETTER('Notice Date')})[0], attr: document.querySelector('.sheet [data-fill-label="Notice Date"]').getAttribute('data-fill-format'),
+  const num = await t.eval(`({ text: (${LETTER('Notice Date')})[0], attr: document.querySelector('.sheet [data-fill-label="Notice Date"]').getAttribute('data-fill-shown'),
     other: (${LETTER('Renewal Date')})[0] })`);
   s.check('Notice Date set to numeric → "10/9/2026"; other dates unaffected (per field)', num.text === '10/9/2026' && num.attr === 'numeric' && !/\//.test(num.other || ''), JSON.stringify(num));
   await t.eval(`(() => { const s = document.querySelector('[data-ff-fmt="notice_date"]'); s.value = 'weekday'; s.dispatchEvent(new Event('change')); })()`); await t.wait(300);
@@ -75,12 +75,12 @@ const L = await open(url('Letterhead.html'));
 try {
   await L.eval(`document.getElementById('tt-edit-btn').click()`); await L.wait(400);
   await L.eval(`(() => { const b = document.querySelector('.sheet[data-flow] .lh-body'); const p = document.createElement('p'); p.id = 'zf';
-    p.textContent = 'Deposit {{amount: Deposit}} due {{weekday date: Move Out}}, signed {{legal date: Signing}}, and $ {{amount: Fee}}.'; b.querySelector('.signoff').before(p); })()`);
+    p.textContent = 'Deposit {{amount: Deposit}} due {{weekday date: Move Out}}, signed {{legal date: Signing}}, and $ {{amount: Fee}}. Again: {{numeric date: Move Out}}.'; b.querySelector('.signoff').before(p); })()`);
   await L.eval(`document.getElementById('tt-edit-btn').click()`); await L.wait(500);
   const keyFmt = await L.eval(`({ w: document.querySelector('#zf [data-fill-label="Move Out"]')?.getAttribute('data-fill-format'), l: document.querySelector('#zf [data-fill-label="Signing"]')?.getAttribute('data-fill-format') })`);
   s.check('{{weekday date: …}} / {{legal date: …}} keys set the field\'s format', keyFmt.w === 'weekday' && keyFmt.l === 'legal', JSON.stringify(keyFmt));
   await openSetupTab(L, 'Fields'); await L.wait(800);
-  s.check('Fields tab dropdown shows the key\'s format', (await L.eval(`document.querySelector('[data-ff-fmt="move_out"]').value`)) === 'weekday');
+  s.check('one date in two formats (two keys, same label): dropdown says "Different in each place"', (await L.eval(`document.querySelector('[data-ff-fmt="move_out"]').value`)) === '');
   await L.eval(`(() => { for (const [k, v] of [['deposit', '750'], ['fee', '25']]) { const i = document.querySelector('[data-ff-key="' + k + '"]'); i.value = v; i.dispatchEvent(new Event('input')); i.dispatchEvent(new Event('change')); } })()`);
   for (const [k, v] of [['move_out', '10/8/2026'], ['signing', '10/1/2026']]) {
     await L.eval(`(() => { const a = document.querySelector('[data-ff-key="${k}"]')._flatpickr.altInput; a.focus(); a.value = '${v}'; a.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true })); a.blur(); })()`);
@@ -88,7 +88,13 @@ try {
   await L.wait(300);
   const line = await L.eval(`document.getElementById('zf').textContent.replace(/\\s+/g, ' ')`);
   s.check('"$" added where the letter has none, not where it has one; formats applied',
-    line === 'Deposit $750.00 due Thursday, October 8, 2026, signed the 1st day of October, 2026, and $ 25.00.', line);
+    line === 'Deposit $750.00 due Thursday, October 8, 2026, signed the 1st day of October, 2026, and $ 25.00. Again: 10/8/2026.', line);
+  const SETF = v => L.eval(`(() => { const s = document.querySelector('[data-ff-fmt="move_out"]'); s.value = '${v}'; s.dispatchEvent(new Event('change')); })()`);
+  const MO = `[...document.querySelectorAll('#zf [data-fill-label="Move Out"]')].map(e => e.textContent).join(' / ')`;
+  await SETF('short'); await L.wait(300);
+  s.check('dropdown sets ALL places of the date at once', (await L.eval(MO)) === 'Oct 8, 2026 / Oct 8, 2026', await L.eval(MO));
+  await SETF(''); await L.wait(300);
+  s.check('"Different in each place" gives each place its own format back', (await L.eval(MO)) === 'Thursday, October 8, 2026 / 10/8/2026', await L.eval(MO));
   // The tenant's rent (tenant field) gets the same money formatting.
   const rent = await L.eval(`(() => { const p = document.createElement('p'); p.id = 'zr'; p.innerHTML = 'Rent <span data-tenant-field="rent_amount"></span>; or $<span data-tenant-field="rent_amount"></span>.';
     document.getElementById('zf').after(p); LPR_TENANTS.applyTenant({ effective: { rent_amount: '1200' } }); const t = p.textContent; p.remove(); return t; })()`);

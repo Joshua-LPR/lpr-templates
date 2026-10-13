@@ -113,7 +113,7 @@
       <button class="tt-btn tt-fmt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
       <button class="tt-btn tt-fmt-btn" data-cmd="italic" title="Italic"><i>I</i></button>
       <button class="tt-btn tt-fmt-btn" data-cmd="underline" title="Underline"><u>U</u></button>
-      <button class="tt-btn tt-fmt-btn" data-cmd="removeFormat" title="Plain — remove all formatting">Plain</button>
+      <button class="tt-btn tt-fmt-btn" data-cmd="removeFormat" title="Plain: remove all formatting">Plain</button>
       <span class="tt-fmt-sep"></span>
       <select id="tt-font-size" class="tt-size-select" title="Change font size of selected text">
         <option value="">Size</option>
@@ -286,7 +286,7 @@
         list.push({
           attr: attr,
           value: value,
-          label: (TOKEN_ATTR_LABELS[attr] || attr) + ' — ' + value.replace(/_/g, ' ')
+          label: (TOKEN_ATTR_LABELS[attr] || attr) + ': ' + value.replace(/_/g, ' ')
         });
       });
     });
@@ -542,7 +542,7 @@
       back.innerHTML = `
         <div class="tt-dialog">
           <h2>⚠ Some fields may have been unlinked</h2>
-          <p>Editing may have detached these auto-fill fields from their data — they'll no longer update automatically:<br/>
+          <p>Editing may have detached these auto-fill fields from their data, so they'll no longer update automatically:<br/>
             <ul style="margin:8px 0 0 16px;padding:0;font-size:13px;color:var(--lpr-muted);line-height:1.8">
               ${labels.map(l => `<li>${l}</li>`).join('')}
             </ul>
@@ -985,9 +985,9 @@
     const hasEmpty = sel => [...document.querySelectorAll(sel)]
       .filter(isRendered)
       .some(el => !el.textContent.trim());
-    if (hasEmpty('[data-contact-field]'))  warnings.push('No recipient selected — recipient fields will be blank');
-    if (hasEmpty('[data-tenant-field]'))   warnings.push('No tenant selected — tenant fields will be blank');
-    if (hasEmpty('[data-vendor-field]'))   warnings.push('No vendor selected — vendor fields will be blank');
+    if (hasEmpty('[data-contact-field]'))  warnings.push('No recipient selected: recipient fields will be blank');
+    if (hasEmpty('[data-tenant-field]'))   warnings.push('No tenant selected: tenant fields will be blank');
+    if (hasEmpty('[data-vendor-field]'))   warnings.push('No vendor selected: vendor fields will be blank');
     return warnings;
   }
 
@@ -1594,7 +1594,7 @@
   }
 
   async function doSaveAs() {
-    const defaultName = baseFilename() + " — Copy";
+    const defaultName = baseFilename() + " (Copy)";
     const name = await new Promise(resolve => {
       const back = document.createElement('div');
       back.className = 'tt-backdrop';

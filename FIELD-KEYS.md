@@ -1,10 +1,10 @@
-LPR TEMPLATES — FIELD KEYS
+LPR TEMPLATES: FIELD KEYS
 ==========================
 
 Put these keys in a letter where a name, address, date or amount belongs.
 Paste the letter into a template in Edit mode (or type the keys and click
 Done): every key becomes a live field that fills in from the recipient,
-tenant, sender and Fields tab. Spelling is forgiving — {{first name}},
+tenant, sender and Fields tab. Spelling is forgiving: {{first name}},
 {{First_Name}} and {{firstname}} all work. A key the templates don't
 know is highlighted, never dropped.
 
@@ -22,13 +22,13 @@ SAME NAME, DIFFERENT PERSON
 ---------------------------
 Names, addresses, phones and emails exist for the recipient, a tenant and a
 vendor. A key with no prefix ({{first name}}, {{city}}, {{phone}}) is the
-RECIPIENT — whoever the letter is addressed to, tenant or vendor. To name a
+RECIPIENT: whoever the letter is addressed to, tenant or vendor. To name a
 specific one, start the key with "tenant" or "vendor": {{tenant first name}},
 {{vendor phone}}. Vendor keys only work with the "vendor" prefix, and the
 person signing is always {{signer …}}.
 
-RECIPIENT — THE TENANT OR VENDOR THE LETTER IS ADDRESSED TO
------------------------------------------------------------
+RECIPIENT (THE TENANT OR VENDOR IT IS ADDRESSED TO)
+---------------------------------------------------
   {{first name}}                 First Name
   {{last name}}                  Last Name
   {{recipient name}}             Recipient Name
@@ -61,7 +61,7 @@ SENDER
   {{signer phone}}               Signer Phone
   {{signer email}}               Signer Email
 
-VENDOR — ALWAYS STARTS WITH "VENDOR"
+VENDOR (ALWAYS STARTS WITH "VENDOR")
 ------------------------------------
   {{vendor name}}                Vendor Name
   {{vendor street address}}      Street Address
@@ -73,6 +73,15 @@ VENDOR — ALWAYS STARTS WITH "VENDOR"
   {{vendor email alternate}}     Email (Alternate)
   {{vendor work phone}}          Work Phone
   {{vendor mobile}}              Mobile
+
+HEADER: SMALL LABEL + LARGE TITLE (marks, not keys)
+---------------------------------------------------
+  ^^Lease Addendum^^             on its own line: the small label
+  ==Past-Due Rent | Payment Plan Addendum==
+                                 on its own line: the large title; | starts a
+                                 second line
+On a notice with a header area they fill it; elsewhere (e.g. Letterhead)
+they become the label and title at that spot in the text.
 
 FILL-IN BLANKS (you choose the label)
 -------------------------------------
@@ -88,24 +97,24 @@ The label is what the Fields tab asks for. The same label used twice is the
 same value (fill it once, it appears everywhere). A date's format can also
 be changed later in the Fields tab.
 
-INSTRUCTIONS FOR AN AI DRAFTING A LETTER
-----------------------------------------
-You are drafting the BODY of a letter for LPR Management. It will be pasted
-into a letterhead template that already has the logo, our address, the date
-line, the recipient's address block, the sign-off and the signature.
+INSTRUCTIONS FOR AN AI: HOW TO USE THE KEYS
+-------------------------------------------
 1. Wherever a name, address, date, amount or other blank belongs, write the
    matching {{key}} from this list instead of a value. Never invent names,
    addresses, dates or amounts.
 2. For a blank that is not in the list, use a fill-in key with a clear label:
    {{date: …}}, {{amount: …}}, {{time: …}} or {{text: …}}. Reuse the exact same
    label when the same value appears again.
-3. To make a filled-in value bold or italic, format the KEY itself:
+3. For a date, the word before "date" sets how that one place shows it:
+   {{date: …}} October 8, 2026 · {{numeric date: …}} 10/8/2026 ·
+   {{weekday date: …}} Thursday, October 8, 2026 · {{short date: …}} Oct 8, 2026 ·
+   {{legal date: …}} the 8th day of October, 2026. The same label in two
+   formats is still the same date.
+4. To make a filled-in value bold or italic, format the KEY itself:
    **{{rent amount}}** gives the rent in bold, *{{date: Move-out Date}}* gives
    the date in italics. Don't put the formatting inside the braces.
-4. Formatting you may use: **bold**, *italic*, numbered lists (1.), bullet
-   lists (-), and headings (#) for section titles. No tables, colours or fonts.
-5. Start with the salutation (Dear {{first name}} {{last name}},) and end with
-   the last body paragraph. Do NOT write a date line, the recipient's address,
-   a closing ("Sincerely"), a signature or the sender's name — the template
-   adds those.
+5. Formatting that carries over when pasted: **bold**, *italic*, numbered
+   lists (1.), bullet lists (-) and headings (#).
 6. Write keys exactly with double curly braces: {{first name}}.
+7. A header is two marked lines, not keys: ^^Small Label^^ and
+   ==Large Title== (| splits the title over two lines), each on its own line.

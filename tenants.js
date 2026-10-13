@@ -406,11 +406,11 @@
             <button class="lpr-ins-btn" data-ff-type="${esc(type)}">${esc(label)}</button>`).join('')}
         </div>
         ${insGroup('RECIPIENT', Object.entries(CONTACT_FIELD_LABELS), 'contact')}
-        <div class="lpr-ins-grid"><button class="lpr-ins-btn" data-preset="full_address" data-ns="contact" title="123 Main St, Apt 2, City, MD 21215 — “, Apt 2” only when there is one">Full Address</button></div>
-        ${insGroup('TENANT — body reference', Object.entries(FIELD_LABELS), 'tenant')}
-        <div class="lpr-ins-grid"><button class="lpr-ins-btn" data-preset="full_address" data-ns="tenant" title="123 Main St, Apt 2, City, MD 21215 — “, Apt 2” only when there is one">Full Address</button></div>
-        ${Object.keys(vendorLabels).length ? insGroup('VENDOR — body reference', Object.entries(vendorLabels), 'vendor') : ''}
-        <div class="lpr-ins-group-label">FIELD KEYS — for drafting with {{…}} / AI</div>
+        <div class="lpr-ins-grid"><button class="lpr-ins-btn" data-preset="full_address" data-ns="contact" title="123 Main St, Apt 2, City, MD 21215: “, Apt 2” only when there is one">Full Address</button></div>
+        ${insGroup('TENANT (body reference)', Object.entries(FIELD_LABELS), 'tenant')}
+        <div class="lpr-ins-grid"><button class="lpr-ins-btn" data-preset="full_address" data-ns="tenant" title="123 Main St, Apt 2, City, MD 21215: “, Apt 2” only when there is one">Full Address</button></div>
+        ${Object.keys(vendorLabels).length ? insGroup('VENDOR (body reference)', Object.entries(vendorLabels), 'vendor') : ''}
+        <div class="lpr-ins-group-label">FIELD KEYS for drafting with {{…}} / AI</div>
         <div id="lpr-ins-keys"></div>
         <div id="lpr-ins-hint" class="lpr-ins-hint"></div>
         <button class="lpr-ins-clear" id="lpr-ins-clear">Clear All Fields</button>
@@ -565,7 +565,7 @@
           <input type="file" accept=".csv" id="lpr-tp-file" hidden/>
           ↑ Import CSV
         </label>
-        <label class="lpr-tp-import-btn lpr-tp-import-props" title="Import Buildium's Properties export — fills each tenant's Landlord from their street address + zip">
+        <label class="lpr-tp-import-btn lpr-tp-import-props" title="Import Buildium's Properties export: fills each tenant's Landlord from their street address + zip">
           <input type="file" accept=".csv" id="lpr-tp-props-file" hidden/>
           ↑ Properties
         </label>
@@ -624,7 +624,7 @@
       reader.onload = ev => {
         const r = importPropertiesCSV(ev.target.result);
         importMsg = `✓ ${r.properties} properties · landlord found for ${r.matched} tenant${r.matched !== 1 ? 's' : ''}` +
-          (r.ambiguous ? ` · ${r.ambiguous} at an address with 2 owners (left blank — type it in)` : '') +
+          (r.ambiguous ? ` · ${r.ambiguous} at an address with 2 owners (left blank: type it in)` : '') +
           (r.unmatched ? ` · ${r.unmatched} not found` : '');
         renderFillPanel();
       };

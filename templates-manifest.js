@@ -61,7 +61,7 @@
     },
     {
       id: "Business Card Company.html",
-      title: "Business Card — Company",
+      title: "Business Card (Company)",
       role: "3.5″ × 2″ · Company",
       section: "stationery",
       desc: "No name version. Centered logo + office phone & address. For the main line.",
@@ -90,7 +90,7 @@
       title: "Watermark Paper",
       role: "8.5″ × 11″ · US Letter",
       section: "stationery",
-      desc: "Pre-printable background — top brand band, foot stripe, ghosted mark.",
+      desc: "Pre-printable background: top brand band, foot stripe, ghosted mark.",
       badge: null,
       options: [],
       fillLabels: ["Notice Date", "Document Category", "Notice Title"],
@@ -136,7 +136,7 @@
     },
     {
       id: "Address Labels P-touch.html",
-      title: "Address Labels — P-touch",
+      title: "Address Labels (P-touch)",
       role: "DK-1201 · 29×90mm · Brother QL-810W",
       section: "stationery",
       desc: "Generates a .lbt label file per tenant. Opens directly in P-touch Editor, ready to print.",
@@ -153,10 +153,10 @@
       desc: "Prints From/To directly onto a blank USPS PS Form 3817 fed through your printer. Calibration sliders dial in your printer's offset.",
       badge: null,
       modes: [
-        { id: "overlay", label: "Overlay — feed blank USPS form" },
-        { id: "card",    label: "Full form — 3×5 card" },
-        { id: "letter",  label: "Full form — Letter paper (cut corner)" },
-        { id: "multi",   label: "Multi — Letter paper (up to 5)" }
+        { id: "overlay", label: "Overlay: feed blank USPS form" },
+        { id: "card",    label: "Full form: 3×5 card" },
+        { id: "letter",  label: "Full form: Letter paper (cut corner)" },
+        { id: "multi",   label: "Multi: Letter paper (up to 5)" }
       ],
       options: ["manual-address", "com-calibration"],
       fillLabels: [],
@@ -180,7 +180,7 @@
 
     {
       id: "Notice Template.html",
-      title: "Notice Template — Blank",
+      title: "Notice Template (Blank)",
       role: "8.5″ × 11″ · US Letter · Blank",
       section: "property-management",
       desc: "Reusable shell for any new notice. Same layout as the other letters, with placeholders for category, title, and body.",
@@ -227,7 +227,7 @@
       title: "Tenancy Confirmation",
       role: "8.5″ × 11″ · US Letter · Verification",
       section: "property-management",
-      desc: "Confirms a tenant currently resides at an address. Optional rent block with contract rent, HAP portion, and tenant portion — dismiss it for a plain confirmation.",
+      desc: "Confirms a tenant currently resides at an address. Optional rent block with contract rent, HAP portion, and tenant portion; dismiss it for a plain confirmation.",
       badge: null,
       options: [],
       fillLabels: ["Notice Date", "Contract Rent", "HAP Portion", "Tenant Portion"],
@@ -250,7 +250,7 @@
     },
     {
       id: "TOPA Notice - DHCD.html",
-      title: "TOPA Notice — DHCD",
+      title: "TOPA Notice (DHCD)",
       role: "8.5″ × 11″ · US Letter",
       section: "property-management",
       desc: "Cover letter to DHCD enclosing the Appendix A Form. Fill in property address and tenant name.",
@@ -283,8 +283,8 @@
       desc: "Designates which utilities are paid by tenant (T) or owner (O). Fuel type checkboxes; blank signature lines for wet or electronic signing.",
       badge: null,
       modes: [
-        { id: "full",   label: "Full — with Fuel Type" },
-        { id: "simple", label: "Simplified — no Fuel Type" }
+        { id: "full",   label: "Full (with Fuel Type)" },
+        { id: "simple", label: "Simplified (no Fuel Type)" }
       ],
       options: [],
       fillLabels: [],
@@ -303,7 +303,7 @@
     },
     {
       id: "Yard Sign.html",
-      title: "Yard Sign — For Rent",
+      title: "Yard Sign (For Rent)",
       role: "24″ × 18″ · Vinyl / Coroplast",
       section: "property-management",
       desc: "Print-shop ready. Sized for standard H-stake yard signs. Includes spec sheet for printer.",

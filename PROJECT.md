@@ -647,6 +647,18 @@ Per-document override in Setup → **Sender** (moved there from Options 2026-10-
 
 ---
 
+## 2026-10-13 changes (Joshua's review)
+
+- **Security Deposit does the math** (fill-fields.js `data-fill-calc`, reusable on any template): Partial "Refund Amount" = Deposit Held + Accrued Interest − Total Deductions; Withheld "Balance Due" = Deductions − Deposit Held − Interest; Full "Full Refund Amount" = Deposit Held + Interest. Read-only in the Fields tab with the formula shown; blank until every input has a number; a negative result shows a note naming the notice that fits (`data-fill-calc-negative`). Tests `tests/deposit.test.mjs`.
+- **Wording (Joshua):** no em dashes in letters ("big no no"), formal tone, no dispute window — the "if you believe any charge is incorrect, call within 14 days" sentence is gone. Security Deposit (all 3), Rent Increase, Notice Template / Letter Watermark guidance rewritten; every Security Deposit variant signs off "Sincerely,".
+- **Clear all also removes the closing "Sincerely,"** (same single Undo); Clear body keeps it.
+- **Date format per PLACE:** a key's format (`{{weekday date: X}}`) applies to that place only, so one date can show two ways; the Fields-tab dropdown sets all places at once or "Different in each place"; its options show the field's own date. `data-fill-shown` records what each place shows (blank-form line widths use it).
+- **Header markers (not keys — Joshua: "not a form field, use other symbols, like bold/italic"):** a line that is only `^^Small Label^^` is the badge; a line that is only `==Large Title | Line 2==` is the big title. On a notice with a header area they fill it (through the Fields tab where it is a fill field — Notice Template, whose title field gets a 2-line box); elsewhere (Letterhead: payment plans, addenda) they become a badge + title block in the text at that spot, kept with what follows (`data-flow-keep-next`). Tests `tests/header.test.mjs`.
+- **Copy for AI** (legend buttons, Insert Field panel + index): the AI rules + every key, one line per group (~1.4k chars vs ~5.9k for the full guide) for small-context models. `LPR_KEYS.aiText()`, built from the same table.
+- **From Joshua's real payment-plan test (2026-10-13):** blank-print write-in lines are now drawn as the field's `::after`, so a "$" (the `::before`) sits before the line instead of on it; a full address uses shorter lines so it stays on one line; Markdown dividers (`---`, `***`, `___`) and rich-text `<hr>` are dropped on paste (AI drafts put them between sections, which already have headings); no leading "·" on the signer line when the title is empty. The landlord field fills only after **↑ Properties** has been imported once. Tests `tests/plan.test.mjs`.
+- **Site-wide em-dash sweep (2026-10-13):** every visible string — page text, tab titles (now "LPR · X"; they become PDF file names), on-screen labels, tooltips, dialogs, index cards, style guide, legend — rewritten with ·, colons, commas or periods. A rendered-page scan of all pages finds none. Code comments untouched.
+- **Legend AI instructions = key usage only** (Joshua: "clean and universal" — keys also serve payment plans/contracts): no letter structure, salutation, sign-off or tone rules.
+
 ## Mail merge — Phase 1 BUILT 2026-10-10 (bead `4z2`; tests `tests/merge.test.mjs`)
 
 **Scope (Joshua 2026-10-10):** "for now mail merge on letterhead, notice and envelopes etc. Individualized ones (security deposit, rent increase etc) will be a later phase." Opted in with `data-merge` on `.stage`: **Letterhead, Letter Watermark, Notice Template, 24-Hour Notice, Envelope, Envelope Premium.**

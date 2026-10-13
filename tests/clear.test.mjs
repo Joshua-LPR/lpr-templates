@@ -9,10 +9,12 @@ const LONG = `(() => { const b = document.querySelector('.sheet[data-flow] .lh-b
 // Everything Clear must never touch, plus what it should change.
 const STATE = `(() => { const sh = document.querySelector('.sheet[data-flow]'); const b = sh.querySelector('.lh-body');
   const outside = sh.cloneNode(true); outside.querySelector('.lh-body').remove();
-  const protectedHtml = [...b.querySelectorAll(':scope > .signoff, :scope > .sig-block')].map(e => e.outerHTML).join('');
+  // The signature, signer name/title and tenant lines — everything in the sign-off but its closing line.
+  const protectedHtml = [...b.querySelectorAll(':scope > .signoff, :scope > .sig-block')].map(e => { const c = e.cloneNode(true); const p = c.matches('.signoff') && c.querySelector(':scope > p'); if (p) p.remove(); return c.outerHTML.replace(/>\\s+</g, '><'); }).join('');
+  const closer = (b.querySelector(':scope > .signoff > p') || {}).textContent || '';
   const lines = [...b.children].filter(c => !c.matches('.signoff, .sig-block'));
   const sel = getSelection(); const caretIn = sel.rangeCount ? (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement).closest('.lh-body > *') : null;
-  return { outside: outside.innerHTML, protectedHtml, body: b.innerHTML,
+  return { outside: outside.innerHTML, protectedHtml, closer, body: b.innerHTML,
     date: !!b.querySelector(':scope > .date'), recipient: !!b.querySelector(':scope > .recipient'), dear: /Dear/.test(b.textContent),
     lines: lines.map(c => c.tagName + '.' + c.className + ':' + c.textContent.trim().slice(0, 30)),
     caretLine: caretIn ? lines.indexOf(caretIn) : -2 }; })()`;
@@ -28,7 +30,9 @@ for (const [cmd, all] of [['clearbody', false], ['clearall', true]]) {
     await t.eval(CLICK(cmd)); await t.wait(200);
     const after = await t.eval(STATE);
     s.check(`${label}: letterhead header unchanged`, after.outside === before.outside);
-    s.check(`${label}: sign-off + signature lines unchanged`, after.protectedHtml === before.protectedHtml && after.protectedHtml.length > 0);
+    { let i = 0; while (i < after.protectedHtml.length && after.protectedHtml[i] === before.protectedHtml[i]) i++;
+      s.check(`${label}: sign-off + signature lines unchanged`, after.protectedHtml === before.protectedHtml && after.protectedHtml.length > 0, JSON.stringify({ before: before.protectedHtml.slice(Math.max(0, i - 60), i + 80), after: after.protectedHtml.slice(Math.max(0, i - 60), i + 80) })); }
+    s.check(`${label}: closing "Sincerely," ${all ? 'removed' : 'kept'}`, all ? after.closer === '' : after.closer === 'Sincerely,', JSON.stringify({ before: before.closer, after: after.closer }));
     s.check(`${label}: date + recipient ${all ? 'removed' : 'kept'}`, all ? (!after.date && !after.recipient) : (after.date && after.recipient), JSON.stringify(after.lines));
     s.check(`${label}: "Dear …" line and body removed`, !after.dear && !after.lines.some(l => /Paragraph/.test(l)), JSON.stringify(after.lines));
     const EMPTY = /^(P|DIV)\.:$/;      // a plain (unstyled) empty line

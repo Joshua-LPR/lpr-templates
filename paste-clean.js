@@ -149,6 +149,9 @@
       if (!raw.trim()) return;                                       // blank lines only separate
       var indent = raw.replace(/\t/g, '    ').match(/^ */)[0].length;
       var line = raw.trim();
+      // Markdown divider (---, ***, ___): dropped — AI drafts put them between
+      // sections, which already have headings (Joshua 2026-10-13).
+      if (/^([-*_])(\s*\1){2,}$/.test(line)) { stack = []; return; }
       var h = /^(#{1,6})\s+(.*)$/.exec(line);
       var ol = /^(\d+)[.)]\s+(.*)$/.exec(line);
       var ul = /^[-*•]\s+(.*)$/.exec(line);
@@ -355,9 +358,10 @@
 
   document.addEventListener('paste', onPaste, true);
 
-  // Clear body (keeps the date + recipient) / Clear all (removes those too).
-  // Everything up to the sign-off goes; the letterhead, sign-off and tenant
-  // signature lines are never touched. One native delete, so one Ctrl+Z
+  // Clear body (keeps the date + recipient) / Clear all (removes those AND
+  // the closing "Sincerely,"). Everything up to the sign-off goes; the
+  // letterhead, signature, signer name/title and tenant signature lines
+  // are never touched. One native delete, so one Ctrl+Z
   // brings it all back, and the removed fields count as deliberate (no
   // warning on Done). Leaves one empty line with the caret, ready to paste.
   function clear(all) {
@@ -380,6 +384,10 @@
     var r = document.createRange();
     r.setStart(gone[0], 0);
     var end = endInside(gone[gone.length - 1]);
+    // Clear all also takes the closing ("Sincerely,") — Joshua 2026-10-13 —
+    // in the same delete (one Undo); the signature, name and title stay.
+    var closer = all && prot && prot.matches('.signoff') && prot.querySelector(':scope > p');
+    if (closer && closer.textContent.trim()) end = endInside(closer);
     r.setEnd(end[0], end[1]);
     var sel = window.getSelection();
     sel.removeAllRanges();

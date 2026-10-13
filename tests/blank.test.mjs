@@ -15,7 +15,7 @@ try {
   // Print Blank's state: every fill-in + recipient field empty.
   await t.eval(`document.querySelectorAll('[data-fill-field],[data-contact-field],[data-tenant-field]').forEach(e => e.textContent = '')`);
   const MEASURE = `(() => { const one = sel => { const e = document.querySelector(sel); if (!e) return null; const cs = getComputedStyle(e), b = getComputedStyle(e, '::before');
-      return { w: Math.round(e.getBoundingClientRect().width), border: cs.borderBottomStyle, before: b.display === 'none' ? '' : b.content }; };
+      const af = getComputedStyle(e, '::after'); return { w: af.content === 'none' ? 0 : Math.round(parseFloat(af.width)), border: af.content === 'none' ? 'none' : af.borderBottomStyle, before: b.display === 'none' ? '' : b.content }; };
     return { due: one('#zb [data-fill-label="Due"]'), n: one('#zb [data-fill-label="N"]'), w: one('#zb [data-fill-label="W"]'), sh: one('#zb [data-fill-label="S"]'),
       legal: one('#zb [data-fill-label="L"]'), time: one('#zb [data-fill-label="T"]'), amt: one('#zb [data-fill-label="Back Rent"]'), text: one('#zb [data-fill-label="U"]'),
       landlord: one('#zb [data-tenant-field="landlord"]'), dateLine: one('.sheet .date [data-fill-field]'), state: one('.recipient [data-contact-field="state"]'),
@@ -45,7 +45,7 @@ try {
   await t.send('Emulation.setEmulatedMedia', { media: 'print' });
   // A filled field prints as normal text — no line.
   await t.eval(`document.querySelector('#zb [data-fill-label="Due"]').textContent = 'October 8, 2026'`);
-  const filled = await t.eval(`getComputedStyle(document.querySelector('#zb [data-fill-label="Due"]')).borderBottomStyle`);
+  const filled = await t.eval(`getComputedStyle(document.querySelector('#zb [data-fill-label="Due"]'), '::after').borderBottomStyle`);
   s.check('a filled field prints as plain text (no line)', filled !== 'solid', filled);
   await t.send('Emulation.setEmulatedMedia', { media: '' });
   await t.eval(`localStorage.removeItem('lpr_sigopt_letterhead.html')`);
@@ -59,7 +59,7 @@ try {
   await r.eval(`document.querySelectorAll('[data-fill-field]').forEach(e => e.textContent = '')`);
   await r.send('Emulation.setEmulatedMedia', { media: 'print' }); await r.wait(200);
   const nr = await r.eval(`(() => { const e = document.querySelector('[data-fill-label="New Rent"]'); const b = getComputedStyle(e, '::before');
-    return { border: getComputedStyle(e).borderBottomStyle, before: b.display === 'none' ? '' : b.content }; })()`);
+    return { border: getComputedStyle(e, '::after').borderBottomStyle, before: b.display === 'none' ? '' : b.content }; })()`);
   s.check('Rent Increase: "$" already in the letter → line with no second "$"', nr.border === 'solid' && nr.before !== '"$"', JSON.stringify(nr));
   s.check('no console errors', r.logs.length === 0, r.logs.join(' || '));
 } catch (e) { s.crash(e); }
@@ -70,7 +70,7 @@ const v = await open(url('Envelope.html'));
 try {
   await v.eval(`document.querySelectorAll('[data-contact-field]').forEach(e => e.textContent = '')`);
   await v.send('Emulation.setEmulatedMedia', { media: 'print' }); await v.wait(200);
-  const lines = await v.eval(`[...document.querySelectorAll('[data-contact-field]')].filter(e => getComputedStyle(e).borderBottomStyle === 'solid').length`);
+  const lines = await v.eval(`[...document.querySelectorAll('[data-contact-field]')].filter(e => getComputedStyle(e, '::after').borderBottomStyle === 'solid').length`);
   s.check('Envelope (not a letter): empty fields print no lines', lines === 0, 'lines=' + lines);
 } catch (e) { s.crash(e); }
 finally { await v.close(); }

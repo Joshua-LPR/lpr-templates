@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Certificate of Mailing — LPR Management</title>
+<title>Certificate of Mailing · LPR Management</title>
 <link rel="stylesheet" href="brand.css">
 <script src="user.js"></script>
 
@@ -349,10 +349,10 @@ body { background: var(--lpr-page); }
        this page's own CSS/JS still key off the legacy body classes, kept in
        sync via a bridge listener below) -->
   <div class="mode-bar no-print" data-mode-group="doc">
-    <button class="mode-btn" data-mode="overlay">Overlay — feed blank USPS form</button>
-    <button class="mode-btn active" data-mode="card">Full form — 3×5 card</button>
-    <button class="mode-btn" data-mode="letter">Full form — Letter paper (cut corner)</button>
-    <button class="mode-btn" data-mode="multi">Multi — Letter paper (up to 5)</button>
+    <button class="mode-btn" data-mode="overlay">Overlay: feed blank USPS form</button>
+    <button class="mode-btn active" data-mode="card">Full form: 3×5 card</button>
+    <button class="mode-btn" data-mode="letter">Full form: Letter paper (cut corner)</button>
+    <button class="mode-btn" data-mode="multi">Multi: Letter paper (up to 5)</button>
   </div>
 
   <!-- Track 4 §5.3: the printer-alignment calibration card moved to a
@@ -363,7 +363,7 @@ body { background: var(--lpr-page); }
   <!-- multi-mode panel -->
   <div id="multi-panel" class="no-print" style="display:none">
     <div class="cal-card">
-      <h3>Multi-print — up to 5 certificates per sheet</h3>
+      <h3>Multi-print: up to 5 certificates per sheet</h3>
       <div class="cal-row" style="margin:4px 0 12px;gap:10px;flex-wrap:wrap;align-items:center;">
         <span style="font-size:11px;color:#888;font-weight:600;letter-spacing:.5px;">TEXT ALIGNMENT</span>
         <div class="cal-ctrl">
@@ -452,50 +452,50 @@ body { background: var(--lpr-page); }
 
   <!-- per-mode instructions -->
   <div class="instructions no-print" id="instr-overlay">
-    <h3>Overlay mode — feed a blank PS Form 3817</h3>
+    <h3>Overlay mode: feed a blank PS Form 3817</h3>
     <ol>
-      <li>Use <strong>Fill Fields</strong> to select a tenant — the To address fills automatically. Or click <strong>Edit</strong> in the toolbar to type it manually.</li>
+      <li>Use <strong>Fill Fields</strong> to select a tenant: the To address fills automatically. Or click <strong>Edit</strong> in the toolbar to type it manually.</li>
       <li><strong>Calibrate once:</strong> click Print, print on plain paper, hold it over a blank form to check that text lands on the lines. Nudge Up/Down and Left/Right above until aligned. Settings save automatically.</li>
       <li>Feed a blank <strong>PS Form 3817</strong> into your printer's manual/bypass tray. Try face-up first; flip it if text lands on the wrong side.</li>
       <li>Click <strong>Print</strong> in the toolbar. Set paper size to <strong>5″ × 3″</strong> or select the manual feed tray.</li>
-      <li>Hand to the postal worker — they stamp <em>Postmark Here</em> and return it as your proof of mailing.</li>
+      <li>Hand to the postal worker: they stamp <em>Postmark Here</em> and return it as your proof of mailing.</li>
     </ol>
-    <p>Blank PS Form 3817 slips are free at any USPS post office counter — just ask at the window.</p>
+    <p>Blank PS Form 3817 slips are free at any USPS post office counter: just ask at the window.</p>
   </div>
 
   <div class="instructions no-print" id="instr-card" style="display:none">
-    <h3>Full form — 3×5 index card</h3>
+    <h3>Full form: 3×5 index card</h3>
     <ol>
       <li>Use <strong>Fill Fields</strong> to select a tenant, or click <strong>Edit</strong> to type the address manually.</li>
       <li>Load a <strong>3×5 index card</strong> into your printer's manual/bypass tray.</li>
       <li>Click <strong>Print</strong> in the toolbar. In the print dialog, set paper size to <strong>5″ × 3″</strong> (custom size) or select the index card tray if your printer has one. Disable "fit to page" scaling.</li>
-      <li>Hand the printed card to the postal worker — they stamp it and return it as your proof of mailing.</li>
+      <li>Hand the printed card to the postal worker: they stamp it and return it as your proof of mailing.</li>
     </ol>
-    <p>Prints the complete official form from scratch — no blank USPS slip needed.</p>
+    <p>Prints the complete official form from scratch: no blank USPS slip needed.</p>
   </div>
 
   <div class="instructions no-print" id="instr-letter" style="display:none">
-    <h3>Full form — Letter paper (top-left corner)</h3>
+    <h3>Full form: Letter paper (top-left corner)</h3>
     <ol>
       <li>Use <strong>Fill Fields</strong> to select a tenant, or click <strong>Edit</strong> to type the address manually.</li>
       <li>Load a standard <strong>8.5″ × 11″</strong> sheet into your printer.</li>
       <li>Click <strong>Print</strong> in the toolbar. Select <strong>Letter</strong> paper size. The form prints in the top-left corner; dashed lines mark where to cut.</li>
       <li>Cut along the dashed lines with scissors or a paper trimmer.</li>
-      <li>Hand to the postal worker — they stamp it and return it as your proof of mailing.</li>
+      <li>Hand to the postal worker: they stamp it and return it as your proof of mailing.</li>
     </ol>
-    <p>Prints the complete official form from scratch — no blank USPS slip needed.</p>
+    <p>Prints the complete official form from scratch: no blank USPS slip needed.</p>
   </div>
 
   <div class="instructions no-print" id="instr-multi" style="display:none">
-    <h3>Multi — up to 5 certificates per letter sheet</h3>
+    <h3>Multi: up to 5 certificates per letter sheet</h3>
     <ol>
       <li>Use the slots above to pick a tenant for each position. Slots 1–3 print upright in the left column; slots 4–5 print rotated sideways in the right column.</li>
       <li>Load a standard <strong>8.5″ × 11″</strong> sheet into your printer.</li>
       <li>Click <strong>Print</strong> in the toolbar. Select <strong>Letter</strong> paper size, no scaling, narrow margins (avoids edge clipping).</li>
-      <li>Cut along the dashed lines — each cut-out is a complete 5″ × 3″ PS Form 3817.</li>
-      <li>Hand each to the postal worker — they stamp and return as proof of mailing.</li>
+      <li>Cut along the dashed lines: each cut-out is a complete 5″ × 3″ PS Form 3817.</li>
+      <li>Hand each to the postal worker: they stamp and return as proof of mailing.</li>
     </ol>
-    <p>Only filled slots print — empty slots are suppressed. No blank USPS slip needed — the full form image is included.</p>
+    <p>Only filled slots print; empty slots are suppressed. No blank USPS slip is needed: the full form image is included.</p>
   </div>
 
   <!-- print container for multi mode — hidden on screen -->
@@ -769,12 +769,12 @@ body { background: var(--lpr-page); }
         item.className = 'multi-slot-item' + (active ? ' active' : '');
         var label = t
           ? esc(((t.first_name||'') + ' ' + (t.last_name||'')).trim()) +
-            (t.address_line1 ? ' — ' + esc(t.address_line1) : '')
+            (t.address_line1 ? ' · ' + esc(t.address_line1) : '')
           : '';
         item.innerHTML =
           '<span class="multi-slot-num">' + (idx+1) + '</span>' +
           (idx >= 3 ? '<span class="multi-slot-rot-icon" title="Prints rotated 90°">↻</span>' : '') +
-          '<span class="multi-slot-label' + (t ? '' : ' empty') + '">' + (label || '— empty —') + '</span>' +
+          '<span class="multi-slot-label' + (t ? '' : ' empty') + '">' + (label || '(empty)') + '</span>' +
           (t ? '<button class="cal-btn multi-slot-clear" title="Clear">×</button>' : '');
         var clrBtn = item.querySelector('.multi-slot-clear');
         if (clrBtn) clrBtn.addEventListener('click', function(e) {
@@ -806,7 +806,7 @@ body { background: var(--lpr-page); }
     var q = searchEl ? searchEl.value.toLowerCase().trim() : '';
     ul.innerHTML = '';
     if (allTenants.length === 0) {
-      ul.innerHTML = '<li class="multi-no-tenants">No tenants loaded — use Fill Fields in the toolbar to import a CSV first.</li>';
+      ul.innerHTML = '<li class="multi-no-tenants">No tenants loaded. Use Fill Fields in the toolbar to import a CSV first.</li>';
       return;
     }
     var filtered = allTenants.filter(function(t) {

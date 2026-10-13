@@ -123,9 +123,9 @@ body { margin: 0; font-family: 'Montserrat', sans-serif; color: var(--lpr-text);
    Opt out with data-no-blank-lines on an area that draws its own write-in
    lines (Utilities Addendum header rows); signature rows are never touched. ---- */
 [data-fill-field="date"]                          { --blank: 1.6in; }
-[data-fill-field="date"][data-fill-format="numeric"] { --blank: 1in; }
-[data-fill-field="date"][data-fill-format="short"]   { --blank: 1.2in; }
-[data-fill-field="date"][data-fill-format="weekday"] { --blank: 2.5in; }
+[data-fill-field="date"][data-fill-shown="numeric"] { --blank: 1in; }
+[data-fill-field="date"][data-fill-shown="short"]   { --blank: 1.2in; }
+[data-fill-field="date"][data-fill-shown="weekday"] { --blank: 2.5in; }
 [data-fill-field="time"]                          { --blank: 0.9in; }
 [data-fill-field="amount"]                        { --blank: 1in; }
 [data-fill-field="text"]                          { --blank: 1.6in; }
@@ -139,17 +139,23 @@ body { margin: 0; font-family: 'Montserrat', sans-serif; color: var(--lpr-text);
 [data-contact-field="email"], [data-tenant-field^="email"], [data-vendor-field^="email"] { --blank: 2.2in; }
 [data-tenant-field="lease_start"], [data-tenant-field="lease_end"], [data-tenant-field="dob"] { --blank: 1.3in; }
 [data-tenant-field="rent_amount"] { --blank: 1in; }
+/* Inside a one-line full address the lines are shorter so it stays on one line */
+.lpr-full-addr [data-contact-field="address_line1"], .lpr-full-addr [data-tenant-field="address_line1"] { --blank: 2in; }
+.lpr-full-addr [data-contact-field="city"], .lpr-full-addr [data-tenant-field="city"] { --blank: 1.1in; }
+.lpr-full-addr [data-contact-field="state"], .lpr-full-addr [data-tenant-field="state"] { --blank: 0.4in; }
+.lpr-full-addr [data-contact-field="zip"], .lpr-full-addr [data-tenant-field="zip"] { --blank: 0.65in; }
+/* The line itself is the field's ::after, so a "$" (::before) sits BEFORE it, not on it. */
 @media print {
-  :is(.sheet.letter, .sheet.watermark) :is([data-fill-field], [data-contact-field], [data-tenant-field], [data-vendor-field]):empty:not(.sig-name *):not([data-no-blank-lines] *):not([data-fill-format="legal"]) {
-    display: inline-block; min-width: var(--blank, 1.4in); border-bottom: 1px solid currentColor; }
-  :is(.sheet.letter, .sheet.watermark) [data-fill-format="legal"]:empty::before { display: inline !important; content: "the ______ day of ______________, 20______" !important;
+  :is(.sheet.letter, .sheet.watermark) :is([data-fill-field], [data-contact-field], [data-tenant-field], [data-vendor-field]):empty:not(.sig-name *):not([data-no-blank-lines] *):not([data-fill-shown="legal"])::after {
+    content: ""; display: inline-block; width: var(--blank, 1.4in); border-bottom: 1px solid currentColor; }
+  :is(.sheet.letter, .sheet.watermark) [data-fill-shown="legal"]:empty::before { display: inline !important; content: "the ______ day of ______________, 20______" !important;
     color: inherit !important; font-style: normal !important; font-size: inherit !important; border: 0 !important; }
 }
-body.tt-rastering :is(.sheet.letter, .sheet.watermark) :is([data-fill-field], [data-contact-field], [data-tenant-field], [data-vendor-field]):empty:not(.sig-name *):not([data-no-blank-lines] *):not([data-fill-format="legal"]) {
-  display: inline-block; min-width: var(--blank, 1.4in); border-bottom: 1px solid currentColor; }
+body.tt-rastering :is(.sheet.letter, .sheet.watermark) :is([data-fill-field], [data-contact-field], [data-tenant-field], [data-vendor-field]):empty:not(.sig-name *):not([data-no-blank-lines] *):not([data-fill-shown="legal"])::after {
+  content: ""; display: inline-block; width: var(--blank, 1.4in); border-bottom: 1px solid currentColor; }
 @media print { :is(.sheet.letter, .sheet.watermark) [data-dollar]:empty::before { display: inline !important; content: "$" !important; color: inherit !important; font-style: normal !important; font-size: inherit !important; border: 0 !important; } }
 body.tt-rastering :is(.sheet.letter, .sheet.watermark) [data-dollar]:empty::before { display: inline !important; content: "$" !important; color: inherit !important; font-style: normal !important; font-size: inherit !important; border: 0 !important; }
-body.tt-rastering :is(.sheet.letter, .sheet.watermark) [data-fill-format="legal"]:empty::before { display: inline !important; content: "the ______ day of ______________, 20______" !important;
+body.tt-rastering :is(.sheet.letter, .sheet.watermark) [data-fill-shown="legal"]:empty::before { display: inline !important; content: "the ______ day of ______________, 20______" !important;
   color: inherit !important; font-style: normal !important; font-size: inherit !important; border: 0 !important; }
 
 /* ---- Field keys (field-keys.js) — here, not injected: HTML export strips

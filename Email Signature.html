@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>LPR — Email Signature</title>
+<title>LPR · Email Signature</title>
 <link rel="stylesheet" href="brand.css">
 <script src="user.js"></script>
 <style>
@@ -55,7 +55,7 @@
   <b>Subject:</b> Re: Your maintenance request</div>
   <div class="body-text">
     <p>Hi Sarah,</p>
-    <p>Thanks for the note — I have scheduled a plumber for Wednesday morning between 9 and 11 a.m. They have a key on file, so you don't need to be home unless you'd prefer to be.</p>
+    <p>Thanks for the note. I have scheduled a plumber for Wednesday morning between 9 and 11 a.m. They have a key on file, so you don't need to be home unless you'd prefer to be.</p>
     <p>Best,<br/>David</p>
   </div>
 
@@ -104,7 +104,7 @@
 </div>
 
 <div class="note">
-  <strong>Logo mode:</strong> <strong>Embed</strong> bakes the logo into the signature as base64 — no hosting needed, works offline, best for Gmail. <strong>Hosted URL</strong> keeps the HTML smaller if you have a public image URL.
+  <strong>Logo mode:</strong> <strong>Embed</strong> bakes the logo into the signature as base64: no hosting needed, works offline, best for Gmail. <strong>Hosted URL</strong> keeps the HTML smaller if you have a public image URL.
 </div>
 
 <div class="sig-style">
@@ -129,7 +129,7 @@
     <input id="host-url" type="url" placeholder="https://lasalleparkrealty.com/email-logo.png"/>
   </div>
   <div class="hint" id="mode-hint">
-    <strong>Embed:</strong> logo is built into the signature HTML — no hosting needed, just paste and go. ~14&nbsp;KB. Works in Gmail, Outlook, Apple Mail.
+    <strong>Embed:</strong> logo is built into the signature HTML: no hosting needed, just paste and go. ~14&nbsp;KB. Works in Gmail, Outlook, Apple Mail.
   </div>
 </div>
 
@@ -182,7 +182,7 @@
     modeBox.classList.toggle('host', mode === 'host');
     if (mode === 'embed') {
       imgEl.setAttribute('src', EMBED_SRC);
-      hint.innerHTML = '<strong>Embed:</strong> logo is built into the signature HTML — no hosting needed, just paste and go. ~14&nbsp;KB. Works in Gmail, Outlook, Apple Mail.';
+      hint.innerHTML = '<strong>Embed:</strong> logo is built into the signature HTML, so no hosting is needed: just paste and go. ~14&nbsp;KB. Works in Gmail, Outlook, Apple Mail.';
     } else {
       const url = urlInput.value.trim() || 'https://lasalleparkrealty.com/email-logo.png';
       imgEl.setAttribute('src', url);
@@ -268,9 +268,9 @@
           'text/plain': new Blob([text], { type: 'text/plain' })
         })
       ]);
-      copied.textContent = '✓ Copied — paste directly into Gmail';
+      copied.textContent = '✓ Copied. Paste directly into Gmail';
     } catch (e) {
-      copied.textContent = '⚠ Copy failed — try the HTML Source button';
+      copied.textContent = '⚠ Copy failed. Try the HTML Source button';
     }
     setTimeout(() => { copied.textContent = ''; }, 3000);
   }

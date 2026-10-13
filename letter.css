@@ -34,7 +34,13 @@ body { background: var(--lpr-page); padding: 96px 20px 40px; }
 
 /* ---- Doc badge / title ---- */
 .doc-badge { margin-top: 0.45in; font-size: 9pt; letter-spacing: 4px; text-transform: uppercase; color: var(--lpr-blue); font-weight: 600; }
+/* A title set by ==Line one | Line two== into a fill field keeps its line break */
+.doc-title [data-fill-field] { white-space: pre-line; }
 .doc-title { font-size: 26pt; font-weight: 700; letter-spacing: -0.4px; line-height: 1.05; margin-top: 8px; color: var(--lpr-ink); }
+/* A badge / title made in the text by ^^…^^ / ==…== markers (templates without
+   a header area, e.g. Letterhead): same look, spaced for the body. */
+.lh-body > .doc-badge { margin-top: 0.15in; }
+.lh-body > .doc-title { margin-top: 4px; margin-bottom: 0.2in; }
 
 /* ---- Body ---- */
 .lh-body { flex: 1; padding-top: 0.35in; font-size: 11pt; line-height: 1.65; color: var(--lpr-text); }
@@ -133,6 +139,8 @@ body { background: var(--lpr-page); padding: 96px 20px 40px; }
 /* "Title · Company": no dangling "·" when the company is empty (e.g. the
    Utilities Addendum clears it until a Sender company is applied). */
 .signed-role .owner-sep:has(+ [data-owner-field]:empty) { display: none; }
+/* …nor a leading "·" when the signer has no title */
+.signed-role [data-employee-field="title"]:empty + .owner-sep { display: none; }
 .sig-block .sig-name { grid-column: 2 / -1; font-weight: 600; color: var(--lpr-ink); padding-top: 4px; min-height: 1.4em; }
 
 /* ---- Legal disclaimer strip ---- */

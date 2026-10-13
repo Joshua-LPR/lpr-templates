@@ -149,6 +149,11 @@ try {
     window.__blobs = []; const o = URL.createObjectURL.bind(URL); URL.createObjectURL = b => { __blobs.push(b); return o(b); }; })()`);
   await x.eval(`document.querySelector('#field-keys-actions [data-keys="copy"]').click()`); await x.wait(100);
   s.check('index: Copy field keys puts the legend on the clipboard', (await x.eval('window.__copied')) === text);
+  await x.eval(`document.querySelector('#field-keys-actions [data-keys="ai"]').click()`); await x.wait(100);
+  const ai = await x.eval('window.__copied');
+  const missing = await x.eval(`LPR_KEYS.entries().map(e => '{{' + e.name + '}}').filter(k => !${JSON.stringify(ai || '')}.includes(k))`);
+  s.check('Copy for AI: compact (< 35% of the full guide), every key included, header marks + date formats explained',
+    ai && ai.length < text.length * 0.35 && !missing.length && /\^\^Small Label\^\^/.test(ai) && /==Large Title/.test(ai) && /weekday date/.test(ai) && !/—/.test(ai), JSON.stringify({ len: ai && ai.length, full: text.length, missing }));
   await x.eval(`document.querySelector('#field-keys-actions [data-keys="download"]').click()`); await x.wait(200);
   s.check('index: Download .txt makes the legend file (captured in memory, nothing saved)', (await x.eval(`(async () => __blobs.length ? await __blobs[0].text() : '')()`)) === text);
   s.check('no console errors', x.logs.length === 0, x.logs.join(' || '));

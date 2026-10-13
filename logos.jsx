@@ -266,7 +266,7 @@ function ConceptSingleFamily({ mode = "primary", on = "light", palette }) {
 
 /* =========================================================================
    CONCEPT 04 — "LPR Buildings"
-   The skyline IS the letters — L, P, R as building forms. Most distinctive,
+   The skyline IS the letters: L, P, R as building forms. Most distinctive,
    still preserves "tall blue buildings + LPR" DNA but unifies into one mark.
    ========================================================================= */
 function ConceptLPRBuildings({ mode = "primary", on = "light", palette }) {
@@ -353,11 +353,11 @@ function ConceptPinstripe({ mode = "primary", on = "light", palette }) {
 
 /* ---------- Concept index ---------- */
 const CONCEPTS = [
-  { id:"original", name:"01 · True to Original", direction:"Same skyline, same lockup, just cleaned up — tightened kerning, aligned baseline, refined building tops. Drop-in replacement.", Component: ConceptOriginal },
+  { id:"original", name:"01 · True to Original", direction:"Same skyline, same lockup, just cleaned up: tightened kerning, aligned baseline, refined building tops. Drop-in replacement.", Component: ConceptOriginal },
   { id:"refined", name:"02 · Refined Skyline", direction:"Cleaner architectural building shapes with fewer pinstripes. Adds a baseline rule and refined caption. Same DNA, more confident silhouette.", Component: ConceptRefined },
-  { id:"single-family", name:"03 · Single-Family Skyline", direction:"Keeps the tall blue slab from the original but evolves the cluster into pitched-roof homes — actually represents single-family property management.", Component: ConceptSingleFamily },
-  { id:"lpr-buildings", name:"04 · LPR Buildings", direction:"The skyline IS the letters — L, P, R rendered as building forms. Most distinctive; unifies mark and wordmark into one ownable shape.", Component: ConceptLPRBuildings },
-  { id:"pinstripe", name:"05 · Pinstripe Skyline", direction:"Most minimal evolution — rhythmic pinstripe bars forming a skyline arc. Best small-size legibility (favicon, email signature, yard sign).", Component: ConceptPinstripe },
+  { id:"single-family", name:"03 · Single-Family Skyline", direction:"Keeps the tall blue slab from the original but evolves the cluster into pitched-roof homes, so it actually represents single-family property management.", Component: ConceptSingleFamily },
+  { id:"lpr-buildings", name:"04 · LPR Buildings", direction:"The skyline IS the letters: L, P, R rendered as building forms. Most distinctive; unifies mark and wordmark into one ownable shape.", Component: ConceptLPRBuildings },
+  { id:"pinstripe", name:"05 · Pinstripe Skyline", direction:"Most minimal evolution: rhythmic pinstripe bars forming a skyline arc. Best small-size legibility (favicon, email signature, yard sign).", Component: ConceptPinstripe },
 ];
 
 window.LPR_CONCEPTS = CONCEPTS;

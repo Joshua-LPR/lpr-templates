@@ -75,13 +75,13 @@
         return '<label class="lpr-merge-row"><input type="checkbox" data-id="' + esc(t._id) + '"' + (chosen[t._id] ? ' checked' : '') + '>' +
                '<span class="lpr-merge-name">' + esc(fullName(t)) + '</span>' +
                '<span class="lpr-merge-addr">' + esc([e.address_line1, e.address_line2].filter(Boolean).join(', ')) + '</span></label>';
-      }).join('') : '<div class="lpr-merge-empty">' + (all.length ? 'No tenants match.' : 'No tenants yet — import a tenant CSV first.') + '</div>';
+      }).join('') : '<div class="lpr-merge-empty">' + (all.length ? 'No tenants match.' : 'No tenants yet. Import a tenant CSV first.') + '</div>';
       counts();
     }
     // A tick only updates the count — redrawing the list would jump a long list.
     function counts() {
       var n = Object.keys(chosen).length;
-      count.textContent = n + ' selected' + (n > MAX ? ' — max ' + MAX + ' at a time' : '');
+      count.textContent = n + ' selected' + (n > MAX ? ' (max ' + MAX + ' at a time)' : '');
       go.textContent = 'Preview ' + n + (n === 1 ? ' copy' : ' copies');
       go.disabled = !n || n > MAX;
     }

@@ -49,7 +49,7 @@
       add(group, name, { ns: ns, field: k }, (bare ? [k, label] : []).concat([NSWORD[ns] + k, NSWORD[ns] + label]));
     });
   }
-  var G_REC = 'Recipient — the tenant OR vendor the letter is addressed to';
+  var G_REC = 'Recipient (the tenant or vendor it is addressed to)';
   var G_TEN = 'Tenant only';
   addNs(G_REC, 'contact', Object.keys(F.contact), '', true);
   add(G_REC, 'full address', { ns: 'contact', preset: 'full_address' }, ['recipient full address', 'address']);
@@ -65,7 +65,7 @@
   // company signing the letter (LPR as agent) is {{sender company}}.
   add('Sender', 'sender company', { ns: 'owner', field: 'name' }, ['company', 'sender']);
   addNs('Sender', 'employee', Object.keys(F.employee), '', false);
-  addNs('Vendor — always starts with "vendor"', 'vendor', Object.keys(F.vendor), 'vendor', false);
+  addNs('Vendor (always starts with "vendor")', 'vendor', Object.keys(F.vendor), 'vendor', false);
 
   function resolve(raw) {
     var m = FILL_RE.exec(raw.trim());
@@ -104,8 +104,53 @@
     if (twin) tok.textContent = twin.textContent;
   }
 
-  // Replace every {{key}} in root's text. Returns { made, unknown }.
-  function convert(root, lock) {
+  /* ---- header markers (Joshua 2026-10-13: not {{keys}}, like **bold**) ----
+     A line that is only  ^^Lease Addendum^^  is the small badge label; a
+     line that is only  ==Past-Due Rent | Payment Plan Addendum==  is the
+     large title ("|" = second line). On a notice with its own header area
+     (doc-badge / doc-title above the body) they fill it — through the Fields
+     tab where that header is a fill field (Notice Template). Elsewhere (e.g.
+     Letterhead) they become a badge / title block right there in the text,
+     kept with what follows. */
+  var BADGE_RE = /^\^\^\s*([^\^]+?)\s*\^\^$/, TITLE_RE = /^==\s*([^=]+?)\s*==$/;
+  function headerArea(sheet, which) {
+    if (!sheet) return null;
+    return [].filter.call(sheet.querySelectorAll(which === 'title' ? '.doc-title' : '.doc-badge'), function (e) { return !e.closest('.lh-body'); })[0] || null;
+  }
+  function setHeader(sheet, which, text) {
+    var target = headerArea(sheet, which);
+    if (!target) return false;
+    var lines = text.split(/\s*\|\s*/);
+    var fill = target.querySelector('[data-fill-field]');
+    if (fill && window.LPR_FILL_SET && window.LPR_FILL_SET(fill.getAttribute('data-fill-label'), lines.join('\n'))) return true;
+    target.innerHTML = lines.map(function (l) { return U.esc(l); }).join('<br/>');
+    return true;
+  }
+  function headerMarkers(root, sheet) {
+    var n = 0;
+    [].slice.call(root.querySelectorAll('p, div, li, h1, h2, h3, h4, h5, h6')).forEach(function (b) {
+      if (b.querySelector('p, div, li, h1, h2, h3, h4, h5, h6') || b.closest(U.TOKEN_SEL) || b.matches('.doc-badge, .doc-title')) return;
+      var t = b.textContent.trim(), m, which;
+      if ((m = BADGE_RE.exec(t))) which = 'badge'; else if ((m = TITLE_RE.exec(t))) which = 'title'; else return;
+      n++;
+      if (setHeader(sheet, which, m[1])) { b.remove(); return; }
+      var blk = document.createElement('div');
+      blk.className = which === 'title' ? 'doc-title' : 'doc-badge';
+      blk.setAttribute('data-flow-keep-next', '');
+      blk.innerHTML = m[1].split(/\s*\|\s*/).map(function (l) { return U.esc(l); }).join('<br/>');
+      b.parentNode.replaceChild(blk, b);
+    });
+    return n;
+  }
+  function editingSheet() {
+    return [].filter.call(document.querySelectorAll('.sheet.tt-editing'), function (s) { return s.offsetHeight > 0; })[0] || null;
+  }
+
+  // Replace every {{key}} in root's text (and header markers). Returns { made, unknown }.
+  // sheet: whose header the markers fill (default: root itself if it is a sheet).
+  function convert(root, lock, sheet) {
+    sheet = sheet || (root.classList && root.classList.contains('sheet') ? root : null);
+    headerMarkers(root, sheet);
     var found = [], w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), n;
     while ((n = w.nextNode())) {
       var host = n.parentElement;
@@ -123,7 +168,7 @@
         if (r) { el = build(r); made.push(el); }
         else {
           el = document.createElement('mark'); el.className = 'lpr-key-unknown';
-          el.title = 'Unknown field key — see the field-key legend'; el.textContent = m[0];
+          el.title = 'Unknown field key: see the field-key legend'; el.textContent = m[0];
           unknown.push(m[0]);
         }
         frag.appendChild(el);
@@ -157,7 +202,7 @@
   function pasteTransform(html) {
     var d = document.createElement('div');
     d.innerHTML = html;
-    var r = convert(d, !!document.querySelector('.sheet.tt-editing'));
+    var r = convert(d, !!document.querySelector('.sheet.tt-editing'), editingSheet());
     if (r.made.length || r.unknown.length) afterConvert(r.made, r.unknown);
     return d.innerHTML;
   }
@@ -167,13 +212,13 @@
     var groups = [], by = {};
     ENTRIES.forEach(function (e) { if (!by[e.group]) { by[e.group] = []; groups.push(e.group); } by[e.group].push(e); });
     var L = [];
-    L.push('LPR TEMPLATES — FIELD KEYS');
+    L.push('LPR TEMPLATES: FIELD KEYS');
     L.push('==========================');
     L.push('');
     L.push('Put these keys in a letter where a name, address, date or amount belongs.');
     L.push('Paste the letter into a template in Edit mode (or type the keys and click');
     L.push('Done): every key becomes a live field that fills in from the recipient,');
-    L.push('tenant, sender and Fields tab. Spelling is forgiving — {{first name}},');
+    L.push('tenant, sender and Fields tab. Spelling is forgiving: {{first name}},');
     L.push('{{First_Name}} and {{firstname}} all work. A key the templates don\'t');
     L.push('know is highlighted, never dropped.');
     L.push('');
@@ -191,7 +236,7 @@
     L.push('---------------------------');
     L.push('Names, addresses, phones and emails exist for the recipient, a tenant and a');
     L.push('vendor. A key with no prefix ({{first name}}, {{city}}, {{phone}}) is the');
-    L.push('RECIPIENT — whoever the letter is addressed to, tenant or vendor. To name a');
+    L.push('RECIPIENT: whoever the letter is addressed to, tenant or vendor. To name a');
     L.push('specific one, start the key with "tenant" or "vendor": {{tenant first name}},');
     L.push('{{vendor phone}}. Vendor keys only work with the "vendor" prefix, and the');
     L.push('person signing is always {{signer …}}.');
@@ -208,6 +253,15 @@
       });
       L.push('');
     });
+    L.push('HEADER: SMALL LABEL + LARGE TITLE (marks, not keys)');
+    L.push('---------------------------------------------------');
+    L.push('  ^^Lease Addendum^^             on its own line: the small label');
+    L.push('  ==Past-Due Rent | Payment Plan Addendum==');
+    L.push('                                 on its own line: the large title; | starts a');
+    L.push('                                 second line');
+    L.push('On a notice with a header area they fill it; elsewhere (e.g. Letterhead)');
+    L.push('they become the label and title at that spot in the text.');
+    L.push('');
     L.push('FILL-IN BLANKS (you choose the label)');
     L.push('-------------------------------------');
     L.push('  {{date: Payment Due Date}}     a date: October 8, 2026');
@@ -222,35 +276,49 @@
     L.push('same value (fill it once, it appears everywhere). A date\'s format can also');
     L.push('be changed later in the Fields tab.');
     L.push('');
-    L.push('INSTRUCTIONS FOR AN AI DRAFTING A LETTER');
-    L.push('----------------------------------------');
-    L.push('You are drafting the BODY of a letter for LPR Management. It will be pasted');
-    L.push('into a letterhead template that already has the logo, our address, the date');
-    L.push('line, the recipient\'s address block, the sign-off and the signature.');
+    L.push('INSTRUCTIONS FOR AN AI: HOW TO USE THE KEYS');
+    L.push('-------------------------------------------');
     L.push('1. Wherever a name, address, date, amount or other blank belongs, write the');
     L.push('   matching {{key}} from this list instead of a value. Never invent names,');
     L.push('   addresses, dates or amounts.');
     L.push('2. For a blank that is not in the list, use a fill-in key with a clear label:');
     L.push('   {{date: …}}, {{amount: …}}, {{time: …}} or {{text: …}}. Reuse the exact same');
     L.push('   label when the same value appears again.');
-    L.push('3. To make a filled-in value bold or italic, format the KEY itself:');
+    L.push('3. For a date, the word before "date" sets how that one place shows it:');
+    L.push('   {{date: …}} October 8, 2026 · {{numeric date: …}} 10/8/2026 ·');
+    L.push('   {{weekday date: …}} Thursday, October 8, 2026 · {{short date: …}} Oct 8, 2026 ·');
+    L.push('   {{legal date: …}} the 8th day of October, 2026. The same label in two');
+    L.push('   formats is still the same date.');
+    L.push('4. To make a filled-in value bold or italic, format the KEY itself:');
     L.push('   **{{rent amount}}** gives the rent in bold, *{{date: Move-out Date}}* gives');
     L.push('   the date in italics. Don\'t put the formatting inside the braces.');
-    L.push('4. Formatting you may use: **bold**, *italic*, numbered lists (1.), bullet');
-    L.push('   lists (-), and headings (#) for section titles. No tables, colours or fonts.');
-    L.push('5. Start with the salutation (Dear {{first name}} {{last name}},) and end with');
-    L.push('   the last body paragraph. Do NOT write a date line, the recipient\'s address,');
-    L.push('   a closing ("Sincerely"), a signature or the sender\'s name — the template');
-    L.push('   adds those.');
+    L.push('5. Formatting that carries over when pasted: **bold**, *italic*, numbered');
+    L.push('   lists (1.), bullet lists (-) and headings (#).');
     L.push('6. Write keys exactly with double curly braces: {{first name}}.');
+    L.push('7. A header is two marked lines, not keys: ^^Small Label^^ and');
+    L.push('   ==Large Title== (| splits the title over two lines), each on its own line.');
     return L.join('\n') + '\n';
   }
 
-  function copyLegend() {
-    var t = legendText();
+  // The compact version for an AI with a small context window: the rules and
+  // every key, one line per group, nothing else. Built from the same table.
+  function aiText() {
+    var groups = [], by = {};
+    ENTRIES.forEach(function (e) { if (!by[e.group]) { by[e.group] = []; groups.push(e.group); } by[e.group].push('{{' + e.name + '}}'); });
+    var L = ['FIELD KEYS: write a key wherever a value belongs; never invent names, addresses, dates or amounts. Use double braces.'];
+    groups.forEach(function (g) { L.push(g + ': ' + by[g].join(' ')); });
+    L.push('Shared names (first name, city, phone, email…) with no prefix = the recipient; start with "tenant" or "vendor" for that person: {{tenant first name}}, {{vendor phone}}.');
+    L.push('Other blanks: {{date: Label}} {{amount: Label}} {{time: Label}} {{text: Label}}. Same label = same value.');
+    L.push('Date format (word before "date"): {{date: L}} October 8, 2026 · {{numeric date: L}} 10/8/2026 · {{weekday date: L}} Thursday, October 8, 2026 · {{short date: L}} Oct 8, 2026 · {{legal date: L}} the 8th day of October, 2026.');
+    L.push('Bold/italic value: **{{key}}** / *{{key}}*.');
+    L.push('Header, each on its own line: ^^Small Label^^ and ==Large Title | Second Line==.');
+    return L.join('\n') + '\n';
+  }
+  function copyText(t) {
     if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t).then(function () { return true; }, function () { return fallbackCopy(t); });
     return Promise.resolve(fallbackCopy(t));
   }
+  function copyLegend() { return copyText(legendText()); }
   function fallbackCopy(t) {
     var ta = document.createElement('textarea'); ta.value = t; ta.style.cssText = 'position:fixed;left:-9999px';
     document.body.appendChild(ta); ta.select();
@@ -266,13 +334,14 @@
   // Two buttons that copy / download the legend (Insert Field panel, index page).
   function legendButtons(cls) {
     var box = document.createElement('div'); box.className = 'lpr-keys-btns';
-    box.innerHTML = '<button type="button" class="' + (cls || '') + '" data-keys="copy" title="Copy the field keys + AI instructions">Copy field keys</button>' +
+    box.innerHTML = '<button type="button" class="' + (cls || '') + '" data-keys="ai" title="Copy just the AI instructions + every key, nothing else (for small AI models)">Copy for AI</button>' +
+                    '<button type="button" class="' + (cls || '') + '" data-keys="copy" title="Copy the full field-key guide">Copy field keys</button>' +
                     '<button type="button" class="' + (cls || '') + '" data-keys="download" title="Download the field keys + AI instructions as a .txt file">Download .txt</button>';
     box.addEventListener('mousedown', function (e) { if (e.target.closest('[data-keys]')) e.preventDefault(); });   // keep the editing caret
     box.addEventListener('click', function (e) {
       var b = e.target.closest('[data-keys]'); if (!b) return;
       if (b.dataset.keys === 'download') return downloadLegend();
-      copyLegend().then(function (ok) { var o = b.textContent; b.textContent = ok ? '✓ Copied' : 'Copy failed'; setTimeout(function () { b.textContent = o; }, 1500); });
+      (b.dataset.keys === 'ai' ? copyText(aiText()) : copyLegend()).then(function (ok) { var o = b.textContent; b.textContent = ok ? '✓ Copied' : 'Copy failed'; setTimeout(function () { b.textContent = o; }, 1500); });
     });
     return box;
   }
@@ -292,6 +361,7 @@
     // On-screen notice only — the full-address and unknown-key rules live in
     // brand.css (exports strip this style and all scripts).
     st.textContent =
+      '.lpr-keys-btns { display: flex; gap: 8px; flex-wrap: wrap; }' +
       '.lpr-keys-note { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); max-width: 560px; z-index: 10000;' +
       '  background: #0e1430; color: #fff; font: 13px/1.5 Montserrat, sans-serif; padding: 10px 16px; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,.25); }' +
       '@media print { .lpr-keys-note { display: none; } }';
@@ -300,7 +370,7 @@
 
   window.LPR_KEYS = {
     resolve: resolve, convert: convert, convertSheets: convertSheets, fullAddress: fullAddress,
-    legendText: legendText, copyLegend: copyLegend, downloadLegend: downloadLegend, legendButtons: legendButtons,
+    legendText: legendText, aiText: aiText, copyLegend: copyLegend, downloadLegend: downloadLegend, legendButtons: legendButtons,
     entries: function () { return ENTRIES.slice(); }
   };
   if (window.LPR_PASTE) window.LPR_PASTE.transforms.push(pasteTransform);

@@ -41,7 +41,7 @@ try {
   // Blank print: the header rows draw their own write-in lines — no doubled lines.
   await t.eval(`document.querySelectorAll('[data-contact-field],[data-owner-field]').forEach(e => e.textContent = '')`);
   await t.send('Emulation.setEmulatedMedia', { media: 'print' }); await t.wait(200);
-  const dbl = await t.eval(`[...document.querySelectorAll('.ua-fields [data-contact-field]')].filter(e => getComputedStyle(e).borderBottomStyle === 'solid').length`);
+  const dbl = await t.eval(`[...document.querySelectorAll('.ua-fields [data-contact-field]')].filter(e => getComputedStyle(e, '::after').borderBottomStyle === 'solid' && getComputedStyle(e, '::after').content !== 'none').length`);
   s.check('blank print: Resident Name / Address rows keep their single line (no doubled lines)', dbl === 0, 'field lines=' + dbl);
   const txt = await t.eval(`({ addr: document.querySelector('.ua-addr').innerText.trim(), role: document.querySelector('.signoff .signed-role').innerText.trim(),
     name: getComputedStyle(document.querySelector('.signoff .signed-name')).display })`);

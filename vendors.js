@@ -243,7 +243,7 @@
           <div class="lpr-tp-sec-hd">Recent</div>
           ${recentItems.map(v => `
             <div class="lpr-tp-item${v._id === selectedId ? ' sel' : ''}" data-id="${esc(v._id)}">
-              <div class="lpr-tp-name">${esc(v.effective.name || '—')}</div>
+              <div class="lpr-tp-name">${esc(v.effective.name || '-')}</div>
               <div class="lpr-tp-addr">${esc(v.effective.address_line1 || '')}${v.effective.city ? ' · ' + esc(v.effective.city) : ''}</div>
               <button class="lpr-tp-recent-rm" data-id="${esc(v._id)}" title="Remove">✕</button>
             </div>`).join('')}
@@ -255,7 +255,7 @@
           ? `<div class="lpr-tp-empty">${all.length === 0 ? 'Import a CSV to get started' : 'No matches'}</div>`
           : filtered.map(v => `
               <div class="lpr-tp-item${v._id === selectedId ? ' sel' : ''}" data-id="${esc(v._id)}">
-                <div class="lpr-tp-name">${esc(v.effective.name || '—')}</div>
+                <div class="lpr-tp-name">${esc(v.effective.name || '-')}</div>
                 <div class="lpr-tp-addr">${esc(v.effective.address_line1 || '')}${v.effective.city ? ' · ' + esc(v.effective.city) : ''}</div>
               </div>`).join('')}
       </div>
@@ -339,7 +339,7 @@
     return `
       <div class="lpr-tp-ed">
         <div class="lpr-tp-ed-hd">
-          <span>${esc(v.effective.name || '—')}</span>
+          <span>${esc(v.effective.name || '-')}</span>
           ${editedCount ? `<span class="lpr-tp-badge">⚠ ${editedCount} edited</span>` : ''}
           ${v._manual ? `<button class="lpr-tp-del-btn" id="lpr-vnd-del" title="Delete vendor">Delete</button>` : ''}
         </div>
