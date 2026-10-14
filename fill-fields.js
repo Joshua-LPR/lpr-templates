@@ -124,6 +124,16 @@
      Oct 8, 2026 · Sept. 8th 2026 · 8 Oct 2026 · Thursday, October 8, 2026.
      Two-digit year → 20xx. null for anything else (or e.g. 2/30). */
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  // Format dropdown examples use the field's own date (today until one is set),
+  // like Excel / Google Sheets; the pattern name is the option's tooltip.
+  function exampleIso(raw) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw || '')) return raw;
+    var d = new Date(); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+  function refreshFormatExamples(sel, raw) {
+    if (!sel) return;
+    [].forEach.call(sel.options, function (o) { if (DATE_FORMATS[o.value]) o.textContent = formatDate(exampleIso(raw), o.value); });
+  }
   function monthOf(w) {
     if (!w || w.length < 3) return 0;
     for (var i = 0; i < 12; i++) if (MONTHS[i].toLowerCase().indexOf(w) === 0) return i + 1;
@@ -362,6 +372,7 @@
             opts.onChange = function (selectedDates, dateStr, fp) {
               if (fp.altInput) { fp.altInput.classList.remove('lpr-ff-bad'); fp.altInput.title = ''; }
               if (fp._lprHint) fp._lprHint.textContent = '';
+              refreshFormatExamples(container.querySelector('[data-ff-fmt="' + def.key + '"]'), dateStr);
               saveValue(def.key, dateStr);
               applyField(def, dateStr);
             };
@@ -505,17 +516,17 @@
     var input;
     if (def.type === 'date') {
       var fmt = formatOf(def);
-      // Options name the pattern (the box above already shows the actual date).
+      // Options show this field's date in each format (today until one is set).
       // Places set to different formats (by keys) can keep them.
       var own = def.els.map(function (el) { return DATE_FORMATS[el.getAttribute('data-fill-format')] ? el.getAttribute('data-fill-format') : 'spelled'; });
       var mixed = own.some(function (f) { return f !== own[0]; });
       input = '<div class="lpr-ff-icon-wrap"><input type="date" class="lpr-ff-inp lpr-ff-has-icon" data-ff-key="' + k + '" value="' + esc(raw) + '" /><span class="lpr-ff-icon" aria-hidden="true">' + CAL_ICON + '</span></div>' +
-        '<select class="lpr-ff-fmt" data-ff-fmt="' + k + '" title="How this date appears in the letter' + (def.els.length > 1 ? ' (all ' + def.els.length + ' places)' : '') + '">' +
+        '<div class="lpr-ff-fmt-row"><span class="lpr-ff-fmt-lbl">Format</span><select class="lpr-ff-fmt" data-ff-fmt="' + k + '" title="How this date appears in the letter' + (def.els.length > 1 ? ' (all ' + def.els.length + ' places)' : '') + '">' +
           (mixed || !fmt ? '<option value=""' + (!fmt ? ' selected' : '') + '>Different in each place</option>' : '') +
           Object.keys(DATE_FORMATS).map(function (f) {
-            return '<option value="' + f + '"' + (f === fmt ? ' selected' : '') + '>' + esc(DATE_FORMATS[f].label) + '</option>';
+            return '<option value="' + f + '" title="' + esc(DATE_FORMATS[f].label) + '"' + (f === fmt ? ' selected' : '') + '>' + esc(formatDate(exampleIso(raw), f)) + '</option>';
           }).join('') +
-        '</select>';
+        '</select></div>';
     } else if (def.type === 'time') {
       input = '<div class="lpr-ff-icon-wrap"><input type="time" class="lpr-ff-inp lpr-ff-has-icon" data-ff-key="' + k + '" value="' + esc(raw) + '" /><span class="lpr-ff-icon" aria-hidden="true">' + CLK_ICON + '</span></div>';
     } else if (def.calc) {
@@ -581,7 +592,9 @@
       '.lpr-ff-calc-note:empty{display:none;}.lpr-ff-calc-note{font-size:11px;color:#cc2222;}',
       '.lpr-ff-title{resize:vertical;font-family:inherit;line-height:1.4;}',
       '.lpr-ff-inp.lpr-ff-bad{border-color:#cc2222!important;background:#fff5f5;}',
-      '.lpr-ff-fmt{margin-top:4px;padding:4px 6px;border:1px solid #ddd;border-radius:5px;font-family:inherit;font-size:11px;color:var(--lpr-muted);background:#fff;cursor:pointer;}',
+      '.lpr-ff-fmt-row{display:flex;align-items:center;gap:6px;margin-top:4px;}',
+      '.lpr-ff-fmt-lbl{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#aaa;}',
+      '.lpr-ff-fmt{flex:1;min-width:0;margin-top:0;padding:4px 6px;border:1px solid #ddd;border-radius:5px;font-family:inherit;font-size:11px;color:var(--lpr-muted);background:#fff;cursor:pointer;}',
 
       /* ---- dollar-amount compound field ---- */
       '.lpr-ff-money{display:flex;align-items:stretch;border:1px solid #ddd;border-radius:5px;overflow:hidden;background:#fff;}',
