@@ -91,7 +91,7 @@ CALLOUT BOXES (marks, not keys)
                                  warning, used sparingly; starts with a bold
                                  "Important:" (added if missing)
 The mark starts a paragraph; the rest of the paragraph is the box. Keys and
-bold/italic work inside.
+bold/italic work inside; | starts a new line.
 
 FILL-IN BLANKS (you choose the label)
 -------------------------------------

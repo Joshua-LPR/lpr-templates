@@ -189,6 +189,15 @@
         p.remove();
       });
       if (b.parentNode) b.remove();
+      // " | " starts a new line, as in the header title (AI summaries use it
+      // to separate items: "Total: $X | Down payment: $Y | …")
+      var w = document.createTreeWalker(box, NodeFilter.SHOW_TEXT, null), tn, bars = [];
+      while ((tn = w.nextNode())) if (tn.data.indexOf('|') >= 0 && !tn.parentElement.closest(U.TOKEN_SEL)) bars.push(tn);
+      bars.forEach(function (tn) {
+        var bits = tn.data.split(/\s*\|\s*/), frag = document.createDocumentFragment();
+        bits.forEach(function (bit, i) { if (i) frag.appendChild(document.createElement('br')); if (bit) frag.appendChild(document.createTextNode(bit)); });
+        tn.parentNode.replaceChild(frag, tn);
+      });
       // trim the space the marker left in front
       var first = box.firstChild;
       if (first && first.nodeType === 3) first.data = first.data.replace(/^\s+/, '');
@@ -329,7 +338,7 @@
     L.push('                                 warning, used sparingly; starts with a bold');
     L.push('                                 "Important:" (added if missing)');
     L.push('The mark starts a paragraph; the rest of the paragraph is the box. Keys and');
-    L.push('bold/italic work inside.');
+    L.push('bold/italic work inside; | starts a new line.');
     L.push('');
     L.push('FILL-IN BLANKS (you choose the label)');
     L.push('-------------------------------------');
@@ -386,7 +395,7 @@
     L.push('Date format (word before "date"): {{date: L}} October 8, 2026 · {{numeric date: L}} 10/8/2026 · {{weekday date: L}} Thursday, October 8, 2026 · {{short date: L}} Oct 8, 2026 · {{legal date: L}} the 8th day of October, 2026.');
     L.push('Bold/italic value: **{{key}}** / *{{key}}*.');
     L.push('Header, each on its own line: ^^Small Label^^ and ==Large Title | Second Line==.');
-    L.push('Callout box: start a paragraph with [!blue] (action required), [!gold] (key figures/dates) or [!red] (serious warning, rarely). Contracts (leases, payment plans, addenda etc): use callouts sparingly, and only to highlight terms already stated in the text.');
+    L.push('Callout box: start a paragraph with [!blue] (action required), [!gold] (key figures/dates) or [!red] (serious warning, rarely); | starts a new line. Contracts (leases, payment plans, addenda etc): use callouts sparingly, and only to highlight terms already stated in the text.');
     return L.join('\n') + '\n';
   }
   function copyText(t) {

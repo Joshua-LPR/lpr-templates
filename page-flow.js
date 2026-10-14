@@ -74,7 +74,7 @@
   }
 
   function isSplittable(el) {
-    return !el.matches(KEEP_SEL) && !isHeadingLike(el);
+    return !el.matches(KEEP_SEL) && !keepsWithNext(el);
   }
 
   function lineHeight(el) {
@@ -123,6 +123,15 @@
     return !!text && text.length <= 120 && allBold([el]);
   }
 
+  // A short lead-in that ends with ":" and introduces a list ("…according
+  // to the following schedule:") stays with that list, like a heading.
+  function isLeadIn(el) {
+    if (el.tagName !== 'P' || hasBlockChildren(el)) return false;
+    var text = el.textContent.trim(), next = el.nextElementSibling;
+    return text.length <= 240 && /:$/.test(text) && !!next && /^(UL|OL)$/.test(next.tagName);
+  }
+  function keepsWithNext(el) { return isHeadingLike(el) || isLeadIn(el); }
+
   /* ================================================================
      MEASURING (body coordinates, layout px — robust to phone scaling
      and to nested elements, whose offsetParent may differ)
@@ -170,7 +179,7 @@
     if (el.matches(TOKEN_SEL) || /^(IMG|SVG|HR|BR)$/.test(el.tagName)) return null;
     if (!force && el.matches(KEEP_SEL)) return null;
     if (hasBlockChildren(el)) return splitBox(el, ctx, force);
-    if (!force && isHeadingLike(el)) return null;
+    if (!force && keepsWithNext(el)) return null;
     return splitText(el, ctx, force);
   }
 
@@ -432,7 +441,7 @@
       }
       break;                                               // carry prev whole
     }
-    while (j > 0 && isHeadingLike(kids[j - 1])) j--;
+    while (j > 0 && keepsWithNext(kids[j - 1])) j--;
     if (j === 0) {
       // Nothing would stay on this page. Never clip text: split the block
       // that doesn't fit even against the keep rules.
