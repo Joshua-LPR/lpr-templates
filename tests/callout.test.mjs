@@ -49,7 +49,8 @@ try {
   const typed = await t.eval(`[...document.querySelectorAll('.sheet .callout-gold')].some(c => c.textContent.trim() === 'Typed callout')`);
   s.check('a marker typed in edit mode converts on Done', typed);
   const legend = await t.eval(`({ full: LPR_KEYS.legendText(), ai: LPR_KEYS.aiText() })`);
-  s.check('legend + Copy for AI explain [!blue] / [!gold] / [!red]', /\[!blue\]/.test(legend.full) && /\[!red\]/.test(legend.full) && /\[!gold\]/.test(legend.ai) && /rarely/.test(legend.ai));
+  s.check('legend + Copy for AI explain [!blue] / [!gold] / [!red]', /\[!blue\]/.test(legend.full) && /\[!red\]/.test(legend.full) && /\[!gold\]/.test(legend.ai) && /rarely/.test(legend.ai)
+    && legend.ai.includes('Contracts (leases, payment plans, addenda etc): use callouts sparingly, and only to highlight terms already stated in the text.') && legend.full.includes('Contracts (leases, payment plans, addenda etc)'));
   s.check('no console errors', t.logs.filter(l => !/^dialog beforeunload/.test(l)).length === 0, t.logs.join(' || '));
 } catch (e) { s.crash(e); }
 finally { await t.close(); }

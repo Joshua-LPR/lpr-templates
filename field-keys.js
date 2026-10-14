@@ -369,6 +369,8 @@
     L.push('8. A callout box is a paragraph that starts with [!blue] (action the reader');
     L.push('   must take), [!gold] (key figures and dates) or [!red] (serious legal or');
     L.push('   safety warning only; use rarely). At most one or two per letter.');
+    L.push('   Contracts (leases, payment plans, addenda etc): use callouts sparingly,');
+    L.push('   and only to highlight terms already stated in the text.');
     return L.join('\n') + '\n';
   }
 
@@ -384,7 +386,7 @@
     L.push('Date format (word before "date"): {{date: L}} October 8, 2026 · {{numeric date: L}} 10/8/2026 · {{weekday date: L}} Thursday, October 8, 2026 · {{short date: L}} Oct 8, 2026 · {{legal date: L}} the 8th day of October, 2026.');
     L.push('Bold/italic value: **{{key}}** / *{{key}}*.');
     L.push('Header, each on its own line: ^^Small Label^^ and ==Large Title | Second Line==.');
-    L.push('Callout box: start a paragraph with [!blue] (action required), [!gold] (key figures/dates) or [!red] (serious warning, rarely).');
+    L.push('Callout box: start a paragraph with [!blue] (action required), [!gold] (key figures/dates) or [!red] (serious warning, rarely). Contracts (leases, payment plans, addenda etc): use callouts sparingly, and only to highlight terms already stated in the text.');
     return L.join('\n') + '\n';
   }
   function copyText(t) {

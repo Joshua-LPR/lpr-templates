@@ -131,3 +131,5 @@ INSTRUCTIONS FOR AN AI: HOW TO USE THE KEYS
 8. A callout box is a paragraph that starts with [!blue] (action the reader
    must take), [!gold] (key figures and dates) or [!red] (serious legal or
    safety warning only; use rarely). At most one or two per letter.
+   Contracts (leases, payment plans, addenda etc): use callouts sparingly,
+   and only to highlight terms already stated in the text.
