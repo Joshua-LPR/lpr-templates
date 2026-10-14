@@ -48,9 +48,16 @@ Use the **Customize for an employee** panel on the index to set name, title, pho
 Every letter and notice has a **Setup** button in the toolbar that opens a side panel with:
 - **Sender tab** — Pick the owner LLC; include/hide signer name, title, office contact. On Letterhead also: **Your signature** (gallery / leave blank / signature line to sign later) and **Tenant signature lines** (0–2). Click **Apply to Template**.
 
-- **Tenants tab** — Import a Buildium tenant CSV, pick a tenant, and all `data-tenant-field` spans fill automatically. Manual overrides preserved across CSV re-imports.
+- **Tenants tab** — **↑ Import CSV** (Buildium tenant export; never deletes or duplicates; Status column "Former Tenant" and anyone missing from the latest import count as past), **↑ Properties** (Buildium Properties export fills each tenant's Landlord), **+ Add Manually** (a tenant not in Buildium; "Former tenant" checkbox; landlord picked from the owners list or "+ New owner…"). Pick a tenant and the letter fills. Manual edits survive re-imports.
+- **Mail merge** (Tenants tab, on Letterhead, Letter Watermark, Notice Template, 24-Hour Notice and both envelopes) — tick tenants (Current / All, search, building and landlord filters, select-all checkbox) → one copy per tenant → print or one PDF. Individualized notices (per-tenant amounts) are a later phase.
 - **Vendors tab** — Import a Buildium vendor CSV, pick a vendor, fill `data-vendor-field` spans.
-- **Fields tab** — Date pickers, time pickers, dollar amounts, and free-text fields for template-specific fill-in values.
+- **Fields tab** — Date pickers (type any spelling or pick; **Today** button; five formats per date: October 8, 2026 · 10/8/2026 · Thursday, October 8, 2026 · Oct 8, 2026 · the 8th day of October, 2026), time pickers, dollar amounts ("1,234.50", the `$` added only where the letter lacks one) and free-text fields.
+
+## Drafting letters
+
+- **Field keys** — write `{{recipient name}}`, `{{full address}}`, `{{landlord}}`, `{{weekday date: Move-out}}`, `{{amount: Rent}}` … in any text (or an AI draft) and paste it in edit mode: each key becomes a live field. `**bold**` / `*italic*` keys keep their formatting. `^^Small Label^^` and `==Large Title | Line 2==` fill the document header. Full list: `FIELD-KEYS.md` (also **Copy for AI** on the index).
+- **Clean paste**, **Clear body / Clear all**, B / I / U / size / colour (also on field chips), long letters flow onto more pages automatically.
+- **Blank forms** — empty fields print as write-in lines sized for what goes there (Print, PDF, Image).
 
 ## Multi-User System
 
@@ -89,6 +96,8 @@ lpr-templates/
 ├── owners.js             — sender/owner tab in Setup panel
 ├── vendors.js            — vendor address book tab
 ├── fill-fields.js        — date/time/amount/text field pickers tab
+├── field-keys.js         — {{field keys}} + header markers, legend / Copy for AI
+├── merge.js              — mail merge (one copy per tenant)
 ├── template-tools.js     — Edit, Export, Save As toolbar
 ├── letter.css            — shared letter/notice layout (incl. page flow, signature rows, optional rows)
 ├── mode-bar.js           — on-page mode selector (watermark, variants)

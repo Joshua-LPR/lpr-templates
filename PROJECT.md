@@ -22,6 +22,7 @@ Internal stationery and notice template system for **LPR Management, LLC**. Buil
 11. [DRY cleanup — record](#dry-cleanup--done-2026-10-08-approved-by-joshua-bead-joshu_akiva-ssh)
 12. [Future Considerations](#future-considerations)
 13. [Conventions for New Templates](#conventions-for-new-templates)
+14. [Maintainer notes (decisions, preferences, gotchas)](#maintainer-notes-decisions-preferences-gotchas)
 
 ---
 
@@ -217,6 +218,8 @@ The archive page (`archive.html`) has its own search bar that filters the archiv
 | **Save Edits** | *(Library templates only)* Overwrites the current library entry with your changes. Shows a confirmation before overwriting. |
 | **Setup** | Opens the Setup panel (Sender / Tenants / Vendors / Fields / Options tabs, as the template needs) |
 
+**PDF / Image (html2canvas) keep the print layout (2026-10-14):** html2canvas renders its own copy of the page with screen CSS and turns `::before/::after` into real nodes, so `:has([data-…-field]:empty)` collapses (empty Apt fragments next to blank-form lines) stopped matching and `.no-print` grid cells shifted grids (Occupant Update roster). `hideNoPrintForRaster()` in template-tools.js now pins every element that is hidden at capture time, and keeps `.no-print` children of a grid as invisible placeholders (as the `@media print` rules do). Test: `tests/raster.test.mjs` measures html2canvas's copy during a real Export → PDF.
+
 **Unfilled-field warning:** clicking Export or Save As when some field types are still empty shows a modal listing which namespaces will be blank. User can go back or continue anyway.
 
 ### Setup panel — Sender, Tenants, Vendors, Fields, Options
@@ -238,14 +241,15 @@ The **Setup** button opens a tabbed panel that appears in every template. Tab or
 
 - 3-layer data model: `source` (CSV import) → `overrides` (manual panel edits) → `effective` (override wins, falls back to source).
 - **Import CSV** — Buildium tenant export. Smart merge: new tenants added, existing updated, overrides preserved. (The CSV parser handles quoted commas, `""` and line breaks.)
-- **What a tenant CSV import does:** matched by Buildium Id — updates existing tenants (hand edits kept unless the file now agrees), adds new ones, **never deletes or duplicates**; hand-added (+ Add) tenants are never touched. **Current vs past:** Buildium's **Status** column (AG) says "Tenant" or "Former Tenant" — "Former Tenant" is past. Each import also stamps the tenants it contains (`lastSeen`, `lpr_tenants_import`), so anyone missing from the latest import (a current-only export) is past too. A **"Former tenant" checkbox** under the tenant details (editor and + Add, Joshua 2026-10-14) overrides both (`t.former`, kept only while it differs from the data). Hand-added tenants are current unless ticked. Past tenants are tagged in the list; the import message counts them.
-- **Landlord is a dropdown** (editor and + Add, Joshua 2026-10-14) of the owners list — `LPR_UTIL.ownerList()`: LPR + the Sender tab's owners CSV + owners named in the Properties export + owners added by hand via **"+ New owner…"** (`lpr_owners_manual`, kept apart so an owners-CSV re-import never drops them; they also appear in the Sender tab). A landlord typed on a hand-added tenant is never overwritten by a Properties import.
+- **What a tenant CSV import does:** matched by Buildium Id — updates existing tenants (hand edits kept unless the file now agrees), adds new ones, **never deletes or duplicates**; hand-added (+ Add Manually) tenants are never touched. **Current vs past:** Buildium's **Status** column (AG) says "Tenant" or "Former Tenant" — "Former Tenant" is past. Each import also stamps the tenants it contains (`lastSeen`, `lpr_tenants_import`), so anyone missing from the latest import (a current-only export) is past too. A **"Former tenant" checkbox** under the tenant details (editor and Add New Tenant, Joshua 2026-10-14) overrides both (`t.former`, kept only while it differs from the data). Hand-added tenants are current unless ticked. Past tenants are tagged in the list; the import message counts them.
+- **Landlord is a dropdown** (editor and Add New Tenant, Joshua 2026-10-14) of the owners list — `LPR_UTIL.ownerList()`: LPR + the Sender tab's owners CSV + owners named in the Properties export + owners added by hand via **"+ New owner…"** (`lpr_owners_manual`, kept apart so an owners-CSV re-import never drops them; they also appear in the Sender tab). A landlord typed on a hand-added tenant is never overwritten by a Properties import.
 - **↑ Properties** — Buildium Properties export → each tenant's **Landlord** (tenant field, editable like any other). Matched on street address + zip (case, punctuation, Ave/Avenue, St/Street, Rd/Road… and zip+4 ignored); two properties at one address with different owners → Address 2 decides, otherwise blank (never guessed). It's the tenant's `source` value, so a landlord typed by hand wins and survives re-imports; either import order works. Only Address 1/2, Postal code and Rental owners are stored (`lpr_properties`). The import message says how many matched / were ambiguous / weren't found. The landlord does **not** change the Sender company in the sign-off (LPR signs as agent).
 - Overrides auto-cleared if re-import matches the override value. "Buildium: …" hint shown when override differs from source.
 - **Apply as Recipient** — fills `data-contact-field` spans (the canonical recipient family: name, first_name, last_name, address, city/state/zip, email, phone). Also fills any legacy `data-tenant-field` spans (permanent alias — old saved snapshots depend on it; new templates should use contact only).
 - **Body fields only** — fills only the tenant-alias spans; leaves `data-contact-field` untouched for a vendor recipient.
-- **+ Add** — manually create a tenant entry directly in the browser without importing a CSV. Same fields as the editor. Saved to localStorage with a generated ID (`m_<timestamp>`). Manual entries show a **Delete** button in their editor header for removal.
-- **Recently used** — the last 5 applied tenants appear in a shaded section above the scrollable list. Hidden during search. Each entry has an ✕ to remove it individually. Persists across sessions.
+- **Layout (Joshua 2026-10-14):** top row = tenant-list tools (**↑ Import CSV · ↑ Properties · + Add Manually** · count); below it, on templates with `data-merge`, a separate **Mail merge** row ("Send this letter to multiple tenants") — a different job from managing the list. With nothing selected the list fills the panel.
+- **+ Add Manually** — opens **Add New Tenant**, which takes the whole panel (search, Recent and list hidden until Save / Cancel). Same fields as the editor. Saved to localStorage with a generated ID (`m_<timestamp>`). Manual entries show a **Delete** button in their editor header for removal.
+- **Recently used** — the last 5 applied tenants (each once; capped when added and when shown) appear in a shaded section above the scrollable list; the section scrolls past ~150px so the editor keeps its room. Hidden during search. Each entry has an ✕ to remove it individually. Persists across sessions.
 - **Search** matches all address fields (name, address_line1, address_line2, city, state, zip) — typing a street name or city finds matching tenants.
 - Storage keys: `lpr_tenants` (address book), `lpr_recent_tenants` (recent list). Both per user.
 
@@ -418,7 +422,7 @@ lpr-templates/
 ├── mode-bar.js                         # Standardized on-page mode selector (.mode-bar[data-mode-group] + [data-mode-when="group:mode"]) — button state, persistence, lpr:modechange event, central export/clone scrub
 ├── optional-rows.js                    # Dismiss (×) / restore (＋) optional rows — 24-Hour Notice, Occupant Update, Tenancy Confirmation (markup: data-opt-row / data-opt-label / data-opt-start)
 ├── paste-clean.js                      # Clean paste in edit mode (every template; loaded by template-tools.js) — keeps structure + bold/italic/lists, drops foreign fonts/colours; Markdown-lite for plain text; Clear body / Clear all
-├── merge.js                            # Mail merge (Tenants tab → Merge…): one copy per tenant on templates with data-merge; loaded by template-tools.js
+├── merge.js                            # Mail merge (Tenants tab → Mail merge): one copy per tenant on templates with data-merge; loaded by template-tools.js
 ├── field-keys.js                       # {{field keys}} → fields (paste + Done), full address preset, key legend + AI instructions (loaded by template-tools.js after paste-clean, and by index.html)
 ├── FIELD-KEYS.md                       # GENERATED legend — node tests/keys.test.mjs --write
 ├── page-flow.js                        # Automatic multi-page flow for [data-flow] letter sheets — continuation pages, "Page X of Y", edit-mode break guides (window.LPR_FLOW)
@@ -667,7 +671,7 @@ Per-document override in Setup → **Sender** (moved there from Options 2026-10-
 
 **Current / All (2026-10-14):** the picker defaults to **Current tenants** (in the latest tenant import) with **All tenants (incl. past)** as the other choice; a note shows when the tenant list was last imported and how many are current, reminding to import the latest Buildium export first (amber after 14 days).
 
-**How it works (merge.js, loaded by template-tools only where `data-merge` exists):** Tenants tab → **Merge…** → picker (search; filter by building = street address, and by landlord; Tick all shown / Untick all; max 100) → **Preview N copies**: the visible sheet is cloned once per tenant (last-name order) and each clone is filled by `LPR_TENANTS.applyTenantAsRecipient(tenant, clone)` — the same code a single pick uses, now with an optional root. The original is hidden (and loses `data-flow` while merging); `LPR_FLOW.rescan()` lays out every copy, so long letters paginate per copy with their own continuation heading. Shared by all copies: wording, Fields-tab values, Sender, signature lines. A merge bar offers **Print · Save PDF · Exit merge** (reusing the Export menu: one print job / one PDF). While merging, **Edit, Save As, Save Edits and Setup are hidden** — a tenant pick or Sender apply would change every copy; Exit restores the single document exactly.
+**How it works (merge.js, loaded by template-tools only where `data-merge` exists):** Tenants tab → **Mail merge** → picker (Current / All tenants; search; filter by building = street address, and by landlord; Gmail-style header checkbox: dash when some are selected, "Select all N shown" / "Deselect all", acts on the filtered list; max 100) → **Preview N copies**: the visible sheet is cloned once per tenant (last-name order) and each clone is filled by `LPR_TENANTS.applyTenantAsRecipient(tenant, clone)` — the same code a single pick uses, now with an optional root. The original is hidden (and loses `data-flow` while merging); `LPR_FLOW.rescan()` lays out every copy, so long letters paginate per copy with their own continuation heading. Shared by all copies: wording, Fields-tab values, Sender, signature lines. A merge bar offers **Print · Save PDF · Exit merge** (reusing the Export menu: one print job / one PDF). While merging, **Edit, Save As, Save Edits and Setup are hidden** — a tenant pick or Sender apply would change every copy; Exit restores the single document exactly.
 
 **Later phase:** individualized notices (Security Deposit, Rent Increase…) need per-tenant amounts — options noted below.
 
@@ -688,7 +692,7 @@ Per-document override in Setup → **Sender** (moved there from Options 2026-10-
 
 ## Phase 5 — date + money input — DONE 2026-10-09 (tests `tests/formats.test.mjs`)
 
-As built (differences from the plan below): **five date formats per field** (Joshua added weekday + legal): October 8, 2026 (default) · 10/8/2026 · Thursday, October 8, 2026 · Oct 8, 2026 · the 8th day of October, 2026 — Fields-tab dropdown under each date; keys `{{numeric|weekday|short|legal date: Label}}` (stored on the span as `data-fill-format`; your Fields-tab choice, stored in `lpr_fillfmt_<page>`, wins). Typed dates also accept a leading weekday and the legal form. flatpickr's `setDate` is wrapped so unreadable text is refused (red outline) instead of clearing the date. Money helpers live in **LPR_UTIL** (`formatMoney`, `moneyText`) and also format the **tenant's Rent Amount**. `$` audit (Joshua): every amount field in every template has a written `$` before it and nothing else does — kept on purpose (Print Blank shows "$ ____"); the smart `$` never doubles it. No hard-coded dollar figures in any template. `bqt` fixed in `stripSnapshotCommon`.
+As built (differences from the plan below): **five date formats per field** (Joshua added weekday + legal): October 8, 2026 (default) · 10/8/2026 · Thursday, October 8, 2026 · Oct 8, 2026 · the 8th day of October, 2026 — Fields-tab **Format** dropdown under each date, whose options show the field's own date in each format (today until one is set, like Excel / Google Sheets; pattern names were tried and found clunky). The calendar has a **Today** button, a readable month list, and while you type any spelling the calendar jumps to it and "Will show as: …" appears above Today (Enter / Tab / click away sets it); keys `{{numeric|weekday|short|legal date: Label}}` (stored on the span as `data-fill-format`; your Fields-tab choice, stored in `lpr_fillfmt_<page>`, wins). Typed dates also accept a leading weekday and the legal form. flatpickr's `setDate` is wrapped so unreadable text is refused (red outline) instead of clearing the date. Money helpers live in **LPR_UTIL** (`formatMoney`, `moneyText`) and also format the **tenant's Rent Amount**. `$` audit (Joshua): every amount field in every template has a written `$` before it and nothing else does — kept on purpose (Print Blank shows "$ ____"); the smart `$` never doubles it. No hard-coded dollar figures in any template. `bqt` fixed in `stripSnapshotCommon`.
 
 ### Blank forms (2026-10-09, Joshua: "check how it prints as a blank form … if the date format is weekday it needs a gap large enough")
 
@@ -1086,6 +1090,157 @@ Cut lines in multi-mode WYSIWYG should be **print-only**. Do not add a screen ru
 | **PDF / PNG** | html2canvas captures the rendered page (jsPDF wraps it for PDF) — vars already resolved by the browser. One page/file per visible sheet; page-flow layout is frozen during capture |
 | **HTML** | `exportHtml()` inlines all local `<link rel="stylesheet">` files when served over http(s) (under `file://` they become absolute links), so vars resolve without needing `brand.css`. Static: scripts and screen-only UI removed, multi-page letters keep their pages |
 | **Save As / Library** | `buildSaveHtml()` uses the same shared prep (`pageDirUrl`, `stripSnapshotCommon`, `inlineStylesheets`, `absolutizeAssets`), keeps scripts, adds a `<base href>`, and saves multi-page letters as one continuous letter |
+
+---
+
+## Maintainer notes (decisions, preferences, gotchas)
+
+Moved here from the 2026-10 handoff file (deleted 2026-10-14). Open work is
+tracked in beads (`bd list --status open`, run from the home folder; prefix
+`joshu_AKIVA`), not in a handoff file. Tested-feature history is in git and
+`tests/README.md`.
+
+### Decisions already made (don't re-ask)
+
+- Page flow: automatic only (no manual "add page"); continuation heading
+  icon + recipient·date (title fallback); `Page X of Y` on every page incl.
+  page 1 when 2+ pages; watermark repeats; no "(continued)".
+- Signature: three sender states (image / leave blank = nothing / signature
+  line = sign later); sender line matches tenant rows; labels "Landlord/Agent
+  Signature", "Tenant Signature"; 2 tenants stacked (may become side-by-side
+  later — keep CSS-only); **no lead-in wording** above tenant lines (built
+  then removed — don't re-add); signature controls live in **Sender** tab.
+- Clean paste on **every** template; Markdown in plain-text paste.
+- Clear: two buttons, no dialog. Field keys: `{{…}}`.
+- Spacing (date/recipient): 22px (one blank line) on Letterhead; notices keep 12/14px so they fit (`r8m`, done).
+- Letterhead Clean deleted (reversed bead `okk`'s July decision, approved).
+- Utilities Addendum uses the shared signature rows, "Signature line" default, max 1 tenant (`9vg`, done).
+- Tenants/vendors merge on hold (`0dm`); Brand settings future (`d8k`).
+- Sender company is NOT switched to the tenant's landlord: LPR signs as agent of each entity (`d5s` optional future). `{{landlord}}` = the tenant's landlord, `{{sender company}}` = the Sender.
+- Current vs past tenants: Buildium Status column (AG) "Former Tenant", or missing from the latest import; "Former tenant" checkbox overrides.
+- Letter wording: no em dashes (style guide rule 8), formal tone, no dispute invitations or arbitrary deadlines. AI instructions = key usage only.
+- Header markers are `^^Small Label^^` / `==Large Title | Line 2==`, not `{{}}` keys. `---` dividers in pasted text are dropped.
+- Testing cadence: while building, run only the suite for the piece being changed; full `run-all` + `baseline.mjs compare` once per batch, before a push.
+
+---
+
+### Joshua's working preferences
+
+- **Plan before doing, and the plan must list planned tests.** For big
+  multi-part work, write the plan, get approval.
+- **Short, frequent updates**; don't disappear into long runs. If something
+  fights you for more than a couple of tries, stop and say so.
+- **Nothing saved permanently on his PC, nothing popping up** (test exports
+  once landed in Downloads and opened in Adobe — see Test harness below).
+- DRY: wire new features into existing functions; never parallel copies.
+- Style-guide changes: propose first, apply deliberately.
+- Redact/ask before sending personal data anywhere external; test fixtures
+  use fake names.
+- He usually pastes with a "paste values only" mouse shortcut (plain text);
+  normal Ctrl+V is now clean too.
+- No service workers or other persistent client-side code on visitors' devices.
+
+---
+
+### Discoveries & gotchas
+
+#### Codebase
+
+- **user.js loads first everywhere** and redirects to `users.html` when
+  `lpr_active_user` is unset; it monkey-patches localStorage to namespace
+  `lpr_*` keys as `lpr_user_<id>_…`.
+- **`window.LPR_UTIL` lives in user.js on purpose:** every page AND every saved
+  Library copy loads user.js; a new helpers file would be missing from older
+  saved copies and break their scripts.
+- **Three page-key formulas — never unify them** (saved settings depend on
+  each): `pageBase()` (mode-bar legacy), `pageKey()` (fields/manual
+  address/mode bar; adds `view_<id>` for Library copies), `fileKey()`
+  (signature offsets/options). URL encoding is kept (`Certificate%20of%20Mailing`).
+- **Save As** (`buildSaveHtml`) keeps scripts, adds `<base href>`, stores the
+  ONE unsplit letter (page-flow unpaginates around the single
+  `document.documentElement.cloneNode` — mode-bar.js overrides that method
+  to scrub hidden variants; call it exactly once). **HTML export** strips
+  scripts and keeps pages. Both share the snapshot-prep helpers.
+- **view.html** `document.write`s the saved HTML; it repairs the pre-fix
+  doubled `<base>`.
+- Scripts loaded later via `ensureLib()` (html2canvas, jsPDF,
+  paste-clean.js) resolve relative to `<base>` in Library copies.
+- `employee.js` skips everything when `data-lpr-snapshot` is set (saved
+  copies keep baked values); signature image insertion is
+  `window.LPR_SIGNATURE.inject`.
+- `owners.js` Sender tab extension point: `window.LPR_SENDER_EXTRAS = [{id,
+  render(el) → commit()}]`, committed by "Apply to Template". Sub-rows with
+  class `lpr-own-sub-toggle` dim with "Include signer name".
+- page-flow: `setEditing(true/false)` from `toggleEdit`; `hold()` freezes
+  layout during export capture (image src swaps would otherwise trigger a
+  re-layout mid-capture → "Unable to find element in cloned iframe");
+  `normalizeFlow` runs on every paginate; edit-mode guides lay out an
+  off-screen copy.
+- Edit-loss census (`censusTokenSpans`/`diffLostSpans`) compares field
+  counts at Edit vs Done; tests that remove fields by script will get the
+  dialog — click `[data-act="keep"]`.
+
+#### Chrome contenteditable behaviour (verified by probes)
+
+- Field chips are `contenteditable=false`. **Native typing / Backspace /
+  Delete / insertHTML over a selection DO delete them** and Undo restores
+  them. `execCommand('bold'…)` does NOT style them.
+- `insertHTML` at a caret **between** blocks (body-level position) silently
+  does nothing → create an empty `<p>` there and insert into it.
+- Range boundaries are canonicalised into the adjacent block: a range ending
+  "before `.signoff`" gets snapped INTO it and "Sincerely," is merged into
+  the paste → end the range at the last character inside the previous
+  block (`endInside`).
+- A highlight starting in `.date` makes Chrome merge the remainder into a
+  copy of `.date` (class kept).
+- `insertHTML` into a paragraph adds redundant `<span style="font-size:11pt">`
+  — remove only the **style attribute**; unwrapping the span breaks Undo.
+- Google Docs clipboard wraps everything in `<b style="font-weight:normal"
+  id="docs-internal-guid-…">`; Chrome turns it into a `<span>` when pasted
+  raw. Word lists are `<p class=MsoListParagraph>` with literal "1." markers.
+- `beforeinput.getTargetRanges()` covers the chip on a collapsed Backspace —
+  used to detect deliberate deletions.
+
+#### Test harness (headless Edge over CDP, no npm deps)
+
+- Run: `node tests/run-all.mjs` (all, ~9–10 min — close to the 10-min tool
+  timeout; prefer `node tests/run-all.mjs <word>` subsets), single file
+  `node tests/<name>.test.mjs`.
+- **Downloads:** `Browser.setDownloadBehavior` only lasts while the session
+  that set it is connected — it was silently ignored and 280+ exports landed
+  in Downloads and opened in Adobe. Now blocked at the source:
+  `Page.addScriptToEvaluateOnNewDocument` makes `<a download>` `.click()` /
+  click events no-ops; exports are captured in memory by hooking
+  `URL.createObjectURL` (`site.mjs` `exportAs`).
+- **msedge.exe is a launcher** on Windows — killing its process tree stops
+  nothing. Shut down with CDP `Browser.close`; match leftovers by the unique
+  `--user-data-dir` in the command line. Profiles: `%TEMP%\lpr-test-*`
+  (the harness now deletes them; 375 were left over before the fix).
+- `tests/out/` (git-ignored) keeps only `baseline/` and `current/`; other
+  artifacts go to a temp folder deleted on exit (`site.mjs ARTIFACTS`).
+- **Fixtures must use fake names/addresses** (tests/ is published with the site).
+- **baseline.mjs**: `capture` before changing shared code, `compare` after.
+  Recapture the baseline after each batch whose diffs are all intended.
+  Date-picker popups are normalised away (their "today" marker changes daily).
+- cdp.mjs auto-accepts JS dialogs and times out any CDP command after 60 s.
+
+#### Tooling (cost a lot of time — avoid)
+
+- **Don't write patches as inline Python/JS through Bash heredocs or
+  `-c`/`-e` strings** (a `C:\Users` path in a Python string is a `\U` escape error). This shell mangles backslashes (`\\` → `\`, `\b`
+  became a literal backspace byte 0x08 in a file). Use the **Edit / Write
+  tools**; for scripts, Write a `.py` file (Write needs a fresh path or a
+  prior Read) and run it.
+- Guarded commands: a `Remove-Item` on a computed path is blocked; use
+  explicit paths. Move user files to the Recycle Bin
+  (`Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(..., 'SendToRecycleBin')`),
+  never hard-delete.
+- Files in OneDrive (`C:\Users\joshu.AKIVA\OneDrive\Desktop\lpr-templates`).
+- **Pushing:** git's default login on this PC is a different GitHub
+  account → 403 on this repo. `Joshua-LPR` is also signed in to `gh`; push
+  once with it without switching: `git -c credential.helper= -c 'credential.helper=!f(){ echo
+  username=x-access-token; echo "password=$(gh auth token --user
+  Joshua-LPR)"; }; f' push origin main`.
 
 ---
 
