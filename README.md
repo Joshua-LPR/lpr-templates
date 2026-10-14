@@ -55,7 +55,7 @@ Every letter and notice has a **Setup** button in the toolbar that opens a side 
 
 ## Drafting letters
 
-- **Field keys** — write `{{recipient name}}`, `{{full address}}`, `{{landlord}}`, `{{weekday date: Move-out}}`, `{{amount: Rent}}` … in any text (or an AI draft) and paste it in edit mode: each key becomes a live field. `**bold**` / `*italic*` keys keep their formatting. `^^Small Label^^` and `==Large Title | Line 2==` fill the document header. Full list: `FIELD-KEYS.md` (also **Copy for AI** on the index).
+- **Field keys** — write `{{recipient name}}`, `{{full address}}`, `{{landlord}}`, `{{weekday date: Move-out}}`, `{{amount: Rent}}` … in any text (or an AI draft) and paste it in edit mode: each key becomes a live field. `**bold**` / `*italic*` keys keep their formatting. `^^Small Label^^` and `==Large Title | Line 2==` fill the document header. A paragraph starting `[!blue]`, `[!gold]` or `[!red]` becomes a callout box (action / key figures / serious warning, sparingly). Full list: `FIELD-KEYS.md` (also **Copy for AI** on the index).
 - **Clean paste**, **Clear body / Clear all**, B / I / U / size / colour (also on field chips), long letters flow onto more pages automatically.
 - **Blank forms** — empty fields print as write-in lines sized for what goes there (Print, PDF, Image).
 

@@ -142,6 +142,64 @@
     });
     return n;
   }
+  /* ---- callout markers (Joshua 2026-10-14) ----
+     A paragraph starting  [!blue] / [!gold] / [!red]  becomes that style-guide
+     callout (blue = action required, gold = key figures + dates, red = serious
+     warning, sparingly). Synonyms below, so GitHub-style alerts an AI writes
+     (> [!WARNING] on its own line, then > lines) work too. The rest of the
+     paragraph keeps its formatting and {{keys}}. A red callout without a bold
+     lead word gets "Important:" (style guide: never colour alone). */
+  var CALLOUT_RE = /^\s*(?:>\s*)?\[!\s*([a-z]+)\s*\]\s*/i;
+  var CALLOUT_KIND = { blue: 'blue', action: 'blue', note: 'blue', info: 'blue', tip: 'blue', important: 'blue',
+                       gold: 'gold', figures: 'gold', key: 'gold', numbers: 'gold', dates: 'gold',
+                       red: 'red', warning: 'red', caution: 'red', alert: 'red' };
+  // Remove the first n characters of el's text, keeping its markup.
+  function dropLeading(el, n) {
+    var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null), t;
+    while (n > 0 && (t = w.nextNode())) { var k = Math.min(n, t.data.length); t.data = t.data.slice(k); n -= k; }
+  }
+  function calloutMarkers(root) {
+    var n = 0;
+    [].slice.call(root.querySelectorAll('p, div, li, h1, h2, h3, h4, h5, h6')).forEach(function (b) {
+      if (!b.parentNode || b.querySelector('p, div, li, h1, h2, h3, h4, h5, h6') || b.closest(U.TOKEN_SEL + ', .callout')) return;
+      var m = CALLOUT_RE.exec(b.textContent), kind = m && CALLOUT_KIND[m[1].toLowerCase()];
+      if (!kind) return;
+      n++;
+      var box = document.createElement('div');
+      box.className = 'callout callout-' + kind;
+      dropLeading(b, m[0].length);
+      var parts = [];
+      if (b.textContent.trim()) parts.push(b);
+      else {
+        // marker on its own line: the following "> " lines (or the next paragraph) are the text
+        var next = b.nextElementSibling;
+        while (next && next.matches('p, div') && !CALLOUT_RE.test(next.textContent)) {
+          var q = /^\s*>\s*/.exec(next.textContent);
+          if (!q && parts.length) break;
+          if (q) dropLeading(next, q[0].length);
+          parts.push(next);
+          if (!q) break;
+          next = next.nextElementSibling;
+        }
+      }
+      b.parentNode.insertBefore(box, b);
+      parts.forEach(function (p, i) {
+        if (i) box.appendChild(document.createElement('br'));
+        while (p.firstChild) box.appendChild(p.firstChild);
+        p.remove();
+      });
+      if (b.parentNode) b.remove();
+      // trim the space the marker left in front
+      var first = box.firstChild;
+      if (first && first.nodeType === 3) first.data = first.data.replace(/^\s+/, '');
+      if (kind === 'red' && !/^\s*(important|warning|caution|notice)\s*:/i.test(box.textContent)) {
+        var lead = document.createElement('strong'); lead.textContent = 'Important:';
+        box.insertBefore(document.createTextNode(' '), box.firstChild);
+        box.insertBefore(lead, box.firstChild);
+      }
+    });
+    return n;
+  }
   function editingSheet() {
     return [].filter.call(document.querySelectorAll('.sheet.tt-editing'), function (s) { return s.offsetHeight > 0; })[0] || null;
   }
@@ -151,6 +209,7 @@
   function convert(root, lock, sheet) {
     sheet = sheet || (root.classList && root.classList.contains('sheet') ? root : null);
     headerMarkers(root, sheet);
+    calloutMarkers(root);
     var found = [], w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null), n;
     while ((n = w.nextNode())) {
       var host = n.parentElement;
@@ -262,6 +321,16 @@
     L.push('On a notice with a header area they fill it; elsewhere (e.g. Letterhead)');
     L.push('they become the label and title at that spot in the text.');
     L.push('');
+    L.push('CALLOUT BOXES (marks, not keys)');
+    L.push('------------------------------');
+    L.push('  [!blue] Pay the balance by {{date: Due Date}}.     action the reader must take');
+    L.push('  [!gold] New monthly rent: **{{amount: New Rent}}**  key figures and dates');
+    L.push('  [!red] Do not use the gas stove until repaired.    serious legal or safety');
+    L.push('                                 warning, used sparingly; starts with a bold');
+    L.push('                                 "Important:" (added if missing)');
+    L.push('The mark starts a paragraph; the rest of the paragraph is the box. Keys and');
+    L.push('bold/italic work inside.');
+    L.push('');
     L.push('FILL-IN BLANKS (you choose the label)');
     L.push('-------------------------------------');
     L.push('  {{date: Payment Due Date}}     a date: October 8, 2026');
@@ -297,6 +366,9 @@
     L.push('6. Write keys exactly with double curly braces: {{first name}}.');
     L.push('7. A header is two marked lines, not keys: ^^Small Label^^ and');
     L.push('   ==Large Title== (| splits the title over two lines), each on its own line.');
+    L.push('8. A callout box is a paragraph that starts with [!blue] (action the reader');
+    L.push('   must take), [!gold] (key figures and dates) or [!red] (serious legal or');
+    L.push('   safety warning only; use rarely). At most one or two per letter.');
     return L.join('\n') + '\n';
   }
 
@@ -312,6 +384,7 @@
     L.push('Date format (word before "date"): {{date: L}} October 8, 2026 · {{numeric date: L}} 10/8/2026 · {{weekday date: L}} Thursday, October 8, 2026 · {{short date: L}} Oct 8, 2026 · {{legal date: L}} the 8th day of October, 2026.');
     L.push('Bold/italic value: **{{key}}** / *{{key}}*.');
     L.push('Header, each on its own line: ^^Small Label^^ and ==Large Title | Second Line==.');
+    L.push('Callout box: start a paragraph with [!blue] (action required), [!gold] (key figures/dates) or [!red] (serious warning, rarely).');
     return L.join('\n') + '\n';
   }
   function copyText(t) {

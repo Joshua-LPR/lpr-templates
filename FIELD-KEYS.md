@@ -83,6 +83,16 @@ HEADER: SMALL LABEL + LARGE TITLE (marks, not keys)
 On a notice with a header area they fill it; elsewhere (e.g. Letterhead)
 they become the label and title at that spot in the text.
 
+CALLOUT BOXES (marks, not keys)
+------------------------------
+  [!blue] Pay the balance by {{date: Due Date}}.     action the reader must take
+  [!gold] New monthly rent: **{{amount: New Rent}}**  key figures and dates
+  [!red] Do not use the gas stove until repaired.    serious legal or safety
+                                 warning, used sparingly; starts with a bold
+                                 "Important:" (added if missing)
+The mark starts a paragraph; the rest of the paragraph is the box. Keys and
+bold/italic work inside.
+
 FILL-IN BLANKS (you choose the label)
 -------------------------------------
   {{date: Payment Due Date}}     a date: October 8, 2026
@@ -118,3 +128,6 @@ INSTRUCTIONS FOR AN AI: HOW TO USE THE KEYS
 6. Write keys exactly with double curly braces: {{first name}}.
 7. A header is two marked lines, not keys: ^^Small Label^^ and
    ==Large Title== (| splits the title over two lines), each on its own line.
+8. A callout box is a paragraph that starts with [!blue] (action the reader
+   must take), [!gold] (key figures and dates) or [!red] (serious legal or
+   safety warning only; use rarely). At most one or two per letter.
