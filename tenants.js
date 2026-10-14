@@ -1029,9 +1029,9 @@
       }
       .lpr-ins-btn:hover { background: var(--lpr-blue); color: #fff; border-color: var(--lpr-blue); }
       .lpr-ins-btn.inserted { background: #2a7a2a; color: #fff; border-color: #2a7a2a; }
-      .lpr-ins-hint { font-size: 11px; color: #c04; min-height: 16px; opacity: 0; transition: opacity .3s; }
+      .lpr-ins-hint { font-size: 11px; color: var(--lpr-alert); min-height: 16px; opacity: 0; transition: opacity .3s; }
       .lpr-ins-clear { width: 100%; margin-top: 4px; padding: 8px; background: none; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 12px; color: #888; cursor: pointer; transition: all .15s; }
-      .lpr-ins-clear:hover { border-color: #c04; color: #c04; }
+      .lpr-ins-clear:hover { border-color: var(--lpr-alert); color: var(--lpr-alert); }
       #lpr-ins-keys .lpr-keys-btns { display: flex; gap: 6px; }
       #lpr-ins-keys .lpr-ins-keybtn { color: var(--lpr-blue, #283891); }
       #lpr-ins-keys .lpr-ins-keybtn:hover { border-color: var(--lpr-blue, #283891); color: var(--lpr-blue, #283891); }
@@ -1120,7 +1120,7 @@
         cursor: pointer; padding: 3px 5px; border-radius: 3px; line-height: 1;
         transition: color .15s;
       }
-      .lpr-tp-recent-rm:hover { color: #c04; }
+      .lpr-tp-recent-rm:hover { color: var(--lpr-alert); }
 
       /* ---- Add / delete buttons ---- */
       .lpr-tp-add-btn {
@@ -1135,7 +1135,7 @@
         color: #b03020; font-family: inherit; font-size: 10px;
         font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap;
       }
-      .lpr-tp-del-btn:hover { background: #ffeaea; border-color: #c03030; }
+      .lpr-tp-del-btn:hover { background: var(--lpr-alert-tint); border-color: var(--lpr-alert); }
 
       /* ---- Insert sidebar group labels ---- */
       .lpr-ins-group-label {

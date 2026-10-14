@@ -428,8 +428,8 @@
             document.body.appendChild(a); a.click(); a.remove();
             setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
           }, 'image/png');
-        }).catch(function (err) { restoreImgs(); restore(); hiresBusy = false; msg.textContent = 'PNG export failed. Check your internet connection and try again'; msg.style.background = '#b3261e'; setTimeout(function () { msg.remove(); }, 4000); console.error(err); });
-      }).catch(function (err) { restoreImgs(); restore(); hiresBusy = false; msg.textContent = 'PNG export failed. Check your internet connection and try again'; msg.style.background = '#b3261e'; setTimeout(function () { msg.remove(); }, 4000); console.error(err); });
+        }).catch(function (err) { restoreImgs(); restore(); hiresBusy = false; msg.textContent = 'PNG export failed. Check your internet connection and try again'; msg.style.background = 'var(--lpr-alert)'; setTimeout(function () { msg.remove(); }, 4000); console.error(err); });
+      }).catch(function (err) { restoreImgs(); restore(); hiresBusy = false; msg.textContent = 'PNG export failed. Check your internet connection and try again'; msg.style.background = 'var(--lpr-alert)'; setTimeout(function () { msg.remove(); }, 4000); console.error(err); });
     });
   }
 })();

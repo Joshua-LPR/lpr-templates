@@ -23,6 +23,9 @@
   --lpr-muted: #5a5f72;
   --lpr-gold: #d6a35a;
   --lpr-page: #efeae0;
+  --lpr-alert: #b23b3b;         /* warnings: delete buttons, errors, legal-warning callouts. Use sparingly */
+  --lpr-alert-deep: #8f2c2c;    /* alert hover / pressed */
+  --lpr-alert-tint: #f8ecec;    /* alert callout / error background */
 }
 
 * { box-sizing: border-box; }

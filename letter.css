@@ -85,7 +85,7 @@ body { background: var(--lpr-page); padding: 96px 20px 40px; }
   opacity: 0.4; transition: opacity 0.15s, color 0.15s, background 0.15s;
   padding: 0;
 }
-.opt-dismiss:hover { opacity: 1; color: #c00; background: rgba(200,0,0,0.08); }
+.opt-dismiss:hover { opacity: 1; color: var(--lpr-alert); background: var(--lpr-alert-tint); }
 .opt-dismiss.opt-removed { display: none !important; }
 .opt-restore-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; min-height: 0; }
 .opt-restore-btn {

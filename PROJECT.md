@@ -76,6 +76,7 @@ Top-left of every page shows the active user. Click **↻ Switch user** to retur
 | Property | Value |
 |----------|-------|
 | **Primary color (royal blue)** | `#283891` |
+| **Alert red (added 2026-10-14)** | `#b23b3b` (`--lpr-alert`; deep `#8f2c2c`, tint `#f8ecec`). Warnings, used sparingly (strong suggestion, not a hard rule): legal/safety callouts in letters with a bold "Important:" / "Warning:" lead word and no icon; icons fine on the site / app. Replaced the ad-hoc UI reds (#c33, #c04, #c00 …) everywhere. Style guide: swatch, callout, "Red Callout: Serious Warning" |
 | **Closest Pantone** | PMS 287 C |
 | **Type family** | Montserrat (weights 300, 400, 500, 600, 700, 800) |
 | **Address** | 1517 Reisterstown Road, 2nd Floor, Pikesville, MD 21208 |

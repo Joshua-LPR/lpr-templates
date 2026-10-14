@@ -77,6 +77,7 @@ Use the **Customize for an employee** panel on the index to fill in name, title,
 | `--lpr-text` | `#1a1a1a` | Body text |
 | `--lpr-muted` | `#5a5f72` | Secondary/muted text |
 | `--lpr-gold` | `#d6a35a` | Accent stripe |
+| `--lpr-alert` | `#b23b3b` | Warnings, used sparingly: legal/safety callouts (bold "Important:" lead word, no icons in letters), delete buttons, errors. `--lpr-alert-deep` `#8f2c2c` hover, `--lpr-alert-tint` `#f8ecec` background |
 | `--lpr-page` | `#efeae0` | Page background |
 | `--lpr-rule` | `rgba(40,56,145,0.18)` | Borders and rules |
 

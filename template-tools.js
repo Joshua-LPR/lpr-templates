@@ -141,7 +141,7 @@
           <button class="tt-color-chip" data-color="#0e1430" title="Ink" style="background:#0e1430;"></button>
           <button class="tt-color-chip" data-color="#1a1a1a" title="Body Text" style="background:#1a1a1a;"></button>
           <button class="tt-color-chip" data-color="#5a5f72" title="Muted" style="background:#5a5f72;"></button>
-          <button class="tt-color-chip" data-color="#cc2222" title="Red" style="background:#cc2222;"></button>
+          <button class="tt-color-chip" data-color="var(--lpr-alert)" title="Red" style="background:var(--lpr-alert);"></button>
           <button class="tt-color-chip tt-color-chip-clear" data-color="" title="Remove color" style="background:#fff;">⊘</button>
         </div>
       </div>
@@ -864,8 +864,8 @@
       .tt-dialog button.primary:hover { background: var(--lpr-blue-deep); }
       .tt-dialog button.muted { border-color: rgba(40,56,145,0.18); color: var(--lpr-muted); }
       .tt-dialog button.muted:hover { background: #f4f1ec; color: var(--lpr-ink); }
-      .tt-dialog button.danger { border-color: #c33; color: #c33; }
-      .tt-dialog button.danger:hover { background: #c33; color: #fff; }
+      .tt-dialog button.danger { border-color: var(--lpr-alert); color: var(--lpr-alert); }
+      .tt-dialog button.danger:hover { background: var(--lpr-alert); color: #fff; }
       .tt-modal-input {
         width: 100%; box-sizing: border-box;
         font-family: inherit; font-size: 14px; padding: 9px 13px;

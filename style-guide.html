@@ -75,6 +75,7 @@ body { background: #efeae0; min-height: 100vh; }
 .color-swatch .chip.primary    { background: #283891; }
 .color-swatch .chip.deep       { background: #1c2870; }
 .color-swatch .chip.gold       { background: #d6a35a; }
+.color-swatch .chip.alert      { background: #b23b3b; }
 .color-swatch .chip.ink        { background: #0e1430; }
 .color-swatch .chip.text       { background: #1a1a1a; }
 .color-swatch .chip.muted      { background: #5a5f72; }
@@ -255,6 +256,8 @@ body { background: #efeae0; min-height: 100vh; }
   border-radius: 0 4px 4px 0; width: 100%; box-sizing: border-box;
 }
 .callout-demo.gold { border-left-color: #d6a35a; background: rgba(214,163,90,0.08); }
+.callout-demo.alert { border-left-color: #b23b3b; background: #f8ecec; }
+.callout-demo .lead-word { font-weight: 700; color: #b23b3b; }
 
 /* print dimensions */
 .dim-grid { display: flex; flex-direction: column; }
@@ -562,6 +565,8 @@ details[open] .dev-chevron { transform: rotate(90deg); }
   /* callouts */
   .ps-clout { border-left: 2pt solid #283891; background: rgba(40,56,145,0.05); padding: 3.5pt 5.5pt; border-radius: 0 2pt 2pt 0; font-size: 6.5pt; color: #0e1430; margin-bottom: 3pt; line-height: 1.35; }
   .ps-clout.gold { border-color: #d6a35a; background: rgba(214,163,90,0.07); }
+  .ps-clout.alert { border-color: #b23b3b; background: #f8ecec; }
+  .ps-clout .lead-word { font-weight: 700; color: #b23b3b; }
   .ps-clout-note { font-size: 6pt; color: #5a5f72; margin-bottom: 5pt; line-height: 1.4; }
   .ps-wm { font-size: 6.5pt; color: #5a5f72; line-height: 1.5; padding: 4pt 7pt; border-left: 2pt solid rgba(40,56,145,0.2); margin-top: 6pt; }
   .ps-wm strong { color: #0e1430; }
@@ -680,6 +685,15 @@ details[open] .dev-chevron { transform: rotate(90deg); }
           <div class="name">Gold Bronze</div>
           <div class="hex">#d6a35a</div>
           <div class="role">Accent / watermark stripe</div>
+        </div>
+      </div>
+
+      <div class="color-swatch">
+        <div class="chip alert"></div>
+        <div class="info">
+          <div class="name">Alert Red</div>
+          <div class="hex">#b23b3b</div>
+          <div class="role">Warnings, used sparingly · tint #f8ecec</div>
         </div>
       </div>
 
@@ -901,6 +915,10 @@ details[open] .dev-chevron { transform: rotate(90deg); }
         <div class="el-item" style="flex-direction:column; align-items:flex-start; gap:8px; border-bottom:none; padding-bottom:0;">
           <div class="callout-demo gold">Lease term, rent amounts, and important dates.</div>
           <div class="el-meta"><strong>Gold callout</strong>Left border 3px #d6a35a · tinted bg: financial figures and key terms</div>
+        </div>
+        <div class="el-item" style="flex-direction:column; align-items:flex-start; gap:8px; border-bottom:none; padding-bottom:0; margin-top:12px;">
+          <div class="callout-demo alert"><span class="lead-word">Important:</span> Do not use the gas stove until the repair is complete.</div>
+          <div class="el-meta"><strong>Red callout</strong>Left border 3px #b23b3b · bg #f8ecec: legal and safety warnings only</div>
         </div>
       </div>
 
@@ -1144,10 +1162,18 @@ details[open] .dev-chevron { transform: rotate(90deg); }
         <div style="font-family:'Courier New',monospace; font-size:10px; color:var(--lpr-muted); margin-top:8px;">bg rgba(214,163,90,0.10) · border-left 3px #d6a35a</div>
       </div>
 
+      <div class="el-card">
+        <h4>Red Callout: Serious Warning</h4>
+        <div class="callout-demo alert"><span class="lead-word">Important:</span> Do not use the gas stove until the repair is complete.</div>
+        <div class="el-meta" style="margin-top:14px;"><strong>Use sparingly, only when necessary</strong>Legal or safety consequences: lead or gas hazards, a legal deadline with real consequences. Not a hard rule, but most letters, including rent increases and non-renewals, should not need red: it can read as threatening and works against a formal tone. When in doubt, use gold.</div>
+        <div class="el-meta" style="margin-top:10px;"><strong>Never color alone</strong>Start with a bold lead word (<em>Important:</em> or <em>Warning:</em>) so it still reads in black-and-white print and for color-blind readers. No icons in formal letters. Icons (⚠) are fine on the website and in the app.</div>
+        <div style="font-family:'Courier New',monospace; font-size:10px; color:var(--lpr-muted); margin-top:8px;">bg #f8ecec (--lpr-alert-tint) · border-left 3px #b23b3b (--lpr-alert)</div>
+      </div>
+
     </div>
 
     <div style="background:#fff; border-radius:10px; padding:20px 24px; margin-top:16px; box-shadow:0 2px 10px rgba(0,0,0,.05); font-size:11px; color:var(--lpr-muted); line-height:1.65;">
-      <strong style="color:var(--lpr-ink); font-size:12px;">Consistency is the whole point.</strong> Semantic color only works if it never drifts. A tenant who receives several LPR letters learns the code: blue means <em>do something</em>, gold means <em>here are the numbers</em>. Tinting a paragraph gold for emphasis, or boxing routine text in blue, breaks the signal for every notice that follows.
+      <strong style="color:var(--lpr-ink); font-size:12px;">Consistency is the whole point.</strong> Semantic color only works if it never drifts. A tenant who receives several LPR letters learns the code: blue means <em>do something</em>, gold means <em>here are the numbers</em>, red (rarely) means <em>this is serious</em>. Tinting a paragraph gold for emphasis, or boxing routine text in blue, breaks the signal for every notice that follows.
     </div>
   </div>
 
@@ -1612,6 +1638,8 @@ details[open] .dev-chevron { transform: rotate(90deg); }
           <div class="ps-clout-note">Left border 3px &middot; #283891 &middot; tinted bg: notices &amp; key info</div>
           <div class="ps-clout gold">Lease terms, rent amounts, key dates.</div>
           <div class="ps-clout-note">Left border 3px &middot; #d6a35a &middot; tinted bg: financial figures</div>
+          <div class="ps-clout alert"><span class="lead-word">Important:</span> legal or safety warning.</div>
+          <div class="ps-clout-note">Left border 3px &middot; #b23b3b &middot; bg #f8ecec: sparingly; bold lead word, no icon</div>
           <div class="ps-wm"><strong>Watermark</strong> &middot; Logo centered 6 in wide &middot; opacity 0.06 &middot; letterhead only</div>
         </div>
 
