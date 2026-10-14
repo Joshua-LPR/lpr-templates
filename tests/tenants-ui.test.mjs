@@ -62,6 +62,26 @@ try {
   await t.eval(`localStorage.setItem('lpr_tenants_import', JSON.stringify(Object.assign(LPR_TENANTS.importInfo(), { id: Date.now() - 20 * 86400000 })))`);
   await t.eval(`document.querySelector('.lpr-merge-dlg [data-act="cancel"]').click(); document.getElementById('lpr-tp-merge').click()`); await t.wait(300);
   s.check('note turns amber when the tenant import is over 2 weeks old', await t.eval(`document.querySelector('.lpr-merge-note').classList.contains('stale')`));
+  await t.eval(`document.querySelector('.lpr-merge-dlg [data-act="cancel"]').click()`);
+
+  // ---- Buildium's Status column (AG): "Former Tenant" is past even when in the file ----
+  const CSV3 = [HEAD + ',Status', 'k1,Ann,Alpha,100 Test Avenue,,Testville,MD,21000,Tenant', 'k2,Ben,Beta,200 Sample St,,Testville,MD,21000,Former Tenant'].join('\n');
+  const r3 = await t.eval(`LPR_TENANTS.importCSV(${JSON.stringify(CSV3)})`);
+  const st = await t.eval(`(() => { const d = LPR_TENANTS.loadTenants(); return { k1: LPR_TENANTS.isCurrent(d.k1), k2: LPR_TENANTS.isCurrent(d.k2), k3: LPR_TENANTS.isCurrent(d.k3), count: LPR_TENANTS.importInfo().count }; })()`);
+  s.check('Status "Former Tenant" → past even though it is in the file; "Tenant" → current', st.k1 && !st.k2 && !st.k3 && st.count === 1, JSON.stringify({ st, r3 }));
+
+  // ---- "Former tenant" checkbox ----
+  await t.reload(2500); await openSetupTab(t, 'Tenants');
+  await t.eval(`document.getElementById('lpr-tp-add').click()`); await t.wait(300);
+  await t.eval(`(() => { const f = n => document.querySelector('#lpr-fill-panel .lpr-tp-new-inp[data-field="' + n + '"]'); f('first_name').value = 'Eve'; f('last_name').value = 'Echo';
+    document.getElementById('lpr-tp-new-former').checked = true; document.getElementById('lpr-tp-new-save').click(); })()`); await t.wait(300);
+  s.check('+ Add with "Former tenant" ticked → saved as former (past)', await t.eval(`!LPR_TENANTS.isCurrent(Object.values(LPR_TENANTS.loadTenants()).find(t => t.source.last_name === 'Echo'))`));
+  await t.eval(`document.querySelector('#lpr-fill-panel .lpr-tp-item[data-id="k1"]').click()`); await t.wait(300);
+  await t.eval(`(() => { const c = document.getElementById('lpr-tp-former-cb'); c.checked = true; c.dispatchEvent(new Event('change')); })()`); await t.wait(300);
+  const tick = await t.eval(`({ cur: LPR_TENANTS.isCurrent(LPR_TENANTS.loadTenants().k1), tag: !!document.querySelector('#lpr-fill-panel .lpr-tp-item[data-id="k1"] .lpr-tp-past') })`);
+  s.check('editor: ticking "Former tenant" makes a current tenant past (and tagged)', !tick.cur && tick.tag, JSON.stringify(tick));
+  await t.eval(`(() => { const c = document.getElementById('lpr-tp-former-cb'); c.checked = false; c.dispatchEvent(new Event('change')); })()`); await t.wait(300);
+  s.check('unticking puts them back to current, and the override clears (matches Buildium again)', await t.eval(`(() => { const k = LPR_TENANTS.loadTenants().k1; return LPR_TENANTS.isCurrent(k) && !('former' in k); })()`));
   await t.eval(RESET);
   s.check('no console errors', t.logs.length === 0, t.logs.join(' || '));
 } catch (e) { s.crash(e); }

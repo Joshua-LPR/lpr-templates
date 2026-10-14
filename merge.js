@@ -45,7 +45,7 @@
     var days = info ? Math.floor((Date.now() - info.id) / 86400000) : null;
     var stale = !info || days > 14;
     var noteHtml = info
-      ? 'Current = the ' + info.count + ' tenants in the tenant list imported ' + new Date(info.id).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) +
+      ? 'Current = the ' + info.count + (info.count === 1 ? ' tenant' : ' tenants') + ' in the tenant list imported ' + new Date(info.id).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) +
         (days > 0 ? ' (' + days + ' day' + (days === 1 ? '' : 's') + ' ago)' : ' (today)') + '. Import the latest Buildium tenant export first (Setup &rarr; Tenants &rarr; Import CSV) so move-outs drop off.'
       : 'Import the latest Buildium tenant export (Setup &rarr; Tenants &rarr; Import CSV) before merging, so past tenants can be left out.';
 

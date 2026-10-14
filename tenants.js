@@ -202,19 +202,36 @@
      IMPORT / MERGE
      ================================================================ */
   /* ---- current vs past (Joshua 2026-10-14) ----
-     Buildium's tenant export lists current tenants (its Status column is
-     "Tenant" for everyone), and an import never deletes anyone. So every
-     import stamps the tenants it contains (lastSeen) and records itself in
-     lpr_tenants_import; "current" = in the latest import. Hand-added
-     tenants count as current. Before the first stamped import everyone is. */
+     Buildium's tenant export has a Status column (AG): "Tenant" or "Former
+     Tenant" — that decides. And an import never deletes anyone, so every
+     import also stamps the tenants it contains (lastSeen, lpr_tenants_import):
+     someone missing from the latest import (a current-only export) is past
+     too. Hand-added tenants count as current. Before the first stamped
+     import, only the Status column applies. */
   const IMPORT_KEY = 'lpr_tenants_import';
   function importInfo() {
     try { return JSON.parse(localStorage.getItem(IMPORT_KEY) || 'null'); } catch (e) { return null; }
   }
-  function isCurrent(t) {
+  // What the data says (Buildium Status + latest import)…
+  function dataCurrent(t) {
+    if (t._manual) return true;
+    if (/former/i.test(t.status || '')) return false;
     const info = importInfo();
-    return !!(t._manual || !info || t.lastSeen === info.id);
+    return !info || t.lastSeen === info.id;
   }
+  // …unless the "Former tenant" checkbox says otherwise (t.former, kept only
+  // while it differs from the data, like any hand edit).
+  function isCurrent(t) {
+    return typeof t.former === 'boolean' ? !t.former : dataCurrent(t);
+  }
+  function setFormer(id, former) {
+    const data = loadTenants(), t = data[id];
+    if (!t) return;
+    if (former === !dataCurrent(t)) delete t.former; else t.former = former;
+    saveTenants(data);
+  }
+  const formerBox = (checked, id) =>
+    `<label class="lpr-tp-former"><input type="checkbox" id="${id}"${checked ? ' checked' : ''}/> Former tenant <span>(moved out; left out of "Current" in mail merge)</span></label>`;
 
   function importCSV(text) {
     const rows = parseCSV(text);
@@ -225,6 +242,7 @@
     rows.forEach(row => {
       const id = (row['Id'] || '').trim();
       if (!id) return;
+      const status = (row['Status'] || '').trim();      // column AG: "Tenant" or "Former Tenant"
 
       const source = {};
       ALL_FIELDS.forEach(f => {
@@ -236,7 +254,7 @@
       source['landlord'] = findLandlord(source, loadProperties()).owner;
 
       if (!data[id]) {
-        data[id] = { _id: id, source, overrides: {}, effective: { ...source }, lastSeen: stamp };
+        data[id] = { _id: id, source, overrides: {}, effective: { ...source }, lastSeen: stamp, status };
         added++;
       } else {
         const changed = ALL_FIELDS.some(f => (data[id].source[f] || '') !== source[f]);
@@ -246,14 +264,20 @@
         data[id].source = source;
         data[id].effective = computeEffective(data[id]);
         data[id].lastSeen = stamp;
+        data[id].status = status;
         if (changed) updated++; else unchanged++;
       }
     });
 
     saveTenants(data);
-    const current = Object.values(data).filter(t => t.lastSeen === stamp).length;
-    if (current) localStorage.setItem(IMPORT_KEY, JSON.stringify({ id: stamp, at: new Date(stamp).toISOString(), count: current }));
-    return { added, updated, unchanged, total: Object.keys(data).length, past: Object.values(data).filter(t => !t._manual && t.lastSeen !== stamp).length };
+    if (Object.values(data).some(t => t.lastSeen === stamp)) {
+      // Record this import FIRST — isCurrent() compares against the latest one.
+      const info = { id: stamp, at: new Date(stamp).toISOString(), count: 0 };
+      localStorage.setItem(IMPORT_KEY, JSON.stringify(info));
+      info.count = Object.values(data).filter(t => !t._manual && isCurrent(t)).length;
+      localStorage.setItem(IMPORT_KEY, JSON.stringify(info));
+    }
+    return { added, updated, unchanged, total: Object.keys(data).length, past: Object.values(data).filter(t => !t._manual && !isCurrent(t)).length };
   }
 
   /* ================================================================
@@ -761,6 +785,7 @@
                 ${over ? `<div class="lpr-tp-src-hint">Buildium: ${esc(t.source[f])}</div>` : ''}
               </div>`;
           }).join('')}
+          ${formerBox(!isCurrent(t), 'lpr-tp-former-cb')}
         </div>
         <div class="lpr-tp-foot">
           <button id="lpr-tp-apply-rec" class="lpr-tp-apply">Apply as Recipient</button>
@@ -770,6 +795,8 @@
   }
 
   function wireEditor(t) {
+    const fcb = gid('lpr-tp-former-cb');
+    if (fcb) fcb.onchange = () => { setFormer(t._id, fcb.checked); renderFillPanel(); };
     fillPanel.querySelectorAll('.lpr-tp-inp').forEach(inp => {
       inp.onchange = e => {
         const updated = saveOverride(t._id, e.target.dataset.field, e.target.value);
@@ -845,6 +872,7 @@
               <label class="lpr-tp-lbl">${esc(FIELD_LABELS[f])}</label>
               ${fieldInput(f, '', 'lpr-tp-new-inp', FIELD_LABELS[f])}
             </div>`).join('')}
+          ${formerBox(false, 'lpr-tp-new-former')}
         </div>
         <div class="lpr-tp-foot">
           <button id="lpr-tp-new-save" class="lpr-tp-apply">Save Tenant</button>
@@ -866,6 +894,7 @@
       const id = 'm_' + Date.now();
       const data = loadTenants();
       data[id] = { _id: id, _manual: true, source, overrides: {}, effective: { ...source } };
+      if (gid('lpr-tp-new-former').checked) data[id].former = true;
       saveTenants(data);
       addMode = false;
       selectedId = id;
@@ -1016,6 +1045,8 @@
       .lpr-tp-import-btn:hover { background: var(--lpr-blue-deep); }
       .lpr-tp-count { font-size: 11px; color: #999; }
       .lpr-tp-msg { padding: 4px 14px 2px; font-size: 11px; color: #2a7a2a; flex-shrink: 0; }
+      .lpr-tp-former { display: flex; align-items: center; gap: 6px; margin: 4px 0 2px; font-size: 12px; font-weight: 600; color: var(--lpr-ink); cursor: pointer; }
+      .lpr-tp-former span { font-weight: 400; color: #999; font-size: 11px; }
       .lpr-tp-past { font-size: 9px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #a05a00; background: #fff4e0; border-radius: 3px; padding: 0 4px; }
       .lpr-tp-newowner { display: flex; gap: 6px; margin-top: 5px; }
       .lpr-tp-newowner[hidden] { display: none; }
