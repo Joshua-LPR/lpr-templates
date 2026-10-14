@@ -939,7 +939,7 @@
 
       /* ---- Fill panel elements ---- */
       .lpr-tp-import-row {
-        display: flex; align-items: center; gap: 10px;
+        display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;   /* wraps: Import CSV · Properties · + Add · Merge… don't fit one line */
         padding: 9px 14px; border-bottom: 1px solid #eee; flex-shrink: 0;
       }
       .lpr-tp-import-btn {

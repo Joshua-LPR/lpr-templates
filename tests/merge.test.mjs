@@ -33,6 +33,8 @@ try {
 
   const dlg = await pick(t, `(() => { const d = document.querySelector('.lpr-merge-dlg'); return { open: !!d, bldgs: [...d.querySelectorAll('.lpr-merge-bldg option')].map(o => o.value).filter(Boolean),
     rows: d.querySelectorAll('.lpr-merge-row').length }; })()`);
+  const fit = await t.eval(`(() => { const p = document.getElementById('lpr-fill-panel').getBoundingClientRect(); return [...document.querySelectorAll('.lpr-tp-import-row > button, .lpr-tp-import-row > label')].filter(e => { const r = e.getBoundingClientRect(); return !(r.width > 0 && r.right <= p.right + 0.5); }).map(e => e.textContent.trim()); })()`);
+  s.check('every Tenants-tab button (incl. Merge…) is fully visible in the panel', !fit.length, JSON.stringify(fit));
   s.check('Tenants tab → Merge… opens the picker: all 3 tenants, building filter lists the 2 buildings', dlg.open && dlg.rows === 3 && dlg.bldgs.join('|') === '100 Test Avenue|200 Other Road', JSON.stringify(dlg));
   const filt = await t.eval(`(() => { const d = document.querySelector('.lpr-merge-dlg'); const b = d.querySelector('.lpr-merge-bldg'); b.value = '100 Test Avenue'; b.dispatchEvent(new Event('change'));
     d.querySelector('[data-act="all"]').click(); return { rows: d.querySelectorAll('.lpr-merge-row').length, count: d.querySelector('.lpr-merge-count').textContent }; })()`);
