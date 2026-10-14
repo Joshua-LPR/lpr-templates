@@ -186,6 +186,8 @@
     // Re-match every tenant already loaded.
     const data = loadTenants(), n = { match: 0, ambiguous: 0, none: 0 };
     Object.values(data).forEach(t => {
+      // A hand-added tenant's typed landlord (+ Add) is what the user said — keep it.
+      if (t._manual && t.source.landlord) return;
       const r = findLandlord(t.source, list);
       n[r.why]++;
       t.source.landlord = r.owner;

@@ -39,6 +39,15 @@ try {
   const bad = Object.keys(WANT).filter(k => got[k] !== WANT[k]).map(k => `${k}: "${got[k]}" want "${WANT[k]}"`);
   s.check('matching: Ave/Avenue, St./Street, Rd/Road, case, zip+4; "Alpha Holdings, LLC" kept whole; Address 2 settles 300 Dup; 400 Twin (2 owners) and wrong zip stay blank', !bad.length, bad.join('; '));
 
+  // Hand-added tenants (+ Add): a typed landlord is kept; a blank one gets matched.
+  await t.eval(`(() => { const d = LPR_TENANTS.loadTenants();
+    d.m_1 = { _id: 'm_1', _manual: true, source: { first_name: 'Hal', last_name: 'Hand', address_line1: '100 Test Ave', zip: '21000', landlord: 'Hand Typed LLC' }, overrides: {}, effective: { landlord: 'Hand Typed LLC' } };
+    d.m_2 = { _id: 'm_2', _manual: true, source: { first_name: 'Mo', last_name: 'Manual', address_line1: '200 Sample Street', zip: '21000', landlord: '' }, overrides: {}, effective: {} };
+    localStorage.setItem('lpr_tenants', JSON.stringify(d)); })()`);
+  await t.eval(`LPR_TENANTS.importPropertiesCSV(${JSON.stringify(PROPS)})`);
+  const man = await t.eval(LANDLORDS);
+  s.check('hand-added tenant: a typed landlord survives a Properties import; a blank one is matched', man.m_1 === 'Hand Typed LLC' && man.m_2 === 'Beta Homes LLC', JSON.stringify({ m_1: man.m_1, m_2: man.m_2 }));
+
   // Properties first, then tenants → same result.
   await t.eval(RESET);
   await t.eval(`LPR_TENANTS.importPropertiesCSV(${JSON.stringify(PROPS)})`);
