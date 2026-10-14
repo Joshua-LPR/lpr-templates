@@ -56,6 +56,28 @@ try {
   await t.reload(2500);
   s.check('format + date remembered after reload', (await t.eval(LETTER('Notice Date')))[0] === 'Friday, October 9, 2026', (await t.eval(LETTER('Notice Date')))[0]);
 
+  // ---- 2b. Picker UI (Joshua 2026-10-14): pattern names, Today, live typing --
+  await openSetupTab(t, 'Fields'); await t.wait(800);
+  const opts = await t.eval(`[...document.querySelectorAll('[data-ff-fmt="notice_date"] option')].map(o => o.textContent)`);
+  s.check('format dropdown names the pattern (no sample date)', opts.includes('Numbers (M/D/YYYY)') && opts.includes('Legal (the Dth day of Month, YYYY)') && !opts.some(o => /2026/.test(o)), JSON.stringify(opts));
+  const mcol = await t.eval(`(() => { const o = document.querySelector('.flatpickr-monthDropdown-months option'); return o ? getComputedStyle(o).color : null; })()`);
+  s.check('month dropdown list is dark text (not white on grey)', mcol === 'rgb(27, 31, 59)', mcol);
+  // real keystrokes: click the box, type, look at the hint + calendar, then Tab
+  const r = await t.eval(`(() => { const b = ${ALT('notice_date')}.getBoundingClientRect(); return { x: b.x + 20, y: b.y + b.height / 2 }; })()`);
+  for (const type of ['mousePressed', 'mouseReleased']) await t.send('Input.dispatchMouseEvent', { type, x: r.x, y: r.y, button: 'left', clickCount: 1 });
+  await t.wait(200); await t.eval(`${ALT('notice_date')}.select()`);
+  await t.send('Input.insertText', { text: '5/1/2000' }); await t.wait(200);
+  const live = await t.eval(`(() => { const fp = document.querySelector('[data-ff-key="notice_date"]')._flatpickr; return { hint: fp._lprHint.textContent, month: fp.currentMonth, year: fp.currentYear }; })()`);
+  s.check('typing "5/1/2000": hint shows how it will read; calendar jumps to May 2000', /Will show as: Monday, May 1, 2000/.test(live.hint) && live.month === 4 && live.year === 2000, JSON.stringify(live));
+  for (const type of ['keyDown', 'keyUp']) await t.send('Input.dispatchKeyEvent', { type, key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9 });
+  await t.wait(400);
+  const typed = await t.eval(`({ box: ${ALT('notice_date')}.value, letter: (${LETTER('Notice Date')})[0] })`);
+  s.check('Tab out → box AND letter switch to the field format ("Monday, May 1, 2000")', typed.box === 'Monday, May 1, 2000' && typed.letter === 'Monday, May 1, 2000', JSON.stringify(typed));
+  await t.eval(`(() => { const fp = document.querySelector('[data-ff-key="notice_date"]')._flatpickr; fp.open(); fp.calendarContainer.querySelector('.lpr-fp-today').click(); })()`); await t.wait(300);
+  const today = await t.eval(`(() => { const d = new Date(); return { want: LPR_FILL_FORMAT.formatDate(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'), 'weekday'), got: (${LETTER('Notice Date')})[0], open: document.querySelector('[data-ff-key="notice_date"]')._flatpickr.isOpen }; })()`);
+  s.check('Today button sets today and closes the calendar', today.got === today.want && !today.open, JSON.stringify(today));
+  await t.eval(TYPE('notice_date', 'October 9, 2026')); await t.wait(200);
+
   // ---- 3. Money in the Fields tab: "$" already in the letter ----------------
   await openSetupTab(t, 'Fields'); await t.wait(800);
   const MONEYIN = (key, v) => `(() => { const i = document.querySelector('[data-ff-key="${key}"]'); i.value = ${JSON.stringify(v)};

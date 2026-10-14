@@ -62,13 +62,14 @@
           '<select class="lpr-merge-bldg"><option value="">All buildings</option>' + buildings.map(function (b) { return '<option>' + esc(b) + '</option>'; }).join('') + '</select>' +
           (landlords.length ? '<select class="lpr-merge-owner"><option value="">All landlords</option>' + landlords.map(function (l) { return '<option>' + esc(l) + '</option>'; }).join('') + '</select>' : '') +
         '</div>' +
-        '<div class="lpr-merge-tools"><button type="button" data-act="all">Tick all shown</button><button type="button" data-act="none">Untick all</button><span class="lpr-merge-count"></span></div>' +
+        '<div class="lpr-merge-tools"><label class="lpr-merge-allbox"><input type="checkbox" class="lpr-merge-all"> <span class="lpr-merge-all-lbl">Select all</span></label><span class="lpr-merge-count"></span></div>' +
         '<div class="lpr-merge-list"></div>' +
         '<div class="actions"><button data-act="cancel" class="muted">Cancel</button><button data-act="go" class="primary">Preview</button></div>' +
       '</div>';
     document.body.appendChild(back);
     var q = back.querySelector('.lpr-merge-q'), bl = back.querySelector('.lpr-merge-bldg'), ow = back.querySelector('.lpr-merge-owner'), sc = back.querySelector('.lpr-merge-scope');
     var list = back.querySelector('.lpr-merge-list'), count = back.querySelector('.lpr-merge-count'), go = back.querySelector('[data-act="go"]');
+    var allBox = back.querySelector('.lpr-merge-all'), allLbl = back.querySelector('.lpr-merge-all-lbl');
 
     function shown() {
       var s = q.value.trim().toLowerCase();
@@ -96,9 +97,22 @@
       count.textContent = n + ' selected' + (n > MAX ? ' (max ' + MAX + ' at a time)' : '');
       go.textContent = 'Preview ' + n + (n === 1 ? ' copy' : ' copies');
       go.disabled = !n || n > MAX;
+      // Gmail-style header box: ticked when every tenant shown is selected,
+      // a dash when only some are. Works on the filtered list.
+      var rows = shown(), on = rows.filter(function (t) { return chosen[t._id]; }).length;
+      allBox.checked = !!rows.length && on === rows.length;
+      allBox.indeterminate = on > 0 && on < rows.length;
+      allBox.disabled = !rows.length;
+      allLbl.textContent = (allBox.checked ? 'Deselect all' : 'Select all') + (rows.length !== all.length ? ' ' + rows.length + ' shown' : '');
     }
     function close() { back.remove(); }
     q.addEventListener('input', paint); bl.addEventListener('change', paint); sc.addEventListener('change', paint); if (ow) ow.addEventListener('change', paint);
+    allBox.addEventListener('change', function () {
+      // Some or none selected → select every shown tenant; all selected → clear them.
+      var rows = shown(), every = rows.every(function (t) { return chosen[t._id]; });
+      rows.forEach(function (t) { if (every) delete chosen[t._id]; else chosen[t._id] = true; });
+      paint();
+    });
     list.addEventListener('change', function (e) {
       var id = e.target.getAttribute('data-id');
       if (!id) return;
@@ -108,8 +122,6 @@
     back.addEventListener('click', function (e) {
       var act = e.target.getAttribute && e.target.getAttribute('data-act');
       if (e.target === back || act === 'cancel') return close();
-      if (act === 'all') { shown().forEach(function (t) { chosen[t._id] = true; }); paint(); }
-      if (act === 'none') { chosen = {}; paint(); }
       if (act === 'go') {
         // keep the list order (by last name)
         var pick = all.filter(function (t) { return chosen[t._id]; });
@@ -208,7 +220,7 @@
       '.lpr-merge-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }' +
       '.lpr-merge-filters input, .lpr-merge-filters select { flex: 1 1 150px; min-width: 0; padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; font: inherit; font-size: 12px; }' +
       '.lpr-merge-tools { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; font-size: 12px; }' +
-      '.lpr-merge-tools button { padding: 3px 10px !important; font-size: 11px !important; }' +
+      '.lpr-merge-allbox { display: flex; align-items: center; gap: 8px; padding: 0 10px; cursor: pointer; font-weight: 600; color: var(--lpr-ink); }' +
       '.lpr-merge-count { margin-left: auto; color: var(--lpr-muted); }' +
       '.lpr-merge-list { flex: 1; min-height: 120px; max-height: 46vh; overflow-y: auto; border: 1px solid #eee; border-radius: 6px; margin-bottom: 14px; }' +
       '.lpr-merge-row { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; padding: 6px 10px; border-bottom: 1px solid #f2f2f2; cursor: pointer; font-size: 12px; }' +

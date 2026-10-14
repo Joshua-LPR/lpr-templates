@@ -20,6 +20,9 @@ try {
   // ---- + Add: landlord dropdown ----
   await openSetupTab(t, 'Tenants');
   await t.eval(`document.getElementById('lpr-tp-add').click()`); await t.wait(300);
+  const lay = await t.eval(`(() => { const p = document.getElementById('lpr-fill-panel'), f = p.querySelector('.lpr-tp-fields');
+    return { btn: document.getElementById('lpr-tp-add').textContent.trim(), hd: p.querySelector('.lpr-tp-ed-hd').textContent.trim(), list: !!p.querySelector('.lpr-tp-list, .lpr-tp-recent, #lpr-tp-q'), formH: f.getBoundingClientRect().height }; })()`);
+  s.check('"+ Add Manually" opens "Add New Tenant" with the whole panel (search, recent and list hidden)', lay.btn === '+ Add Manually' && lay.hd === 'Add New Tenant' && !lay.list && lay.formH > 250, JSON.stringify(lay));
   const dd = await t.eval(`(() => { const s = document.querySelector('#lpr-fill-panel select.lpr-tp-landlord'); const inp = document.querySelector('#lpr-fill-panel input[data-field="landlord"]');
     return { select: !!s, textInput: !!inp, opts: s ? [...s.options].map(o => o.textContent) : [] }; })()`);
   s.check('+ Add: Landlord is a dropdown (no free-text box) of the owners list: LPR, owners CSV, Properties owners, then "+ New owner…"',
@@ -44,6 +47,12 @@ try {
   await t.eval(`document.querySelector('#lpr-fill-panel .lpr-tp-item[data-id="k2"]').click()`); await t.wait(300);
   await t.eval(`(() => { const s = document.querySelector('#lpr-fill-panel select.lpr-tp-landlord'); s.value = 'Alpha Holdings LLC'; s.dispatchEvent(new Event('change', { bubbles: true })); })()`); await t.wait(150);
   s.check('tenant editor: choosing a landlord from the dropdown saves it', (await t.eval(`LPR_TENANTS.loadTenants().k2.effective.landlord`)) === 'Alpha Holdings LLC');
+
+  // ---- Recent list: capped at 5, and its block scrolls so the editor keeps room ----
+  await t.eval(`localStorage.setItem('lpr_recent_tenants', JSON.stringify(['k1','k2','k3','k1','k2','k3','k1','x6','x7']))`);
+  await openSetupTab(t, 'Tenants'); await t.eval(`document.querySelector('#lpr-fill-panel .lpr-tp-list .lpr-tp-item[data-id="k1"]').click()`); await t.wait(300);
+  const rec = await t.eval(`(() => { const p = document.getElementById('lpr-fill-panel'); return { n: p.querySelectorAll('.lpr-tp-recent .lpr-tp-item').length, recentH: p.querySelector('.lpr-tp-recent').getBoundingClientRect().height, edH: p.querySelector('.lpr-tp-fields').getBoundingClientRect().height }; })()`);
+  s.check('recent list shows each tenant once, at most 5, and its block ≤ 150px, so the tenant editor keeps room', rec.n <= 5 && rec.recentH <= 152, JSON.stringify(rec));
 
   // ---- Current vs past ----
   const r2 = await t.eval(`LPR_TENANTS.importCSV(${JSON.stringify(CSV2)})`);

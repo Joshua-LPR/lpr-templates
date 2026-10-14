@@ -33,12 +33,20 @@ try {
 
   const dlg = await pick(t, `(() => { const d = document.querySelector('.lpr-merge-dlg'); return { open: !!d, bldgs: [...d.querySelectorAll('.lpr-merge-bldg option')].map(o => o.value).filter(Boolean),
     rows: d.querySelectorAll('.lpr-merge-row').length }; })()`);
-  const fit = await t.eval(`(() => { const p = document.getElementById('lpr-fill-panel').getBoundingClientRect(); return [...document.querySelectorAll('.lpr-tp-import-row > button, .lpr-tp-import-row > label')].filter(e => { const r = e.getBoundingClientRect(); return !(r.width > 0 && r.right <= p.right + 0.5); }).map(e => e.textContent.trim()); })()`);
-  s.check('every Tenants-tab button (incl. Merge…) is fully visible in the panel', !fit.length, JSON.stringify(fit));
-  s.check('Tenants tab → Merge… opens the picker: all 3 tenants, building filter lists the 2 buildings', dlg.open && dlg.rows === 3 && dlg.bldgs.join('|') === '100 Test Avenue|200 Other Road', JSON.stringify(dlg));
+  const fit = await t.eval(`(() => { const p = document.getElementById('lpr-fill-panel').getBoundingClientRect(); return [...document.querySelectorAll('.lpr-tp-import-row > button, .lpr-tp-import-row > label, #lpr-tp-merge')].filter(e => { const r = e.getBoundingClientRect(); return !(r.width > 0 && r.right <= p.right + 0.5); }).map(e => e.textContent.trim()); })()`);
+  s.check('every Tenants-tab button (incl. Mail merge) is fully visible in the panel', !fit.length, JSON.stringify(fit));
+  s.check('Tenants tab → Mail merge opens the picker: all 3 tenants, building filter lists the 2 buildings', dlg.open && dlg.rows === 3 && dlg.bldgs.join('|') === '100 Test Avenue|200 Other Road', JSON.stringify(dlg));
   const filt = await t.eval(`(() => { const d = document.querySelector('.lpr-merge-dlg'); const b = d.querySelector('.lpr-merge-bldg'); b.value = '100 Test Avenue'; b.dispatchEvent(new Event('change'));
-    d.querySelector('[data-act="all"]').click(); return { rows: d.querySelectorAll('.lpr-merge-row').length, count: d.querySelector('.lpr-merge-count').textContent }; })()`);
-  s.check('building filter → 2 tenants; "Tick all shown" ticks them', filt.rows === 2 && /^2 selected/.test(filt.count), JSON.stringify(filt));
+    const all = d.querySelector('.lpr-merge-all'), lbl = () => d.querySelector('.lpr-merge-all-lbl').textContent;
+    const r = { rows: d.querySelectorAll('.lpr-merge-row').length, lbl0: lbl() };
+    all.click(); r.count = d.querySelector('.lpr-merge-count').textContent; r.checked = all.checked; r.lbl1 = lbl();
+    const c = d.querySelector('.lpr-merge-row input'); c.checked = false; c.dispatchEvent(new Event('change', { bubbles: true })); r.partial = all.indeterminate;
+    all.click(); r.refilled = d.querySelector('.lpr-merge-count').textContent;
+    all.click(); r.cleared = d.querySelector('.lpr-merge-count').textContent; r.unchecked = !all.checked && !all.indeterminate;
+    all.click();   // leave the 2 selected for the next step
+    return r; })()`);
+  s.check('building filter → 2 tenants; the header checkbox selects all shown ("Select all 2 shown" → "Deselect all")', filt.rows === 2 && /^2 selected/.test(filt.count) && filt.checked && /^Select all 2 shown/.test(filt.lbl0) && /^Deselect all/.test(filt.lbl1), JSON.stringify(filt));
+  s.check('header checkbox: a dash when only some are selected; click → all; click again → none', filt.partial && /^2 selected/.test(filt.refilled) && /^0 selected/.test(filt.cleared) && filt.unchecked, JSON.stringify(filt));
   await t.eval(`(() => { const d = document.querySelector('.lpr-merge-dlg'); const b = d.querySelector('.lpr-merge-bldg'); b.value = ''; b.dispatchEvent(new Event('change'));
     const q = d.querySelector('.lpr-merge-q'); q.value = 'gamma'; q.dispatchEvent(new Event('input'));
     const c = d.querySelector('.lpr-merge-row input'); c.checked = true; c.dispatchEvent(new Event('change', { bubbles: true }));

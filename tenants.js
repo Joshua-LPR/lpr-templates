@@ -593,7 +593,7 @@
     const all         = Object.values(data);
     const named       = all.filter(t => t.effective.first_name || t.effective.last_name);
     const q           = searchQ.toLowerCase();
-    const recentItems = q ? [] : loadRecents().map(id => data[id]).filter(Boolean);
+    const recentItems = q ? [] : [...new Set(loadRecents())].map(id => data[id]).filter(Boolean).slice(0, RECENT_MAX);
     const filtered    = named
       .filter(t => !q || [
         t.effective.first_name, t.effective.last_name,
@@ -614,13 +614,17 @@
           <input type="file" accept=".csv" id="lpr-tp-props-file" hidden/>
           ↑ Properties
         </label>
-        <button class="lpr-tp-add-btn" id="lpr-tp-add">+ Add</button>
-        ${document.querySelector('[data-merge]') ? '<button class="lpr-tp-add-btn" id="lpr-tp-merge" title="Mail merge: one copy of this template per tenant you pick">Merge…</button>' : ''}
+        <button class="lpr-tp-add-btn" id="lpr-tp-add" title="Add a tenant who is not in the Buildium import">+ Add Manually</button>
         <span class="lpr-tp-count">${named.length} tenant${named.length !== 1 ? 's' : ''}</span>
       </div>
+      ${document.querySelector('[data-merge]') ? `<div class="lpr-tp-merge-row">
+        <button class="lpr-tp-merge-btn" id="lpr-tp-merge" title="One copy of this template per tenant you select, each with their own name and address">
+          <span class="lpr-tp-merge-ico" aria-hidden="true">✉</span><span><b>Mail merge</b><small>Send this letter to multiple tenants</small></span>
+        </button>
+      </div>` : ''}
       ${importMsg ? `<div class="lpr-tp-msg">${esc(importMsg)}</div>` : ''}
 
-      <div class="lpr-tp-search-wrap">
+      ${addMode ? '' : `<div class="lpr-tp-search-wrap">
         <input id="lpr-tp-q" class="lpr-tp-q" type="text"
                placeholder="Search…" value="${esc(searchQ)}"/>
       </div>
@@ -637,7 +641,7 @@
         </div>
       ` : ''}
 
-      <div class="lpr-tp-list">
+      <div class="lpr-tp-list${sel ? '' : ' grow'}">
         ${filtered.length === 0
           ? `<div class="lpr-tp-empty">${all.length === 0 ? 'Import a CSV to get started' : 'No matches'}</div>`
           : filtered.map(t => `
@@ -645,7 +649,7 @@
                 <div class="lpr-tp-name">${esc(t.effective.last_name)}, ${esc(t.effective.first_name)}</div>
                 <div class="lpr-tp-addr">${esc(t.effective.address_line1)}${t.effective.city ? ' · ' + esc(t.effective.city) : ''}${isCurrent(t) ? '' : ' <span class="lpr-tp-past" title="Not in the latest tenant import">past</span>'}</div>
               </div>`).join('')}
-      </div>
+      </div>`}
 
       ${addMode ? renderAddForm() : sel ? renderEditor(sel) : `<div class="lpr-tp-no-sel">← Select a tenant above</div>`}
     `;
@@ -687,7 +691,7 @@
       renderFillPanel();
     };
 
-    gid('lpr-tp-q').oninput = e => {
+    if (gid('lpr-tp-q')) gid('lpr-tp-q').oninput = e => {
       searchQ = e.target.value;
       const caretStart = e.target.selectionStart;
       const caretEnd = e.target.selectionEnd;
@@ -864,7 +868,7 @@
     return `
       <div class="lpr-tp-ed">
         <div class="lpr-tp-ed-hd">
-          <span>New Tenant</span>
+          <span>Add New Tenant</span>
         </div>
         <div class="lpr-tp-fields">
           ${ALL_FIELDS.map(f => `
@@ -1034,7 +1038,7 @@
 
       /* ---- Fill panel elements ---- */
       .lpr-tp-import-row {
-        display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;   /* wraps: Import CSV · Properties · + Add · Merge… don't fit one line */
+        display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;   /* wraps if Import CSV · Properties · + Add don't fit one line */
         padding: 9px 14px; border-bottom: 1px solid #eee; flex-shrink: 0;
       }
       .lpr-tp-import-btn {
@@ -1043,7 +1047,18 @@
         cursor: pointer; white-space: nowrap; transition: background .15s; user-select: none;
       }
       .lpr-tp-import-btn:hover { background: var(--lpr-blue-deep); }
-      .lpr-tp-count { font-size: 11px; color: #999; }
+      .lpr-tp-count { font-size: 11px; color: #999; margin-left: auto; }
+      /* Mail merge is a different job from managing the tenant list: its own row, one prominent button. */
+      .lpr-tp-merge-row { padding: 9px 14px; border-bottom: 1px solid #eee; flex-shrink: 0; background: #f7f8fc; }
+      .lpr-tp-merge-btn {
+        display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+        background: #fff; border: 1.5px solid var(--lpr-blue); border-radius: 8px; padding: 7px 12px;
+        color: var(--lpr-blue); font-family: inherit; cursor: pointer; transition: background .15s, color .15s;
+      }
+      .lpr-tp-merge-btn:hover { background: var(--lpr-blue); color: #fff; }
+      .lpr-tp-merge-ico { font-size: 18px; line-height: 1; }
+      .lpr-tp-merge-btn b { display: block; font-size: 12.5px; }
+      .lpr-tp-merge-btn small { display: block; font-size: 10.5px; opacity: .75; }
       .lpr-tp-msg { padding: 4px 14px 2px; font-size: 11px; color: #2a7a2a; flex-shrink: 0; }
       .lpr-tp-former { display: flex; align-items: center; gap: 6px; margin: 4px 0 2px; font-size: 12px; font-weight: 600; color: var(--lpr-ink); cursor: pointer; }
       .lpr-tp-former span { font-weight: 400; color: #999; font-size: 11px; }
@@ -1062,6 +1077,7 @@
       .lpr-tp-q:focus { border-color: var(--lpr-blue); }
 
       .lpr-tp-list { flex: 0 0 auto; max-height: 200px; overflow-y: auto; border-bottom: 1px solid #eee; }
+      .lpr-tp-list.grow { flex: 1 1 auto; max-height: none; min-height: 200px; }   /* nothing selected: the list gets the room */
       .lpr-tp-empty, .lpr-tp-no-sel { padding: 16px; text-align: center; color: #bbb; font-size: 12px; }
       .lpr-tp-item { padding: 8px 14px; cursor: pointer; border-bottom: 1px solid #f2f2f2; transition: background .1s; }
       .lpr-tp-item:hover { background: #f7f8ff; }
@@ -1087,6 +1103,7 @@
       /* ---- Recent section ---- */
       .lpr-tp-recent {
         flex-shrink: 0; background: #f7f8ff;
+        max-height: 150px; overflow-y: auto;   /* up to RECENT_MAX (5) rows; scrolls past ~2.5 so the editor keeps its room */
         border-bottom: 2px solid #dde0f5;
       }
       .lpr-tp-sec-hd {
@@ -1094,6 +1111,7 @@
         font-size: 9.5px; font-weight: 700; letter-spacing: 1px;
         text-transform: uppercase; color: var(--lpr-blue);
       }
+      .lpr-tp-recent .lpr-tp-sec-hd { position: sticky; top: 0; z-index: 1; background: #f7f8ff; }
       .lpr-tp-recent .lpr-tp-item { background: #f7f8ff; position: relative; padding-right: 30px; }
       .lpr-tp-recent .lpr-tp-item:hover { background: #eef0fb; }
       .lpr-tp-recent-rm {

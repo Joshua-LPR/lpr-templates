@@ -150,11 +150,11 @@
   function ordinal(n) { var t = n % 100, u = n % 10; return n + (t >= 11 && t <= 13 ? 'th' : u === 1 ? 'st' : u === 2 ? 'nd' : u === 3 ? 'rd' : 'th'); }
   // The date formats (per field — Fields tab dropdown, or the key: {{numeric date: …}}).
   var DATE_FORMATS = {
-    spelled: { label: 'October 8, 2026',               fn: function (y, m, d) { return MONTHS[m - 1] + ' ' + d + ', ' + y; } },
-    numeric: { label: '10/8/2026',                     fn: function (y, m, d) { return m + '/' + d + '/' + y; } },
-    weekday: { label: 'Thursday, October 8, 2026',     fn: function (y, m, d) { return WEEKDAYS[new Date(y, m - 1, d).getDay()] + ', ' + MONTHS[m - 1] + ' ' + d + ', ' + y; } },
-    short:   { label: 'Oct 8, 2026',                   fn: function (y, m, d) { return MONTHS[m - 1].slice(0, 3) + ' ' + d + ', ' + y; } },
-    legal:   { label: 'the 8th day of October, 2026',  fn: function (y, m, d) { return 'the ' + ordinal(d) + ' day of ' + MONTHS[m - 1] + ', ' + y; } }
+    spelled: { label: 'Spelled out (Month D, YYYY)',              fn: function (y, m, d) { return MONTHS[m - 1] + ' ' + d + ', ' + y; } },
+    numeric: { label: 'Numbers (M/D/YYYY)',               fn: function (y, m, d) { return m + '/' + d + '/' + y; } },
+    weekday: { label: 'With weekday (Weekday, Month D, YYYY)',  fn: function (y, m, d) { return WEEKDAYS[new Date(y, m - 1, d).getDay()] + ', ' + MONTHS[m - 1] + ' ' + d + ', ' + y; } },
+    short:   { label: 'Short month (Mon D, YYYY)',              fn: function (y, m, d) { return MONTHS[m - 1].slice(0, 3) + ' ' + d + ', ' + y; } },
+    legal:   { label: 'Legal (the Dth day of Month, YYYY)',  fn: function (y, m, d) { return 'the ' + ordinal(d) + ' day of ' + MONTHS[m - 1] + ', ' + y; } }
   };
   function formatDate(raw, fmt) {
     var x = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
@@ -358,8 +358,10 @@
               var p = iso.split('-');
               return new Date(+p[0], +p[1] - 1, +p[2]);
             };
+            opts.onReady = function (sd, ds, fp) { datePickerExtras(fp, fmt); };
             opts.onChange = function (selectedDates, dateStr, fp) {
               if (fp.altInput) { fp.altInput.classList.remove('lpr-ff-bad'); fp.altInput.title = ''; }
+              if (fp._lprHint) fp._lprHint.textContent = '';
               saveValue(def.key, dateStr);
               applyField(def, dateStr);
             };
@@ -392,6 +394,32 @@
         });
       }).catch(function () {}); // silently fall back to native picker on network error
     }
+  }
+
+  /* Date box extras: a Today button in the calendar, and while you type a
+     date (any spelling) the calendar jumps to it and a line under the box
+     shows (above Today) how it will read. Enter, Tab or clicking away puts it in. */
+  function datePickerExtras(fp, fmt) {
+    var foot = document.createElement('div');
+    foot.className = 'lpr-fp-foot';
+    foot.innerHTML = '<div class="lpr-ff-hint"></div><button type="button" class="lpr-fp-today">Today</button>';
+    foot.lastChild.addEventListener('click', function () { fp.setDate(new Date(), true); fp.close(); });
+    fp.calendarContainer.appendChild(foot);
+    var box = fp.altInput;
+    if (!box) return;
+    box.placeholder = 'Type or pick a date';
+    var hint = foot.firstChild;   // in the calendar, so the open calendar never covers it
+    fp._lprHint = hint;
+    box.addEventListener('input', function () {
+      var v = box.value.trim(), iso = v && parseDate(v);
+      box.classList.remove('lpr-ff-bad');
+      if (iso) {
+        var p = iso.split('-');
+        fp.jumpToDate(new Date(+p[0], +p[1] - 1, +p[2]));
+        hint.textContent = 'Will show as: ' + formatDate(iso, fmt) + '  (Enter to set)';
+      } else hint.textContent = v ? 'Keep typing, e.g. 5/1/2000 or May 1, 2000' : '';
+    });
+    box.addEventListener('blur', function () { setTimeout(function () { hint.textContent = ''; }, 150); });
   }
 
   /* ================================================================
@@ -430,6 +458,15 @@
       '.flatpickr-prev-month:hover,.flatpickr-next-month:hover{background:rgba(255,255,255,.15)!important;}',
       '.flatpickr-current-month{color:#fff;font-size:13px!important;font-weight:700!important;}',
       '.flatpickr-current-month .numInputWrapper input{color:#fff!important;font-weight:700;}',
+      /* month dropdown: white on blue in the header, readable dark-on-white list */
+      '.flatpickr-current-month .flatpickr-monthDropdown-months{color:#fff!important;font-weight:700;background:transparent!important;border-radius:4px;}',
+      '.flatpickr-current-month .flatpickr-monthDropdown-months:hover{background:rgba(255,255,255,.15)!important;}',
+      '.flatpickr-current-month .flatpickr-monthDropdown-months option{background:#fff!important;color:#1b1f3b!important;font-weight:500;}',
+      '.lpr-fp-foot{border-top:1px solid #eee;padding:6px;text-align:center;}',
+      '.lpr-fp-today{font-family:inherit;font-size:12px;font-weight:700;color:var(--lpr-blue);background:#fff;border:1.5px solid var(--lpr-blue);border-radius:999px;padding:3px 16px;cursor:pointer;}',
+      '.lpr-fp-today:hover{background:var(--lpr-blue);color:#fff;}',
+      '.lpr-ff-hint{font-size:11.5px;font-weight:600;color:var(--lpr-blue);margin-bottom:5px;}',
+      '.lpr-ff-hint:empty{display:none;}',
       '.flatpickr-weekday{color:rgba(40,56,145,.65)!important;font-weight:700;}',
       '.flatpickr-day{border-radius:6px!important;font-size:12px;}',
       '.flatpickr-day:hover:not(.selected){background:#eef0fb!important;border-color:#eef0fb!important;}',
@@ -468,8 +505,7 @@
     var input;
     if (def.type === 'date') {
       var fmt = formatOf(def);
-      // Options show THIS field's date (or an example until one is entered).
-      var sample = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : '2026-10-08';
+      // Options name the pattern (the box above already shows the actual date).
       // Places set to different formats (by keys) can keep them.
       var own = def.els.map(function (el) { return DATE_FORMATS[el.getAttribute('data-fill-format')] ? el.getAttribute('data-fill-format') : 'spelled'; });
       var mixed = own.some(function (f) { return f !== own[0]; });
@@ -477,7 +513,7 @@
         '<select class="lpr-ff-fmt" data-ff-fmt="' + k + '" title="How this date appears in the letter' + (def.els.length > 1 ? ' (all ' + def.els.length + ' places)' : '') + '">' +
           (mixed || !fmt ? '<option value=""' + (!fmt ? ' selected' : '') + '>Different in each place</option>' : '') +
           Object.keys(DATE_FORMATS).map(function (f) {
-            return '<option value="' + f + '"' + (f === fmt ? ' selected' : '') + '>' + esc(formatDate(sample, f)) + '</option>';
+            return '<option value="' + f + '"' + (f === fmt ? ' selected' : '') + '>' + esc(DATE_FORMATS[f].label) + '</option>';
           }).join('') +
         '</select>';
     } else if (def.type === 'time') {
