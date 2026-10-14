@@ -16,6 +16,7 @@ node tests/page-flow.test.mjs       # one suite
 | `page-flow.test.mjs` | Letterhead automatic multi-page flow: page count, no clipped text, page numbers, continuation heading, edit mode, forced breaks, sign-off / paragraph-split rules, watermark, print, phone width |
 | `signatures.test.mjs` | Setup → Sender signature rows: gallery / leave blank / signature line, tenant lines, alignment, persistence, long letters, Library copies |
 | `exports.test.mjs` | PDF / PNG / HTML export and Save As → Library on a multi-page letter |
+| `raster.test.mjs` | PDF/PNG (html2canvas) keep the print layout: empty Apt fragment stays collapsed, grid placeholders keep their columns (Occupant Update), page restored after export |
 | `paste.test.mjs` | Clean paste from Google Docs / Word / AI / Markdown / plain text into four caret positions; pagination of pasted letters (no clipped text, numbering continues, no stranded headings); Undo; repair of already-broken letters |
 | `clear.test.mjs` | Clear body / Clear all: letterhead, sign-off and signature lines untouched; date + recipient kept/removed; one empty line with the caret; one Undo restores; paste afterwards; no warning; one page |
 | `fields.test.mjs` | Field chips: automatic spacing on Insert Field and on Done (no space before punctuation or after `$`; Undo/Redo take the space with the field); B / I / U / Plain / Size / Color on chips, one Undo per press, surviving Done, filling, HTML export and Save As |

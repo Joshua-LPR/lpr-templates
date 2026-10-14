@@ -1337,15 +1337,31 @@
     // into it. @media print can't serve these: html2canvas rasterizes the
     // screen rendering, where print styles never apply.
     document.body.classList.add('tt-rastering');
+    // html2canvas turns ::before/::after into real child nodes in its copy,
+    // so `:has([data-…-field]:empty)` collapses (empty Apt/unit fragments,
+    // blank-form write-in lines) stop matching there and reappear. Pin
+    // whatever is hidden right now so the copy keeps it hidden.
+    document.querySelectorAll('.sheet *').forEach(el => {
+      if (el.style.display === 'none' || getComputedStyle(el).display !== 'none') return;
+      touched.push([el, el.style.cssText]);
+      el.style.setProperty('display', 'none', 'important');
+    });
     document.querySelectorAll('.no-print').forEach(el => {
       // Toolbar & co. live outside the sheets and are never captured anyway;
       // only bother with nodes that sit inside what we are about to render.
       if (!el.closest('.sheet')) return;
-      touched.push([el, el.style.display]);
-      el.style.display = 'none';
+      touched.push([el, el.style.cssText]);
+      // A spacer/dismiss cell in a grid holds its column: removing it shifts
+      // every following cell (Occupant Update roster). Keep it in the flow,
+      // invisible, the same way the @media print rules do.
+      const parent = el.parentElement;
+      if (parent && /grid/.test(getComputedStyle(parent).display) && getComputedStyle(el).display !== 'none') {
+        el.style.visibility = 'hidden'; el.style.height = '0'; el.style.minHeight = '0';
+        el.style.padding = '0'; el.style.margin = '0'; el.style.overflow = 'hidden';
+      } else el.style.display = 'none';
     });
     return function restoreNoPrint() {
-      touched.forEach(([el, prev]) => { el.style.display = prev; });
+      touched.reverse().forEach(([el, prev]) => { el.style.cssText = prev; });
       document.body.classList.remove('tt-rastering');
     };
   }
