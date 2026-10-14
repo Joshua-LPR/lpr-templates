@@ -22,21 +22,16 @@
   'use strict';
 
   const STORAGE_KEY  = 'lpr_owners';
-  const DEFAULT      = 'LPR Management, LLC';
+  const DEFAULT      = window.LPR_UTIL.OWNER_DEFAULT;   // 'LPR Management, LLC' (user.js)
   const OFFICE_PHONE = '443.402.5641';
   const OFFICE_EMAIL = 'office@lasalleparkrealty.com';
 
   /* ================================================================
      STORAGE
      ================================================================ */
-  function loadOwners() {
-    try {
-      const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-      if (!Array.isArray(raw) || raw.length === 0) return [DEFAULT];
-      if (!raw.includes(DEFAULT)) raw.unshift(DEFAULT);
-      return raw;
-    } catch (e) { return [DEFAULT]; }
-  }
+  // The one owners list (user.js): LPR + this tab's CSV + Properties owners
+  // + owners added by hand (kept even when the owners CSV is re-imported).
+  function loadOwners() { return window.LPR_UTIL.ownerList(); }
 
   function saveOwners(list) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list));

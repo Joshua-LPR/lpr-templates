@@ -201,10 +201,26 @@
   /* ================================================================
      IMPORT / MERGE
      ================================================================ */
+  /* ---- current vs past (Joshua 2026-10-14) ----
+     Buildium's tenant export lists current tenants (its Status column is
+     "Tenant" for everyone), and an import never deletes anyone. So every
+     import stamps the tenants it contains (lastSeen) and records itself in
+     lpr_tenants_import; "current" = in the latest import. Hand-added
+     tenants count as current. Before the first stamped import everyone is. */
+  const IMPORT_KEY = 'lpr_tenants_import';
+  function importInfo() {
+    try { return JSON.parse(localStorage.getItem(IMPORT_KEY) || 'null'); } catch (e) { return null; }
+  }
+  function isCurrent(t) {
+    const info = importInfo();
+    return !!(t._manual || !info || t.lastSeen === info.id);
+  }
+
   function importCSV(text) {
     const rows = parseCSV(text);
     const data = loadTenants();
     let added = 0, updated = 0, unchanged = 0;
+    const stamp = Date.now();
 
     rows.forEach(row => {
       const id = (row['Id'] || '').trim();
@@ -220,7 +236,7 @@
       source['landlord'] = findLandlord(source, loadProperties()).owner;
 
       if (!data[id]) {
-        data[id] = { _id: id, source, overrides: {}, effective: { ...source } };
+        data[id] = { _id: id, source, overrides: {}, effective: { ...source }, lastSeen: stamp };
         added++;
       } else {
         const changed = ALL_FIELDS.some(f => (data[id].source[f] || '') !== source[f]);
@@ -229,12 +245,15 @@
         });
         data[id].source = source;
         data[id].effective = computeEffective(data[id]);
+        data[id].lastSeen = stamp;
         if (changed) updated++; else unchanged++;
       }
     });
 
     saveTenants(data);
-    return { added, updated, unchanged, total: Object.keys(data).length };
+    const current = Object.values(data).filter(t => t.lastSeen === stamp).length;
+    if (current) localStorage.setItem(IMPORT_KEY, JSON.stringify({ id: stamp, at: new Date(stamp).toISOString(), count: current }));
+    return { added, updated, unchanged, total: Object.keys(data).length, past: Object.values(data).filter(t => !t._manual && t.lastSeen !== stamp).length };
   }
 
   /* ================================================================
@@ -588,7 +607,7 @@
           ${recentItems.map(t => `
             <div class="lpr-tp-item${t._id === selectedId ? ' sel' : ''}" data-id="${esc(t._id)}">
               <div class="lpr-tp-name">${esc(t.effective.last_name)}, ${esc(t.effective.first_name)}</div>
-              <div class="lpr-tp-addr">${esc(t.effective.address_line1)}${t.effective.city ? ' · ' + esc(t.effective.city) : ''}</div>
+              <div class="lpr-tp-addr">${esc(t.effective.address_line1)}${t.effective.city ? ' · ' + esc(t.effective.city) : ''}${isCurrent(t) ? '' : ' <span class="lpr-tp-past" title="Not in the latest tenant import">past</span>'}</div>
               <button class="lpr-tp-recent-rm" data-id="${esc(t._id)}" title="Remove">✕</button>
             </div>`).join('')}
         </div>
@@ -600,7 +619,7 @@
           : filtered.map(t => `
               <div class="lpr-tp-item${t._id === selectedId ? ' sel' : ''}" data-id="${esc(t._id)}">
                 <div class="lpr-tp-name">${esc(t.effective.last_name)}, ${esc(t.effective.first_name)}</div>
-                <div class="lpr-tp-addr">${esc(t.effective.address_line1)}${t.effective.city ? ' · ' + esc(t.effective.city) : ''}</div>
+                <div class="lpr-tp-addr">${esc(t.effective.address_line1)}${t.effective.city ? ' · ' + esc(t.effective.city) : ''}${isCurrent(t) ? '' : ' <span class="lpr-tp-past" title="Not in the latest tenant import">past</span>'}</div>
               </div>`).join('')}
       </div>
 
@@ -613,7 +632,7 @@
       const reader = new FileReader();
       reader.onload = ev => {
         const res = importCSV(ev.target.result);
-        importMsg = `✓ ${res.added} added · ${res.updated} updated · ${res.unchanged} unchanged`;
+        importMsg = `✓ ${res.added} added · ${res.updated} updated · ${res.unchanged} unchanged` + (res.past ? ` · ${res.past} not in this file, kept as past` : '');
         renderFillPanel();
       };
       reader.readAsText(file);
@@ -661,6 +680,7 @@
 
     if (sel) wireEditor(sel);
     if (addMode) wireAddForm();
+    wireLandlordSelects(container);
     if (opts?.refocus) {
       const q = gid('lpr-tp-q');
       if (q) {
@@ -675,6 +695,50 @@
   /* ================================================================
      TENANT EDITOR
      ================================================================ */
+  /* One input per tenant field, shared by the editor and + Add. The
+     landlord is a dropdown of the owners list (LPR_UTIL.ownerList) ending
+     in "+ New owner…", which adds a name to that list (Joshua 2026-10-14). */
+  function fieldInput(f, value, cls, placeholder) {
+    if (f === 'landlord') {
+      const owners = window.LPR_UTIL.ownerList();
+      if (value && owners.indexOf(value) < 0) owners.push(value);
+      return `<select class="lpr-tp-inp ${cls} lpr-tp-landlord" data-field="landlord">` +
+        `<option value="">(none)</option>` +
+        owners.map(o => `<option value="${esc(o)}"${o === value ? ' selected' : ''}>${esc(o)}</option>`).join('') +
+        `<option value="__new">+ New owner…</option></select>` +
+        `<div class="lpr-tp-newowner" hidden><input type="text" class="lpr-tp-newowner-inp" placeholder="Owner name, e.g. Example Holdings, LLC"/>` +
+        `<button type="button" class="lpr-tp-newowner-add">Add</button></div>`;
+    }
+    return `<input class="lpr-tp-inp ${cls}" data-field="${esc(f)}" value="${esc(value)}"${placeholder ? ` placeholder="${esc(placeholder)}"` : ''}/>`;
+  }
+  function wireLandlordSelects(container) {
+    container.querySelectorAll('select.lpr-tp-landlord').forEach(sel => {
+      const box = sel.nextElementSibling, inp = box.querySelector('input'), add = box.querySelector('button');
+      sel.dataset.prev = sel.value;
+      // Capture phase: runs before the editor's own onchange, which must not save "__new".
+      sel.addEventListener('change', e => {
+        if (sel.value !== '__new') { sel.dataset.prev = sel.value; return; }
+        e.stopImmediatePropagation();
+        sel.value = sel.dataset.prev || '';
+        box.hidden = false;
+        inp.focus();
+      }, true);
+      const commit = () => {
+        const name = window.LPR_UTIL.addOwner(inp.value);
+        if (!name) return;
+        if (![...sel.options].some(o => o.value === name)) {
+          const o = document.createElement('option'); o.value = name; o.textContent = name;
+          sel.insertBefore(o, sel.querySelector('option[value="__new"]'));
+        }
+        sel.value = name;
+        inp.value = ''; box.hidden = true;
+        sel.dispatchEvent(new Event('change', { bubbles: true }));   // the editor saves it
+      };
+      add.addEventListener('click', commit);
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } });
+    });
+  }
+
   function renderEditor(t) {
     const editedCount = ALL_FIELDS.filter(f =>
       t.overrides?.[f] != null && t.source[f] !== t.overrides[f]
@@ -693,7 +757,7 @@
             return `
               <div class="lpr-tp-field${over ? ' ov' : ''}">
                 <label class="lpr-tp-lbl">${esc(FIELD_LABELS[f])}</label>
-                <input class="lpr-tp-inp" data-field="${esc(f)}" value="${esc(t.effective[f] || '')}"/>
+                ${fieldInput(f, t.effective[f] || '', '')}
                 ${over ? `<div class="lpr-tp-src-hint">Buildium: ${esc(t.source[f])}</div>` : ''}
               </div>`;
           }).join('')}
@@ -779,7 +843,7 @@
           ${ALL_FIELDS.map(f => `
             <div class="lpr-tp-field">
               <label class="lpr-tp-lbl">${esc(FIELD_LABELS[f])}</label>
-              <input class="lpr-tp-inp lpr-tp-new-inp" data-field="${esc(f)}" value="" placeholder="${esc(FIELD_LABELS[f])}"/>
+              ${fieldInput(f, '', 'lpr-tp-new-inp', FIELD_LABELS[f])}
             </div>`).join('')}
         </div>
         <div class="lpr-tp-foot">
@@ -797,7 +861,7 @@
     gid('lpr-tp-new-save').onclick = () => {
       const source = {};
       fillPanel.querySelectorAll('.lpr-tp-new-inp').forEach(inp => {
-        source[inp.dataset.field] = inp.value.trim();
+        source[inp.dataset.field] = inp.value === '__new' ? '' : inp.value.trim();
       });
       const id = 'm_' + Date.now();
       const data = loadTenants();
@@ -952,6 +1016,11 @@
       .lpr-tp-import-btn:hover { background: var(--lpr-blue-deep); }
       .lpr-tp-count { font-size: 11px; color: #999; }
       .lpr-tp-msg { padding: 4px 14px 2px; font-size: 11px; color: #2a7a2a; flex-shrink: 0; }
+      .lpr-tp-past { font-size: 9px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #a05a00; background: #fff4e0; border-radius: 3px; padding: 0 4px; }
+      .lpr-tp-newowner { display: flex; gap: 6px; margin-top: 5px; }
+      .lpr-tp-newowner[hidden] { display: none; }
+      .lpr-tp-newowner input { flex: 1; min-width: 0; padding: 5px 7px; border: 1px solid #ccd; border-radius: 5px; font: inherit; font-size: 12px; }
+      .lpr-tp-newowner button { padding: 4px 10px; border: 1.5px solid var(--lpr-blue); border-radius: 999px; background: var(--lpr-blue); color: #fff; font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; }
 
       .lpr-tp-search-wrap { padding: 8px 14px; flex-shrink: 0; }
       .lpr-tp-q {
@@ -1099,5 +1168,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 
-  window.LPR_TENANTS = { loadTenants, importCSV, importPropertiesCSV, applyTenant, applyTenantAsRecipient, insertField };
+  window.LPR_TENANTS = { loadTenants, importCSV, importPropertiesCSV, importInfo, isCurrent, applyTenant, applyTenantAsRecipient, insertField };
 })();

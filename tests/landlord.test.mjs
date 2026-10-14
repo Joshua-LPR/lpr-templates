@@ -70,8 +70,8 @@ try {
   await t.eval(`document.querySelector('#lpr-fill-panel .lpr-tp-item[data-id="t1"]').click()`); await t.wait(300);
   const ui = await t.eval(`(() => { const p = document.getElementById('lpr-fill-panel'); return { btn: !!p.querySelector('#lpr-tp-props-file'),
     label: [...p.querySelectorAll('.lpr-tp-lbl')].some(l => l.textContent.trim() === 'Landlord'),
-    value: [...p.querySelectorAll('input')].some(i => i.value === 'Alpha Holdings, LLC') }; })()`);
-  s.check('Tenants tab: "↑ Properties" button; tenant shows an editable Landlord field with the matched owner', ui.btn && ui.label && ui.value, JSON.stringify(ui));
+    value: (p.querySelector('select.lpr-tp-landlord') || {}).value === 'Alpha Holdings, LLC' }; })()`);
+  s.check('Tenants tab: "↑ Properties" button; tenant shows the Landlord dropdown set to the matched owner', ui.btn && ui.label && ui.value, JSON.stringify(ui));
 
   // Picking a tenant fills {{landlord}} in the letter; the sign-off company does NOT change (LPR signs as agent).
   await t.eval(`document.getElementById('tt-edit-btn').click()`); await t.wait(400);

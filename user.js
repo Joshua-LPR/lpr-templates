@@ -42,6 +42,8 @@
      spaceAllTokens(root)             spaceToken for every field in root
      FIELDS                           THE field table: namespace → key → label
      makeToken(ns, key, fillLabel)    a new empty field span (all namespaces)
+     ownerList() / addOwner(name)     the owners list: LPR + owners CSV +
+                                      Properties owners + hand-added ones
      formatMoney(raw) / moneyText(el, raw)
                                       "1,234.50"; moneyText adds "$" only
                                       if the letter has none before el
@@ -101,6 +103,30 @@
     owner: { name: 'Sender Company' },      // data-owner-field (Setup → Sender) — LPR signs as agent; NOT the tenant's landlord
     employee: { name: 'Signer Name', title: 'Signer Title', phone: 'Signer Phone', email: 'Signer Email' }  // data-employee-field
   };
+
+  /* ---- the owners list (Sender company / tenant landlord dropdowns) ----
+     LPR first, then owners from the Sender tab's owners CSV (lpr_owners),
+     owners named in the Properties export (lpr_properties), and owners
+     added by hand (lpr_owners_manual — kept apart so a CSV re-import never
+     drops them). */
+  var OWNER_DEFAULT = 'LPR Management, LLC';
+  function readJson(k, dflt) { try { var v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? dflt : v; } catch (e) { return dflt; } }
+  function ownerList() {
+    var props = (readJson('lpr_properties', {}).list || []).map(function (p) { return p.owner; });
+    var rest = [].concat(readJson('lpr_owners', []), props, readJson('lpr_owners_manual', []))
+      .map(function (n) { return String(n || '').trim(); })
+      .filter(function (n, i, a) { return n && n !== OWNER_DEFAULT && a.indexOf(n) === i; })
+      .sort(function (a, b) { return a.localeCompare(b); });
+    return [OWNER_DEFAULT].concat(rest);
+  }
+  function addOwner(name) {
+    name = String(name || '').trim();
+    if (!name || ownerList().indexOf(name) >= 0) return name;
+    var m = readJson('lpr_owners_manual', []);
+    m.push(name);
+    localStorage.setItem('lpr_owners_manual', JSON.stringify(m));
+    return name;
+  }
 
   // A new (empty) field token. `fillLabel`: a fill-in's own label ("Payment
   // Due Date" — same label = same value); defaults to the type's label.
@@ -192,6 +218,7 @@
     FILL_TOKEN_SEL: selectorFor(FILL_TOKEN_ATTRS),
     FIELDS: FIELDS,
     makeToken: makeToken,
+    OWNER_DEFAULT: OWNER_DEFAULT, ownerList: ownerList, addOwner: addOwner,
     parseMoney: parseMoney, formatMoney: formatMoney, moneyText: moneyText,
     spaceToken: spaceToken,
     spaceAllTokens: spaceAllTokens

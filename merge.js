@@ -39,6 +39,15 @@
     var buildings = uniq(function (t) { return t.effective.address_line1; });
     var landlords = uniq(function (t) { return t.effective.landlord; });
     var chosen = {};
+    // Current = in the latest tenant CSV import (tenants.js). The note keeps
+    // the reminder in front of whoever runs a merge.
+    var info = T().importInfo ? T().importInfo() : null;
+    var days = info ? Math.floor((Date.now() - info.id) / 86400000) : null;
+    var stale = !info || days > 14;
+    var noteHtml = info
+      ? 'Current = the ' + info.count + ' tenants in the tenant list imported ' + new Date(info.id).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) +
+        (days > 0 ? ' (' + days + ' day' + (days === 1 ? '' : 's') + ' ago)' : ' (today)') + '. Import the latest Buildium tenant export first (Setup &rarr; Tenants &rarr; Import CSV) so move-outs drop off.'
+      : 'Import the latest Buildium tenant export (Setup &rarr; Tenants &rarr; Import CSV) before merging, so past tenants can be left out.';
 
     var back = document.createElement('div');
     back.className = 'tt-backdrop lpr-merge-backdrop';
@@ -46,7 +55,9 @@
       '<div class="tt-dialog lpr-merge-dlg">' +
         '<h2>Mail merge</h2>' +
         '<p>One copy of this template for each tenant you tick, filled with their name and address. The wording, Fields-tab values, sender and signature lines are the same on every copy.</p>' +
+        '<div class="lpr-merge-note' + (stale ? ' stale' : '') + '">' + noteHtml + '</div>' +
         '<div class="lpr-merge-filters">' +
+          '<select class="lpr-merge-scope"><option value="current">Current tenants</option><option value="all">All tenants (incl. past)</option></select>' +
           '<input type="text" class="lpr-merge-q" placeholder="Search name or address…">' +
           '<select class="lpr-merge-bldg"><option value="">All buildings</option>' + buildings.map(function (b) { return '<option>' + esc(b) + '</option>'; }).join('') + '</select>' +
           (landlords.length ? '<select class="lpr-merge-owner"><option value="">All landlords</option>' + landlords.map(function (l) { return '<option>' + esc(l) + '</option>'; }).join('') + '</select>' : '') +
@@ -56,13 +67,14 @@
         '<div class="actions"><button data-act="cancel" class="muted">Cancel</button><button data-act="go" class="primary">Preview</button></div>' +
       '</div>';
     document.body.appendChild(back);
-    var q = back.querySelector('.lpr-merge-q'), bl = back.querySelector('.lpr-merge-bldg'), ow = back.querySelector('.lpr-merge-owner');
+    var q = back.querySelector('.lpr-merge-q'), bl = back.querySelector('.lpr-merge-bldg'), ow = back.querySelector('.lpr-merge-owner'), sc = back.querySelector('.lpr-merge-scope');
     var list = back.querySelector('.lpr-merge-list'), count = back.querySelector('.lpr-merge-count'), go = back.querySelector('[data-act="go"]');
 
     function shown() {
       var s = q.value.trim().toLowerCase();
       return all.filter(function (t) {
         var e = t.effective;
+        if (sc.value === 'current' && T().isCurrent && !T().isCurrent(t)) return false;
         if (bl.value && e.address_line1 !== bl.value) return false;
         if (ow && ow.value && e.landlord !== ow.value) return false;
         return !s || [e.first_name, e.last_name, e.address_line1, e.address_line2, e.city].join(' ').toLowerCase().indexOf(s) >= 0;
@@ -86,7 +98,7 @@
       go.disabled = !n || n > MAX;
     }
     function close() { back.remove(); }
-    q.addEventListener('input', paint); bl.addEventListener('change', paint); if (ow) ow.addEventListener('change', paint);
+    q.addEventListener('input', paint); bl.addEventListener('change', paint); sc.addEventListener('change', paint); if (ow) ow.addEventListener('change', paint);
     list.addEventListener('change', function (e) {
       var id = e.target.getAttribute('data-id');
       if (!id) return;
@@ -191,6 +203,8 @@
       'body.lpr-merging #tt-edit-btn, body.lpr-merging .tt-btn[data-merge-hide], body.lpr-merging #lpr-fill-btn,' +
       ' body.lpr-merging #lpr-fill-panel, body.lpr-merging #lpr-insert-panel { display: none !important; }' +
       '.lpr-merge-dlg { width: min(560px, 92vw); max-height: 86vh; display: flex; flex-direction: column; }' +
+      '.lpr-merge-note { font-size: 11.5px; line-height: 1.45; color: var(--lpr-muted); background: #f5f6fb; border-radius: 6px; padding: 7px 10px; margin-bottom: 8px; }' +
+      '.lpr-merge-note.stale { color: #8a4b00; background: #fff4e0; }' +
       '.lpr-merge-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }' +
       '.lpr-merge-filters input, .lpr-merge-filters select { flex: 1 1 150px; min-width: 0; padding: 6px 8px; border: 1px solid #ddd; border-radius: 6px; font: inherit; font-size: 12px; }' +
       '.lpr-merge-tools { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; font-size: 12px; }' +
